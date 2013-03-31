@@ -1,6 +1,6 @@
 # Purpose
 
-Simulation\emulation environment for distributed systems.
+Simulation and emulation environment for distributed systems.
 
 # Features
 
@@ -10,7 +10,7 @@ Simulation\emulation environment for distributed systems.
   * Record and replay
   * Totally and partially ordered event logging
 * Emulator
-  * TODO
+  * Deterministic Replay
 
 # Usage
 
