@@ -1,3 +1,7 @@
+# Chitter
+
+A 3D distributed Twitter built by Riley Adams, Wilson Lee, and Suman Jandhyala.
+
 # Purpose
 
 Simulation and emulation environment for distributed systems.
@@ -15,11 +19,11 @@ Simulation and emulation environment for distributed systems.
 # Usage
 
     Usage: java MessageLayer [options]
-    
+
     General Options:
       -h --help=<boolean>                               - Print usage message [default false]
       -v --version=<boolean>                            - Print program version [default false]
-    
+
     Execution Options:
       -s --simulate=<boolean>                           - Simulate [default false]
       -e --emulate=<boolean>                            - Emulate [default false]
@@ -30,7 +34,7 @@ Simulation and emulation environment for distributed systems.
       -r --seed=<long>                                  - Random seed
       -c --commandFile=<string>                         - Command file [default ]
       -f --failureLvlInt=<int>                          - Failure level, a number between 0 and 4 [default 4]
-    
+
     Debugging Options:
       -L --synopticTotallyOrderedLogFilename=<string>   - Synoptic totally ordered log filename [default ]
       -l --synopticPartiallyOrderedLogFilename=<string> - Synoptic partially ordered log filename [default ]
