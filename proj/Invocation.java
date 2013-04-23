@@ -108,13 +108,20 @@ public class Invocation implements Serializable {
         );
     }
 
-    public Object invokeOn(Object obj)
-    throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        Class<?> klass = obj.getClass();
-        Method method = Invocation.findMethod(klass, procName);
-        Object result = method.invoke(obj, this.paramVals);
-        this.setReturnValue(result);
-        return result;
+    public Object invokeOn(Object obj) throws InvocationException {
+        try {
+            Class<?> klass = obj.getClass();
+            Method method = Invocation.findMethod(klass, procName);
+            Object result = method.invoke(obj, this.paramVals);
+            this.setReturnValue(result);
+            return result;
+        } catch (IllegalAccessException e) {
+            throw new InvocationException(e);
+        } catch (IllegalArgumentException e) {
+            throw new InvocationException(e);
+        } catch (InvocationTargetException e) {
+            throw new InvocationException(e);
+        }
     }
 
     public static Method findMethod(Class<?> klass, String methodName) {

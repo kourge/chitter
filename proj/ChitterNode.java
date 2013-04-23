@@ -107,7 +107,7 @@ public class ChitterNode extends RIONode {
         }
         try {
             payload = Serialization.encode(iv);
-        } catch(IOException e) {
+        } catch(Exception e) {
             logOutput("Failed to encode RPC request.");
             return false;
         }
@@ -151,7 +151,7 @@ public class ChitterNode extends RIONode {
                 byte[] out;
                 try {
                     out = Serialization.encode(iv);
-                } catch(IOException e) {
+                } catch(Exception e) {
                     logOutput("Failed to encode RPC response.");
                     return;
                 }
