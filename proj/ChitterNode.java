@@ -127,7 +127,7 @@ public class ChitterNode extends RIONode {
             byte[] payload;
             try {
                 payload = Serialization.encode(iv);
-            } catch (Exception e) {
+            } catch (Serialization.EncodingException e) {
                 logOutput("Failed to encode RPC request.");
                 return false;
             }
@@ -155,25 +155,19 @@ public class ChitterNode extends RIONode {
                 // we've been sent an RPC, we should invoke it..
                 logOutput("RPC request received.");
                 Invocation iv;
+                byte[] out;
 
                 try {
                     iv = (Invocation)Serialization.decode(msg);
-                } catch (Exception e) {
+                    iv.invokeOn(fsOps);
+                    out = Serialization.encode(iv);
+                } catch (Serialization.DecodingException e) {
                     logOutput("Failed to decode RPC request.");
                     return;
-                }
-
-                try {
-                    iv.invokeOn(fsOps);
-                } catch (Exception e) {
+                } catch (InvocationException e) {
                     logOutput("RPC invocation failed. " + e);
                     return;
-                }
-                
-                byte[] out;
-                try {
-                    out = Serialization.encode(iv);
-                } catch(Exception e) {
+                } catch (Serialization.EncodingException e) {
                     logOutput("Failed to encode RPC response.");
                     return;
                 }
@@ -185,7 +179,7 @@ public class ChitterNode extends RIONode {
                 Invocation rpcResult;
                 try {
                     rpcResult = (Invocation)Serialization.decode(msg);
-                } catch (Exception e) {
+                } catch (Serialization.DecodingException e) {
                     logOutput("Failed to decode RPC reply.");
                     return;
                 }
@@ -212,7 +206,7 @@ public class ChitterNode extends RIONode {
                     byte[] payload;
                     try {
                         payload = Serialization.encode(inv);
-                    } catch (Exception e) {
+                    } catch (Serialization.EncodingException e) {
                         logOutput("Failed to encode RPC request.");
                         return;
                     }
