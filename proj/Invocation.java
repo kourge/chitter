@@ -108,6 +108,27 @@ public class Invocation implements Serializable {
         );
     }
 
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Invocation)) {
+            return false;
+        }
+        Invocation other = (Invocation)obj;
+
+        return (
+            this.equalsIgnoreValues(other) &&
+            this.returnVal.equals(other.returnVal) &&
+            Arrays.equals(this.paramVals, other.paramVals)
+        );
+    }
+
+    public boolean equalsIgnoreValues(Invocation other) {
+        return (
+            this.procName.equals(other.procName) &&
+            this.returnType.equals(other.returnType) &&
+            Arrays.equals(this.paramTypes, other.paramTypes)
+        );
+    }
+
     public Object invokeOn(Object obj) throws InvocationException {
         try {
             Class<?> klass = obj.getClass();
