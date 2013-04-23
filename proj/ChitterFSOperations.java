@@ -22,9 +22,10 @@ public class ChitterFSOperations {
     // basic operations offered via RPC:
 
     /** Create a file by name, return version number */
-    long create(String filename) {
+    public long create(String filename) {
         try {
             node.getWriter(filename, false);
+            System.out.println("created: " + filename);
             return Utility.fileTimestamp(node, filename);
         } catch (IOException e) {
             return -1;
@@ -32,12 +33,12 @@ public class ChitterFSOperations {
     }
 
     /** Gets whether or not a file exists */
-    boolean exists(String filename) {
+    public boolean exists(String filename) {
         return Utility.fileExists(node, filename);
     }
 
     /** Reads a file by name*/
-    Pair<byte[], Long> read(String filename) {
+    public Pair<byte[], Long> read(String filename) {
         /*byte[] out;
         PersistentStorageInputStream reader;
         try {
@@ -55,7 +56,7 @@ public class ChitterFSOperations {
     }
 
     /** Append to a file if not changed since version we have */
-    long appendIfNotChanged(String filename, byte[] data, long version) {
+    public long appendIfNotChanged(String filename, byte[] data, long version) {
         /*if (!Utility.fileExists(node, filename)) {
             return -1;
         }
@@ -70,7 +71,7 @@ public class ChitterFSOperations {
     }
 
     /** Write a file if not changed since the version we have */
-    long overwriteIfNotChanged(String filename, byte[] data, long version) {
+    public long overwriteIfNotChanged(String filename, byte[] data, long version) {
         /*if (!Utility.fileExists(node, filename)) {
             return -1;
         }
@@ -85,12 +86,12 @@ public class ChitterFSOperations {
     }
 
     /** Gets whether or not the file has changed from the version we have */
-    boolean hasChanged(String filename, long version) {
+    public boolean hasChanged(String filename, long version) {
         return version != Utility.fileTimestamp(node, filename);
     }
 
     /** Delete a file by name */
-    boolean delete(String filename) {
+    public boolean delete(String filename) {
         try {
             PersistentStorageWriter writer = node.getWriter(filename, false);
             writer.delete();

@@ -19,6 +19,7 @@ public class ChitterNode extends RIONode {
     public static int TIMEOUT = 5;
 
     PersistentStorageWriter log;
+    ChitterFSOperations fsOps;
 
     enum State {
         IDLE,
@@ -39,6 +40,7 @@ public class ChitterNode extends RIONode {
      */
     public ChitterNode() {
         currentState = State.IDLE;
+        fsOps = new ChitterFSOperations(this);
     }
 
     /**
@@ -94,12 +96,19 @@ public class ChitterNode extends RIONode {
         String cmd = s.next();
         int destination = s.nextInt();
         byte[] payload;
+
+        Invocation iv;
         if (cmd.equals("create")) {
-            // TODO make this use a snazzy serializable thingy
-            String m = "create";
-            payload = m.getBytes();
+            String filename = s.next();
+            iv = Invocation.of(ChitterFSOperations.class, "create", filename);
         } else {
             // TODO the rest of the operations
+            return false;
+        }
+        try {
+            payload = Serialization.encode(iv);
+        } catch(IOException e) {
+            logOutput("Failed to encode RPC request.");
             return false;
         }
         RIOSend(destination, Protocol.CHITTER_RPC_REQUEST, payload);
@@ -123,10 +132,37 @@ public class ChitterNode extends RIONode {
             case Protocol.CHITTER_RPC_REQUEST:
                 // we've been sent an RPC, we should invoke it..
                 logOutput("RPC request received.");
+                Invocation iv;
+
+                try {
+                    iv = (Invocation)Serialization.decode(msg);
+                } catch(Exception e) {
+                    logOutput("Failed to decode RPC request.");
+                    return;
+                }
+
+                try {
+                    iv.invokeOn(fsOps);
+                } catch (Exception e) {
+                    logOutput("RPC invokation failed.");
+                    return;
+                }
+                
+                byte[] out;
+                try {
+                    out = Serialization.encode(iv);
+                } catch(IOException e) {
+                    logOutput("Failed to encode RPC response.");
+                    return;
+                }
+
+                // send it back (including return value)
+                RIOSend(from, Protocol.CHITTER_RPC_REPLY, out);
                 break;
             case Protocol.CHITTER_RPC_REPLY:
                 // this is the reply to an RPC that we invoked, we should
                 // handle it
+                logOutput("RPC reply received.");
                 break;
             default:
                 logOutput("Unknown protocol packet: " + protocol);
