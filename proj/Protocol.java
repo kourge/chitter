@@ -19,6 +19,9 @@ public class Protocol {
 	// Protocols for Testing Reliable in-order message delivery
 	// These should be RIOPacket protocols
 	public static final int RIOTEST_PKT = 20;
+
+    public static final int CHITTER_RPC_REQUEST = 25;
+    public static final int CHITTER_RPC_REPLY = 26;
 	
 	public static final int MAX_PROTOCOL = 127;
 
@@ -37,7 +40,7 @@ public class Protocol {
 	/**
 	 * Tests if the given protocol is valid for a RIOPacket. Note that the
 	 * current implementation of RIOPacket actually uses this to test validity
-	 * of packets.
+	 * of packets. 
 	 * 
 	 * @param protocol
 	 *            The protocol to be checked

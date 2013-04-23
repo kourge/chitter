@@ -9,7 +9,7 @@ import edu.washington.cs.cse490h.lib.PersistentStorageReader;
 import edu.washington.cs.cse490h.lib.PersistentStorageWriter;
 import edu.washington.cs.cse490h.lib.Utility;
 
-public class ChitterNode extends Node {
+public class ChitterNode extends RIONode {
     // override the default failure rates (never fail for now)
     public static double getFailureRate() { return 0.0; }
     public static double getRecoveryRate() { return 0.0; }
@@ -22,13 +22,24 @@ public class ChitterNode extends Node {
     PersistentStorageWriter log;
 
     enum State {
-        CREATE, READ, WRITE, APPEND // ...
+        IDLE,
+        CREATE,
+        EXISTS,
+        READ,
+        APPEND,
+        APPEND_IF_CHANGED,
+        OVERWRITE_IF_CHANGED,
+        HAS_CHANGED,
+        DELETE
     };
+
+    private State currentState;
 
     /**
      * Create a new node and initialize everything
      */
-    public Node2PC() {
+    public ChitterNode() {
+        currentState = State.IDLE;
     }
 
     /**
@@ -86,7 +97,8 @@ public class ChitterNode extends Node {
      * @param msg
      *            The message object that was sent
      */
-    private void onRIOReceive(int from, int protocol, byte[] msg) {
+    @Override
+	public void onRIOReceive(Integer from, int protocol, byte[] msg) {
         // ...
     }
 

@@ -84,4 +84,9 @@ public class Utility {
         File f = new File(realFilename(n.addr, filename));
         return f.exists();
     }
+
+    public static long fileTimestamp(Node n, String filename) {
+        File f = new File(realFilename(n.addr, filename));
+        return f.lastModified();
+    }
 }
