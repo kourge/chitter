@@ -11,7 +11,7 @@ import edu.washington.cs.cse490h.lib.Utility;
 public class ChitterNode extends RIONode {
     // override the default failure rates (never fail for now)
     public static double getFailureRate() { return 0.0; }
-    public static double getRecoveryRate() { return 0.0; }
+    public static double getRecoveryRate() { return 1.0; }
     public static double getDropRate() { return 0.0; }
     public static double getDelayRate() { return 0.0; }
 
@@ -76,9 +76,46 @@ public class ChitterNode extends RIONode {
      * @throws IOException
      */
     private void recoverWithLog() throws IOException {
-        PersistentStorageReader logReader = getReader("log");
-        // ...
+        try {
+            PersistentStorageReader logReader = getReader("log");
+
+            // run through log, and gather a list of commands that were initiated but not finished
+            String tmp;
+            Queue<String> cmds = new LinkedList<String>();
+            while ((tmp = logReader.readLine()) != null) {
+                if (tmp.equals("COMPLETE")) {
+                    cmds.poll(); // pop off
+                } else {
+                    cmds.add(tmp);
+                }
+            }
+
+            // restart all unfinished commands
+            while (!cmds.isEmpty()) {
+                String command = cmds.poll();
+                Command c = null;
+                if ((c = matchFSOperation(command)) != null) {
+                    // 
+                } else {
+                    logError("Unrecognized command: " + command);
+                    return;
+                }
+
+                if (currentCommand == null) {
+                    currentCommand = c;
+                    c.execute(rpcReplies);
+                } else {
+                    pendingCommands.add(c);
+                }
+            }
+
+            log = getWriter("log", true);
+        } catch (Exception e) {
+            logOutput("Failed during recovery");
+            fail();
+        }
     }
+
 
     @Override
     public void fail() {
