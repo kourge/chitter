@@ -34,11 +34,13 @@ public class ChitterFSOperations {
 
     /** Gets whether or not a file exists */
     public boolean exists(String filename) {
+        System.out.println("checking: " + filename);
         return Utility.fileExists(node, filename);
     }
 
     /** Reads a file by name*/
     public Pair<byte[], Long> read(String filename) {
+        // TODO
         /*byte[] out;
         PersistentStorageInputStream reader;
         try {
@@ -57,6 +59,7 @@ public class ChitterFSOperations {
 
     /** Append to a file if not changed since version we have */
     public long appendIfNotChanged(String filename, byte[] data, long version) {
+        // TODO
         /*if (!Utility.fileExists(node, filename)) {
             return -1;
         }
@@ -72,6 +75,7 @@ public class ChitterFSOperations {
 
     /** Write a file if not changed since the version we have */
     public long overwriteIfNotChanged(String filename, byte[] data, long version) {
+        // TODO
         /*if (!Utility.fileExists(node, filename)) {
             return -1;
         }

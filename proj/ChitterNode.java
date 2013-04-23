@@ -19,28 +19,25 @@ public class ChitterNode extends RIONode {
     public static int TIMEOUT = 5;
 
     PersistentStorageWriter log;
+
+    // Server
     ChitterFSOperations fsOps;
 
-    enum State {
-        IDLE,
-        CREATE,
-        EXISTS,
-        READ,
-        APPEND,
-        APPEND_IF_CHANGED,
-        OVERWRITE_IF_CHANGED,
-        HAS_CHANGED,
-        DELETE
-    };
-
-    private State currentState;
+    // Client
+    Invocation pendingRPC; // A pending RPC call
+    Queue<Pair<Invocation, Integer> > pendingCommands; // commands that we
+                                                       // should send next
+    Queue<Pair<Invocation, Integer> > rpcReplies; // replies to commands in the
+                                                  // order they were invoked
 
     /**
      * Create a new node and initialize everything
      */
     public ChitterNode() {
-        currentState = State.IDLE;
         fsOps = new ChitterFSOperations(this);
+        pendingRPC = null;
+        pendingCommands = new LinkedList<Pair<Invocation, Integer> >();
+        rpcReplies = new LinkedList<Pair<Invocation, Integer> >();
     }
 
     /**
@@ -95,23 +92,39 @@ public class ChitterNode extends RIONode {
         Scanner s = new Scanner(command);
         String cmd = s.next();
         int destination = s.nextInt();
-        byte[] payload;
 
         Invocation iv;
-        if (cmd.equals("create")) {
+        if (cmd.equals("create") || cmd.equals("exists")
+            || cmd.equals("delete") || cmd.equals("read")) {
             String filename = s.next();
-            iv = Invocation.of(ChitterFSOperations.class, "create", filename);
+            iv = Invocation.of(ChitterFSOperations.class, cmd, filename);
+        } else if (cmd.equals("hasChanged")) {
+            String filename = s.next();
+            long v = s.nextLong();
+            iv = Invocation.of(ChitterFSOperations.class, cmd, filename, v);
+        } else if (cmd.equals("appendIfNotChanged")
+            || cmd.equals("overwriteIfNotChanged")) {
+            String filename = s.next();
+            long v = s.nextLong();
+            // TODO parse out write/append payload here...
+            iv = Invocation.of(ChitterFSOperations.class, cmd, filename,
+                v, null);
         } else {
-            // TODO the rest of the operations
             return false;
         }
-        try {
-            payload = Serialization.encode(iv);
-        } catch (IOException e) {
-            logOutput("Failed to encode RPC request.");
-            return false;
+        if (pendingRPC != null) {
+            pendingCommands.add(Pair.of(iv, destination));
+        } else {
+            byte[] payload;
+            try {
+                payload = Serialization.encode(iv);
+            } catch (IOException e) {
+                logOutput("Failed to encode RPC request.");
+                return false;
+            }
+            pendingRPC = iv;
+            RIOSend(destination, Protocol.CHITTER_RPC_REQUEST, payload);
         }
-        RIOSend(destination, Protocol.CHITTER_RPC_REQUEST, payload);
         return true;
     }
 
@@ -160,9 +173,44 @@ public class ChitterNode extends RIONode {
                 RIOSend(from, Protocol.CHITTER_RPC_REPLY, out);
                 break;
             case Protocol.CHITTER_RPC_REPLY:
-                // this is the reply to an RPC that we invoked, we should
-                // handle it
-                logOutput("RPC reply received.");
+                Invocation rpcResult;
+                try {
+                    rpcResult = (Invocation)Serialization.decode(msg);
+                } catch (Exception e) {
+                    logOutput("Failed to decode RPC reply.");
+                    return;
+                }
+
+                if (pendingRPC == null || !pendingRPC.getMethodName().equals(
+                    rpcResult.getMethodName())) {
+                    logOutput("Unexpected RPC reply: "
+                        + rpcResult.getMethodName()
+                        + " expected: " + pendingRPC.getMethodName());
+                    return;
+                }
+
+                logOutput("RPC reply received: " + rpcResult.getMethodName());
+                
+                // add to the reply queue so the caller can consume it
+                rpcReplies.add(Pair.of(rpcResult, from));
+                pendingRPC = null;
+
+                // if there were commands queued up, then run the next one now
+                if (!pendingCommands.isEmpty()) {
+                    Pair<Invocation, Integer> cmd = pendingCommands.poll();
+                    Invocation inv = cmd.first();
+                    int destination = cmd.second();
+                    byte[] payload;
+                    try {
+                        payload = Serialization.encode(inv);
+                    } catch (IOException e) {
+                        logOutput("Failed to encode RPC request.");
+                        return;
+                    }
+                    pendingRPC = inv;
+                    RIOSend(destination, Protocol.CHITTER_RPC_REQUEST, payload);
+                }
+
                 break;
             default:
                 logOutput("Unknown protocol packet: " + protocol);
