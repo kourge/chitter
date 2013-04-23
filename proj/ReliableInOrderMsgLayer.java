@@ -257,9 +257,10 @@ class OutChannel {
 		try{
 			Method onTimeoutMethod = Callback.getMethod("onTimeout", parent, new String[]{ "java.lang.Integer", "java.lang.Integer" });
 			RIOPacket riopkt = unACKedPackets.get(seqNum);
+            riopkt.numResends++;
 			
 			n.send(destAddr, Protocol.DATA, riopkt.pack());
-			n.addTimeout(new Callback(onTimeoutMethod, parent, new Object[]{ destAddr, seqNum }), ReliableInOrderMsgLayer.TIMEOUT);
+			n.addTimeout(new Callback(onTimeoutMethod, parent, new Object[]{ destAddr, seqNum }), ReliableInOrderMsgLayer.TIMEOUT * riopkt.numResends);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}

@@ -118,8 +118,13 @@ public class Packet {
 		if((flags & FIN) != 0) {
 			return new String("Packet: " + src + ": FIN");
 		}
-		return new String("Packet: " + src + "->" + dest + " protocol: " + protocol + 
-				" contents: " + Utility.byteArrayToString(payload));
+        if (Utility.byteArrayToString(payload).matches("\\A\\p{ASCII}*\\z")) {
+            return new String("Packet: " + src + "->" + dest + " protocol: " + protocol + 
+                    " contents: " + Utility.byteArrayToString(payload));
+        } else {
+            return new String("Packet: " + src + "->" + dest + " protocol: " + protocol + 
+                    " contents: [binary]");
+        }
 	}
 
 	/**
