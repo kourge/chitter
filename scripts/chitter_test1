@@ -9,7 +9,7 @@ time
 time
 0 read 1 foo.txt
 time
-0 appendIfNotChanged 1 foo.txt -1 "YO"
+0 appendIfNotChanged 1 foo.txt -1 "LO"
 time
 0 read 1 foo.txt
 time

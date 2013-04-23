@@ -35,8 +35,8 @@ public abstract class RIONode extends Node {
 	 * @param payload
 	 *            The payload of the message
 	 */
-	public void RIOSend(int destAddr, int protocol, byte[] payload) {
-		RIOLayer.RIOSend(destAddr, protocol, payload);
+	public int RIOSend(int destAddr, int protocol, byte[] payload) {
+		return RIOLayer.RIOSend(destAddr, protocol, payload);
 	}
 
 	/**
@@ -50,6 +50,8 @@ public abstract class RIONode extends Node {
 	 *            The message that was received
 	 */
 	public abstract void onRIOReceive(Integer from, int protocol, byte[] msg);
+
+    public void onRIODrop(int seqNum) {}
 	
 	@Override
 	public String toString() {

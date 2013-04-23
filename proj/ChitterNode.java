@@ -17,6 +17,7 @@ public class ChitterNode extends RIONode {
 
     public static int NUM_NODES = 2;// client and server only for now
     public static int TIMEOUT = 5;
+    public static int RPC_REPLY_TIMEOUT = 15;
 
     PersistentStorageWriter log;
 
@@ -25,8 +26,9 @@ public class ChitterNode extends RIONode {
 
     // Client
     Invocation pendingRPC; // A pending RPC call
-    Queue<Pair<Invocation, Integer> > pendingCommands; // commands that we
-                                                       // should send next
+    int pendingRPCSeq;     // seq number, so we know when it fails :(
+    Queue<Pair<Invocation, Integer> > pendingRPCs; // rpcs that we
+                                                   // should send next
     Queue<Pair<Invocation, Integer> > rpcReplies; // replies to commands in the
                                                   // order they were invoked
 
@@ -36,7 +38,7 @@ public class ChitterNode extends RIONode {
     public ChitterNode() {
         fsOps = new ChitterFSOperations(this);
         pendingRPC = null;
-        pendingCommands = new LinkedList<Pair<Invocation, Integer> >();
+        pendingRPCs = new LinkedList<Pair<Invocation, Integer> >();
         rpcReplies = new LinkedList<Pair<Invocation, Integer> >();
     }
 
@@ -121,20 +123,8 @@ public class ChitterNode extends RIONode {
         } else {
             return false;
         }
-        if (pendingRPC != null) {
-            pendingCommands.add(Pair.of(iv, destination));
-        } else {
-            byte[] payload;
-            try {
-                payload = Serialization.encode(iv);
-            } catch (Serialization.EncodingException e) {
-                logOutput("Failed to encode RPC request.");
-                return false;
-            }
-            pendingRPC = iv;
-            RIOSend(destination, Protocol.CHITTER_RPC_REQUEST, payload);
-        }
-        return true;
+
+        return sendRPC(iv, destination);
     }
 
     /**
@@ -193,14 +183,13 @@ public class ChitterNode extends RIONode {
                 }
 
                 logOutput("RPC reply received: " + rpcResult.getMethodName());
-                
                 // add to the reply queue so the caller can consume it
                 rpcReplies.add(Pair.of(rpcResult, from));
                 pendingRPC = null;
 
-                // if there were commands queued up, then run the next one now
-                if (!pendingCommands.isEmpty()) {
-                    Pair<Invocation, Integer> cmd = pendingCommands.poll();
+                // if there were rpcs queued up, then run the next one now
+                if (!pendingRPCs.isEmpty()) {
+                    Pair<Invocation, Integer> cmd = pendingRPCs.poll();
                     Invocation inv = cmd.first();
                     int destination = cmd.second();
                     byte[] payload;
@@ -221,6 +210,14 @@ public class ChitterNode extends RIONode {
     }
 
     @Override
+	public void onRIODrop(int seqNum) {
+        if (seqNum == pendingRPCSeq) {
+            rpcReplies.add(null);
+            pendingRPC = null;
+        }
+    }
+
+    @Override
     public String toString() {
         String s = "node";
         return s;
@@ -236,5 +233,38 @@ public class ChitterNode extends RIONode {
 
     public void log(String output, PrintStream stream) {
         stream.println("Node " + addr + ": " + output);
+    }
+
+    private boolean sendRPC(Invocation iv, int destination) {
+        if (pendingRPC != null) {
+            pendingRPCs.add(Pair.of(iv, destination));
+        } else {
+            byte[] payload;
+            try {
+                payload = Serialization.encode(iv);
+            } catch (Serialization.EncodingException e) {
+                logOutput("Failed to encode RPC request.");
+                return false;
+            }
+            pendingRPC = iv;
+
+            pendingRPCSeq = RIOSend(destination, Protocol.CHITTER_RPC_REQUEST,
+                                    payload);
+            try {
+                Method onTimeoutMethod = Callback.getMethod("onTimeoutRPC", this,
+                                                            new String[] {});
+                addTimeout(new Callback(onTimeoutMethod, this, new Object[] {}),
+                           RPC_REPLY_TIMEOUT);
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail();
+            }
+        }
+        return true;
+    }
+
+    public void onTimeoutRPC() {
+        rpcReplies.add(null);
+        pendingRPC = null;
     }
 }

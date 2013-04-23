@@ -20,6 +20,9 @@ public class ReliableInOrderMsgLayer {
 	private HashMap<Integer, OutChannel> outConnections;
 	private RIONode n;
 
+    // how many resends before we give up
+    public static final int NUM_RESENDS = 5;
+
 	/**
 	 * Constructor.
 	 * 
@@ -88,14 +91,14 @@ public class ReliableInOrderMsgLayer {
 	 * @param payload
 	 *            The payload to be sent
 	 */
-	public void RIOSend(int destAddr, int protocol, byte[] payload) {
+	public int RIOSend(int destAddr, int protocol, byte[] payload) {
 		OutChannel out = outConnections.get(destAddr);
 		if(out == null) {
 			out = new OutChannel(this, destAddr);
 			outConnections.put(destAddr, out);
 		}
 		
-		out.sendRIOPacket(n, protocol, payload);
+		return out.sendRIOPacket(n, protocol, payload);
 	}
 
 	/**
@@ -207,7 +210,7 @@ class OutChannel {
 	 * @param payload
 	 *            The payload to be sent
 	 */
-	protected void sendRIOPacket(RIONode n, int protocol, byte[] payload) {
+	protected int sendRIOPacket(RIONode n, int protocol, byte[] payload) {
 		try{
 			Method onTimeoutMethod = Callback.getMethod("onTimeout", parent, new String[]{ "java.lang.Integer", "java.lang.Integer" });
 			RIOPacket newPkt = new RIOPacket(protocol, ++lastSeqNumSent, payload);
@@ -218,6 +221,7 @@ class OutChannel {
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
+        return lastSeqNumSent;
 	}
 	
 	/**
@@ -257,8 +261,14 @@ class OutChannel {
 		try{
 			Method onTimeoutMethod = Callback.getMethod("onTimeout", parent, new String[]{ "java.lang.Integer", "java.lang.Integer" });
 			RIOPacket riopkt = unACKedPackets.get(seqNum);
+
+            // If we fail to get acked for too long, give up
+            if (riopkt.numResends > ReliableInOrderMsgLayer.NUM_RESENDS) {
+                unACKedPackets.remove(seqNum);
+            }
             riopkt.numResends++;
 			
+            // backoff linearly (2 * num_resends)
 			n.send(destAddr, Protocol.DATA, riopkt.pack());
 			n.addTimeout(new Callback(onTimeoutMethod, parent, new Object[]{ destAddr, seqNum }), ReliableInOrderMsgLayer.TIMEOUT * riopkt.numResends);
 		}catch(Exception e) {
