@@ -34,59 +34,63 @@ public class ChitterFSOperations {
 
     /** Gets whether or not a file exists */
     public boolean exists(String filename) {
-        System.out.println("checking: " + filename);
-        return Utility.fileExists(node, filename);
+        boolean ex = Utility.fileExists(node, filename);
+        System.out.println("checking: " + filename + " exists: " + ex);
+        return ex;
     }
 
     /** Reads a file by name*/
     public Pair<byte[], Long> read(String filename) {
-        // TODO
-        /*byte[] out;
-        PersistentStorageInputStream reader;
+        byte[] out;
+        PersistentStorageReader reader;
         try {
-            reader = node.getInputStream(filename);
+            reader = node.getReader(filename);
         } catch (FileNotFoundException e) {
             return null;
         }
         try {
-            reader.read(out);
+            StringBuffer buf = new StringBuffer();
+            String tmp = "";
+            while((tmp = reader.readLine()) != null) {
+                buf.append(tmp);
+            }
+            System.out.println("Read: " + buf.toString());
+            out = buf.toString().getBytes();
         } catch (IOException e) {
             return null;
         }
-        return Pair.of(out, Utility.fileTimestamp(node, filename));*/
-        return null;
+        return Pair.of(out, Utility.fileTimestamp(node, filename));
     }
 
     /** Append to a file if not changed since version we have */
     public long appendIfNotChanged(String filename, byte[] data, long version) {
-        // TODO
-        /*if (!Utility.fileExists(node, filename)) {
+        if (!Utility.fileExists(node, filename)) {
             return -1;
         }
         try {
-            node.getWriter(filename, true);
-            node.append(data);
+            BufferedWriter writer = node.getWriter(filename, true);
+            writer.append(new String(data));
             return Utility.fileTimestamp(node, filename);
         } catch (IOException e) {
             return -1;
-        }*/
-        return -1;
+        }
     }
 
     /** Write a file if not changed since the version we have */
     public long overwriteIfNotChanged(String filename, byte[] data, long version) {
-        // TODO
-        /*if (!Utility.fileExists(node, filename)) {
+        if (!Utility.fileExists(node, filename)) {
+            return -1;
+        }
+        if (version != -1 && version != Utility.fileTimestamp(node, filename)) {
             return -1;
         }
         try {
             PersistentStorageWriter writer = node.getWriter(filename, false);
-            writer.write(data);
+            writer.write(new String(data));
             return Utility.fileTimestamp(node, filename);
         } catch (IOException e) {
             return -1;
-        }*/
-        return -1;
+        }
     }
 
     /** Gets whether or not the file has changed from the version we have */

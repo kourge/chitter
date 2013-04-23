@@ -94,8 +94,10 @@ public class ChitterNode extends RIONode {
         int destination = s.nextInt();
 
         Invocation iv;
-        if (cmd.equals("create") || cmd.equals("exists")
-            || cmd.equals("delete") || cmd.equals("read")) {
+        if (cmd.equals("create")
+            || cmd.equals("exists")
+            || cmd.equals("delete")
+            || cmd.equals("read")) {
             String filename = s.next();
             iv = Invocation.of(ChitterFSOperations.class, cmd, filename);
         } else if (cmd.equals("hasChanged")) {
@@ -103,12 +105,19 @@ public class ChitterNode extends RIONode {
             long v = s.nextLong();
             iv = Invocation.of(ChitterFSOperations.class, cmd, filename, v);
         } else if (cmd.equals("appendIfNotChanged")
-            || cmd.equals("overwriteIfNotChanged")) {
+                   || cmd.equals("overwriteIfNotChanged")) {
             String filename = s.next();
             long v = s.nextLong();
-            // TODO parse out write/append payload here...
+            String payload;
+            int startIdx = command.indexOf('\"');
+            int endIdx = command.lastIndexOf('\"');
+            if (startIdx == endIdx || startIdx < 0 || endIdx < 0) {
+                payload = "";
+            } else {
+                payload = command.substring(startIdx + 1, endIdx);
+            }
             iv = Invocation.of(ChitterFSOperations.class, cmd, filename,
-                v, null);
+                payload.getBytes(), v);
         } else {
             return false;
         }
@@ -157,7 +166,7 @@ public class ChitterNode extends RIONode {
                 try {
                     iv.invokeOn(fsOps);
                 } catch (Exception e) {
-                    logOutput("RPC invocation failed.");
+                    logOutput("RPC invocation failed. " + e);
                     return;
                 }
                 
