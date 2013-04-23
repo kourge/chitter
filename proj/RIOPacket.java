@@ -21,6 +21,7 @@ public class RIOPacket {
 	private int protocol;
 	private int seqNum;
 	private byte[] payload;
+    public int numResends;
 
 	/**
 	 * Constructing a new RIO packet.
@@ -36,6 +37,7 @@ public class RIOPacket {
 		this.protocol = protocol;
 		this.seqNum = seqNum;
 		this.payload = payload;
+        this.numResends = 0;
 	}
 
 	/**
