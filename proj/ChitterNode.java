@@ -19,18 +19,22 @@ public class ChitterNode extends RIONode {
     public static int TIMEOUT = 5;
     public static int RPC_REPLY_TIMEOUT = 15;
 
-    PersistentStorageWriter log;
+    protected PersistentStorageWriter log;
 
     // Server
-    ChitterFSOperations fsOps;
+    protected ChitterFSOperations fsOps;
 
     // Client
-    Invocation pendingRPC; // A pending RPC call
-    int pendingRPCSeq;     // seq number, so we know when it fails :(
-    Queue<Pair<Invocation, Integer> > pendingRPCs; // rpcs that we
-                                                   // should send next
-    Queue<Pair<Invocation, Integer> > rpcReplies; // replies to commands in the
-                                                  // order they were invoked
+    protected Invocation pendingRPC; // A pending RPC call
+    protected int pendingRPCSeq;     // seq number, so we know when it fails :(
+    // rpcs that we should send next:
+    protected Queue<Pair<Invocation, Integer> > pendingRPCs; 
+    // replies to commands in the order they were invoked:
+    protected Queue<Pair<Invocation, Integer> > rpcReplies; 
+    // commands to be applied next
+    protected Queue<Command> pendingCommands; 
+
+    Command currentCommand;
 
     /**
      * Create a new node and initialize everything
@@ -40,6 +44,8 @@ public class ChitterNode extends RIONode {
         pendingRPC = null;
         pendingRPCs = new LinkedList<Pair<Invocation, Integer> >();
         rpcReplies = new LinkedList<Pair<Invocation, Integer> >();
+        pendingCommands = new LinkedList<Command>();
+        currentCommand = null;
     }
 
     /**
@@ -84,13 +90,33 @@ public class ChitterNode extends RIONode {
 
     @Override
     public void onCommand(String command) {
-        if (matchFSOperation(command)) {
+
+        try {
+            log.write(command + "\n");
+        } catch (IOException e) {
+            // well, shit, if we failed here, we drop the command completely
+            // but this is okay with at most once semantics, so whatevs...
+            logOutput("Failed to write command to logfile: " + command);
+            fail();
+        }
+
+        Command c = null;
+        if ((c = matchFSOperation(command)) != null) {
+            // 
+        } else {
+            logError("Unrecognized command: " + command);
             return;
         }
-        logError("Unrecognized command: " + command);
+
+        if (currentCommand == null) {
+            currentCommand = c;
+            c.execute(rpcReplies);
+        } else {
+            pendingCommands.add(c);
+        }
     }
 
-    private boolean matchFSOperation(String command) {
+    private Command matchFSOperation(String command) {
         Scanner s = new Scanner(command);
         String cmd = s.next();
         int destination = s.nextInt();
@@ -121,10 +147,11 @@ public class ChitterNode extends RIONode {
             iv = Invocation.of(ChitterFSOperations.class, cmd, filename,
                 payload.getBytes(), v);
         } else {
-            return false;
+            return null;
         }
 
-        return sendRPC(iv, destination);
+        return new FSCommand(this, iv, destination);
+        //return sendRPC(iv, destination);
     }
 
     /**
@@ -187,7 +214,36 @@ public class ChitterNode extends RIONode {
                 rpcReplies.add(Pair.of(rpcResult, from));
                 pendingRPC = null;
 
-                // if there were rpcs queued up, then run the next one now
+                // now that we have a new reply, try to advance command state
+                if (currentCommand != null) {
+                    currentCommand.execute(rpcReplies);
+                }
+
+                if (currentCommand.hasCompleted()) {
+                    logOutput("Command finished");
+
+                    try {
+                        // note that we completed a command
+                        log.write("COMPLETE\n");
+                    } catch (IOException e) {
+                        // failed to complete, we'll rerun the command
+                        logOutput("Failed to write command completion to logfile.");
+                        fail();
+                    }
+                    currentCommand = null;
+                } else if (currentCommand.hasFailed()) {
+                    // oh well, maybe reissue the command at least once? For now just
+                    // fail and call it good (ok with at-most-once)
+                    logOutput("Command failed! :(");
+                    currentCommand = null;
+                }
+
+                if (currentCommand == null && !pendingCommands.isEmpty()) {
+                    currentCommand = pendingCommands.poll();
+                    currentCommand.execute(rpcReplies);
+                }
+
+                // if there are rpcs queued up, then run the next one now
                 if (!pendingRPCs.isEmpty()) {
                     Pair<Invocation, Integer> cmd = pendingRPCs.poll();
                     Invocation inv = cmd.first();
@@ -200,7 +256,7 @@ public class ChitterNode extends RIONode {
                         return;
                     }
                     pendingRPC = inv;
-                    RIOSend(destination, Protocol.CHITTER_RPC_REQUEST, payload);
+                    pendingRPCSeq = RIOSend(destination, Protocol.CHITTER_RPC_REQUEST, payload);
                 }
 
                 break;
@@ -214,6 +270,7 @@ public class ChitterNode extends RIONode {
         if (seqNum == pendingRPCSeq) {
             rpcReplies.add(null);
             pendingRPC = null;
+            pendingRPCSeq = 0;
         }
     }
 
@@ -235,7 +292,7 @@ public class ChitterNode extends RIONode {
         stream.println("Node " + addr + ": " + output);
     }
 
-    private boolean sendRPC(Invocation iv, int destination) {
+    public boolean sendRPC(Invocation iv, int destination) {
         if (pendingRPC != null) {
             pendingRPCs.add(Pair.of(iv, destination));
         } else {
@@ -252,8 +309,10 @@ public class ChitterNode extends RIONode {
                                     payload);
             try {
                 Method onTimeoutMethod = Callback.getMethod("onTimeoutRPC", this,
-                                                            new String[] {});
-                addTimeout(new Callback(onTimeoutMethod, this, new Object[] {}),
+                                                            new String[] {
+                                                            "java.lang.Integer"});
+                addTimeout(new Callback(onTimeoutMethod, this, new Object[] {
+                            pendingRPCSeq}),
                            RPC_REPLY_TIMEOUT);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -263,8 +322,11 @@ public class ChitterNode extends RIONode {
         return true;
     }
 
-    public void onTimeoutRPC() {
-        rpcReplies.add(null);
-        pendingRPC = null;
+    public void onTimeoutRPC(Integer seq) {
+        if (pendingRPCSeq == seq) {
+            rpcReplies.add(null);
+            pendingRPC = null;
+            pendingRPCSeq = 0;
+        }
     }
 }
