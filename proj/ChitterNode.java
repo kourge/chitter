@@ -1,7 +1,6 @@
-import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.*;
+import java.io.*;
 
 import edu.washington.cs.cse490h.lib.Callback;
 import edu.washington.cs.cse490h.lib.Node;
@@ -17,7 +16,7 @@ public class ChitterNode extends RIONode {
     public static double getDelayRate() { return 0.0; }
 
     public static int NUM_NODES = 2;// client and server only for now
-    public static int TIMEOUT = 3;
+    public static int TIMEOUT = 5;
 
     PersistentStorageWriter log;
 
@@ -84,7 +83,27 @@ public class ChitterNode extends RIONode {
 
     @Override
     public void onCommand(String command) {
+        if (matchFSOperation(command)) {
+            return;
+        }
         logError("Unrecognized command: " + command);
+    }
+
+    private boolean matchFSOperation(String command) {
+        Scanner s = new Scanner(command);
+        String cmd = s.next();
+        int destination = s.nextInt();
+        byte[] payload;
+        if (cmd.equals("create")) {
+            // TODO make this use a snazzy serializable thingy
+            String m = "create";
+            payload = m.getBytes();
+        } else {
+            // TODO the rest of the operations
+            return false;
+        }
+        RIOSend(destination, Protocol.CHITTER_RPC_REQUEST, payload);
+        return true;
     }
 
     /**
@@ -100,6 +119,18 @@ public class ChitterNode extends RIONode {
     @Override
 	public void onRIOReceive(Integer from, int protocol, byte[] msg) {
         // ...
+        switch(protocol) {
+            case Protocol.CHITTER_RPC_REQUEST:
+                // we've been sent an RPC, we should invoke it..
+                logOutput("RPC request received.");
+                break;
+            case Protocol.CHITTER_RPC_REPLY:
+                // this is the reply to an RPC that we invoked, we should
+                // handle it
+                break;
+            default:
+                logOutput("Unknown protocol packet: " + protocol);
+        }
     }
 
     @Override

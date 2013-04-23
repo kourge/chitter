@@ -48,7 +48,10 @@ public class Protocol {
 	 */
 	public static boolean isRIOProtocolValid(int protocol) {
 		return (protocol == VOTEREQ_PKT || protocol == VOTE_PKT
-				|| protocol == DECISION_PKT || protocol == DECISIONREQ_PKT || protocol == RIOTEST_PKT);
+				|| protocol == DECISION_PKT || protocol == DECISIONREQ_PKT
+                || protocol == RIOTEST_PKT 
+                || protocol == CHITTER_RPC_REQUEST
+                || protocol == CHITTER_RPC_REPLY);
 	}
 
 	/**
