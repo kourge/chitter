@@ -4,6 +4,11 @@
 # ignore temporary emacs files
 *~
 
+# ignore temporary vim files
+*.un~
+*.swp
+*.swo
+
 # log and replay files
 *.log
 *.replay
@@ -16,3 +21,6 @@ jars/lib.jar
 
 # ignore tags file
 tags
+
+# ignore OS X stuff
+*.DS_Store
