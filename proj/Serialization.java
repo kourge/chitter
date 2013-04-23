@@ -1,6 +1,8 @@
 import java.io.*;
 
 public class Serialization {
+    private Serialization() {}
+
     public static byte[] encode(Object obj) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
