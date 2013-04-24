@@ -11,7 +11,7 @@ public class ChitterConsole {
     private static Set<String> commands;
 
     static {
-        commands = new HashSet<String>(ChitterOperation.Operation.getNames());
+        commands = new HashSet<String>(Operation.getNames());
         commands.add("help");
     }
 
