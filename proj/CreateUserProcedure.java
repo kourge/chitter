@@ -27,7 +27,7 @@ public class CreateUserProcedure extends Procedure {
         userFn = "users:" + username;
     }
 
-    public void begin() throws Exception {
+    public void call() throws Exception {
         doThen(
             Invocation.of(FSOperations.class, "create", tweetsFn),
             Invocation.on(this, "setTweetsFn")

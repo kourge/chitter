@@ -10,15 +10,7 @@ public abstract class Procedure {
         this.onComplete = onComplete;
     }
 
-    public void call() throws Exception {
-        try {
-            begin();
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-
-    public abstract void begin() throws Exception;
+    public abstract void call() throws Exception;
 
     /**
      * Pipes the result of the first invocation to the second invocation.
