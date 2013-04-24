@@ -15,11 +15,12 @@ import edu.washington.cs.cse490h.lib.Utility;
 public class RIOPacket {
 
 	public static final int MAX_PACKET_SIZE = Packet.MAX_PAYLOAD_SIZE;
-	public static final int HEADER_SIZE = 5;
+	public static final int HEADER_SIZE = 13;
 	public static final int MAX_PAYLOAD_SIZE = MAX_PACKET_SIZE - HEADER_SIZE;
 
 	private int protocol;
 	private int seqNum;
+    private long sessionId;
 	private byte[] payload;
     public int numResends;
 
@@ -29,7 +30,7 @@ public class RIOPacket {
 	 * @param seqNum The sequence number of the packet
 	 * @param payload The payload of the packet.
 	 */
-	public RIOPacket(int protocol, int seqNum, byte[] payload) throws IllegalArgumentException {
+	public RIOPacket(int protocol, int seqNum, long sessionId, byte[] payload) throws IllegalArgumentException {
 		if (!Protocol.isRIOProtocolValid(protocol) || payload.length > MAX_PAYLOAD_SIZE) {
 			throw new IllegalArgumentException("Illegal arguments given to RIOPacket");
 		}
@@ -37,6 +38,7 @@ public class RIOPacket {
 		this.protocol = protocol;
 		this.seqNum = seqNum;
 		this.payload = payload;
+        this.sessionId = sessionId;
         this.numResends = 0;
 	}
 
@@ -55,11 +57,22 @@ public class RIOPacket {
 	}
 
 	/**
+	 * @return The session Id
+	 */
+	public long getSessionId() {
+		return this.sessionId;
+	}
+
+	/**
 	 * @return The payload
 	 */
 	public byte[] getPayload() {
 		return this.payload;
 	}
+
+    public void setSessionId(long id) {
+        this.sessionId = id;
+    }
 
 	/**
 	 * Convert the RIOPacket packet object into a byte array for sending over the wire.
@@ -76,6 +89,8 @@ public class RIOPacket {
 
 			out.writeByte(protocol);
 			out.writeInt(seqNum);
+
+			out.writeLong(sessionId);
 
 			out.write(payload, 0, payload.length);
 
@@ -99,6 +114,7 @@ public class RIOPacket {
 
 			int protocol = in.readByte();
 			int seqNum = in.readInt();
+			long sessionId = in.readLong();
 
 			byte[] payload = new byte[packet.length - HEADER_SIZE];
 			int bytesRead = in.read(payload, 0, payload.length);
@@ -107,7 +123,7 @@ public class RIOPacket {
 				return null;
 			}
 
-			return new RIOPacket(protocol, seqNum, payload);
+			return new RIOPacket(protocol, seqNum, sessionId, payload);
 		} catch (IllegalArgumentException e) {
 			// will return null
 		} catch(IOException e) {
@@ -120,6 +136,6 @@ public class RIOPacket {
 	 * String representation of a RIOPacket
 	 */
 	public String toString() {
-		return "rio-proto:" + this.protocol + " rio-seqNum:" + this.seqNum + " rio-payload:" + Utility.byteArrayToString(this.payload); 
+		return "rio-proto:" + this.protocol + " rio-seqNum:" + this.seqNum + "rio-session:" + this.sessionId + " rio-payload:" + Utility.byteArrayToString(this.payload); 
 	}
 }
