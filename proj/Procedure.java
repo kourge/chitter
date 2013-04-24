@@ -37,7 +37,7 @@ public abstract class Procedure {
         */
     }
 
-    private void returnValue(Object value) throws InvocationException {
+    protected void returnValue(Object value) throws InvocationException {
         if (isComplete) {
             ;
         } else {
