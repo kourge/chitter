@@ -22,6 +22,7 @@ public class ChitterNode extends RIONode {
     protected PersistentStorageWriter log;
 
     public static Map<String, String> consoleOperationsDescription = Operation.getDescriptionMap();
+    public boolean suppressOutput; // running in console mode, manager will suppress logging
 
     // Server
     protected ChitterFSOperations fsOps;
@@ -30,11 +31,11 @@ public class ChitterNode extends RIONode {
     protected Invocation pendingRPC; // A pending RPC call
     protected int pendingRPCSeq;     // seq number, so we know when it fails :(
     // rpcs that we should send next:
-    protected Queue<Pair<Invocation, Integer> > pendingRPCs; 
+    protected Queue<Pair<Invocation, Integer> > pendingRPCs;
     // replies to commands in the order they were invoked:
-    protected Queue<Pair<Invocation, Integer> > rpcReplies; 
+    protected Queue<Pair<Invocation, Integer> > rpcReplies;
     // commands to be applied next
-    protected Queue<Command> pendingCommands; 
+    protected Queue<Command> pendingCommands;
 
     Command currentCommand;
 
@@ -74,7 +75,7 @@ public class ChitterNode extends RIONode {
     /**
      * Recover using a log saved in persistent storage. We will attempt to use
      * the log to decide.
-     * 
+     *
      * @throws IOException
      */
     private void recoverWithLog() throws IOException {
@@ -97,7 +98,7 @@ public class ChitterNode extends RIONode {
                 String command = cmds.poll();
                 Command c = null;
                 if ((c = matchFSOperation(command)) != null) {
-                    // 
+                    //
                 } else {
                     logError("Unrecognized command: " + command);
                     return;
@@ -141,7 +142,7 @@ public class ChitterNode extends RIONode {
 
         Command c = null;
         if ((c = matchFSOperation(command)) != null) {
-            // 
+            //
         } else {
             logError("Unrecognized command: " + command);
             return;
@@ -195,7 +196,7 @@ public class ChitterNode extends RIONode {
 
     /**
      * Actually process a packet.
-     * 
+     *
      * @param from
      *            The address of the sender
      * @param protocol
@@ -324,7 +325,8 @@ public class ChitterNode extends RIONode {
     }
 
     public void logOutput(String output) {
-        log(output, System.out);
+        if (!suppressOutput)
+            log(output, System.out);
     }
 
     public void log(String output, PrintStream stream) {
