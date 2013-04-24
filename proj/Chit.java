@@ -22,8 +22,20 @@ public class Chit implements Serializable {
         return String.format("<Chit time=%d text=\"%s\">", this.timestamp, this.text);
     }
 
+    private String escape(String string) {
+        string = string.replace((CharSequence)"\\", (CharSequence)"\\\\");
+        string = string.replace((CharSequence)"\n", (CharSequence)"\\n");
+        return string;
+    }
+
+    private String unescape(String string) {
+        string = string.replace((CharSequence)"\\n", (CharSequence)"\n");
+        string = string.replace((CharSequence)"\\\\", (CharSequence)"\\");
+        return string;
+    }
+
     private void writeObject(ObjectOutputStream oos) throws IOException {
-        oos.writeUTF(String.format("%d\t%s", this.timestamp, this.text));
+        oos.writeUTF(String.format("%d\t%s", this.timestamp, escape(this.text)));
     }
 
     private void readObject(ObjectInputStream ois)
@@ -32,7 +44,7 @@ public class Chit implements Serializable {
         int delimiter = line.indexOf("\t");
 
         this.timestamp = Long.parseLong(line.substring(0, delimiter));
-        this.text = line.substring(delimiter + 1);
+        this.text = unescape(line.substring(delimiter + 1));
     }
 
     private void readObjectNoData() throws ObjectStreamException {}
