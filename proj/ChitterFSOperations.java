@@ -42,16 +42,18 @@ public class ChitterFSOperations {
     /** Reads a file by name*/
     public Pair<byte[], Long> read(String filename) {
         byte[] out;
+
         PersistentStorageReader reader;
         try {
             reader = node.getReader(filename);
         } catch (FileNotFoundException e) {
             return null;
         }
+
         try {
             StringBuffer buf = new StringBuffer();
-            String tmp = "";
-            while((tmp = reader.readLine()) != null) {
+            String tmp = null;
+            while ((tmp = reader.readLine()) != null) {
                 buf.append(tmp);
             }
             System.out.println("Read: " + buf.toString());
@@ -59,6 +61,7 @@ public class ChitterFSOperations {
         } catch (IOException e) {
             return null;
         }
+
         return Pair.of(out, Utility.fileTimestamp(node, filename));
     }
 
@@ -67,6 +70,7 @@ public class ChitterFSOperations {
         if (!Utility.fileExists(node, filename)) {
             return -1;
         }
+
         try {
             BufferedWriter writer = node.getWriter(filename, true);
             writer.append(new String(data));
@@ -81,9 +85,11 @@ public class ChitterFSOperations {
         if (!Utility.fileExists(node, filename)) {
             return -1;
         }
+
         if (version != -1 && version != Utility.fileTimestamp(node, filename)) {
             return -1;
         }
+
         try {
             PersistentStorageWriter writer = node.getWriter(filename, false);
             writer.write(new String(data));
@@ -106,6 +112,7 @@ public class ChitterFSOperations {
         } catch (IOException e) {
             return false;
         }
+
         return true;
     }
 
