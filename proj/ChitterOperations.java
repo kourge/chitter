@@ -177,4 +177,17 @@ public class ChitterOperations {
 
         return list;
     }
+
+    public List<Chit> getChitsSince(String username, long timestamp) {
+        List<Chit> list = getChits(username);
+        List<Chit> result = new LinkedList<Chit>();
+
+        for (Chit chit : list) {
+            if (chit.getTimestamp() > timestamp) {
+                result.add(chit);
+            }
+        }
+
+        return result;
+    }
 }
