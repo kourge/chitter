@@ -12,6 +12,8 @@ import jline.console.ConsoleReader;
 import jline.console.completer.StringsCompleter;
 
 public class Console {
+    private int clientAddr;
+    private int serverAddr;
     private Set<String> opCommands;
     private Set<String> auxCommands = new HashSet<String>() {{
         add("help");
@@ -22,11 +24,13 @@ public class Console {
     private Boolean isSimulator;
     private ConsoleReader console;
 
-    public Console(Map<String, String> consoleOperationsDescription) {
-        this(consoleOperationsDescription, false);
+    public Console(int clientAddr, int serverAddr, Map<String, String> consoleOperationsDescription) {
+        this(clientAddr, serverAddr, consoleOperationsDescription, false);
     }
 
-    public Console(Map<String, String> consoleOperationsDescription, boolean isSimulator) {
+    public Console(int clientAddr, int serverAddr, Map<String, String> consoleOperationsDescription, boolean isSimulator) {
+        this.clientAddr = clientAddr;
+        this.serverAddr = serverAddr;
         descMap = new HashMap<String, String>(consoleOperationsDescription);
         descMap.put("echo", "Echoes text");
         descMap.put("exit", "Exits the console");
@@ -73,14 +77,15 @@ public class Console {
 
     private String handle(String line) {
 		String[] cmd = line.split("\\s+");
-		if(cmd.length < 1) {
+		if (cmd.length < 1) {
 			System.err.println("Command is too short: " + line);
 			return "";
 		}
 
         // all op commands are passed to node 0 if the Console is for a Simulator
         if (opCommands.contains(cmd[0])) {
-            return isSimulator ? "0 " + line : line;
+            return isSimulator ? String.format("%d %d %s", clientAddr, serverAddr, line)
+                               : String.format("%d %s", serverAddr, line);
         }
 
         // handle auxiliary commands

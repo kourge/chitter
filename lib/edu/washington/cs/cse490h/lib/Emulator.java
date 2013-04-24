@@ -372,7 +372,7 @@ public class Emulator extends Manager {
 				}
 			}
 		} else if (cmdInputType == InputType.CONSOLE) {
-            Console console = new Console(consoleOperationsDescription);
+            Console console = new Console(0, 1, consoleOperationsDescription);
 			while (node != null || failed) {
 				if (IOFinished && node != null) {
 					System.err.println("Network I/O thread failed, killing the node...");

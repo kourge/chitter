@@ -222,9 +222,8 @@ public class Simulator extends Manager {
             currentRoundEvents.add(parser.parseLine("start 1"));
             doTimestep(currentRoundEvents);
 
-            // event loop; send all commands to node 0 (assume it to be the
-            // client)
-            Console console = new Console(consoleOperationsDescription, true);
+            // event loop; assume client is node 0 
+            Console console = new Console(0, 1, consoleOperationsDescription, true);
             while (true) {
                 currentRoundEvents = new ArrayList<Event>();
 
