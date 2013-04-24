@@ -3,10 +3,15 @@ start 1
 time
 0 create 1 foo.txt
 time
+fail 0
+time
 0 exists 1 foo.txt
+time
+fail 1
 time
 0 overwriteIfNotChanged 1 foo.txt -1 "YO"
 time
+fail 1
 time
 0 read 1 foo.txt
 time
