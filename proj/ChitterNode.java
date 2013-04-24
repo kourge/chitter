@@ -17,7 +17,7 @@ public class ChitterNode extends RIONode {
 
     public static int NUM_NODES = 2;// client and server only for now
     public static int TIMEOUT = 5;
-    public static int RPC_REPLY_TIMEOUT = 15;
+    public static int RPC_REPLY_TIMEOUT = 50;
 
     protected PersistentStorageWriter log;
 
@@ -240,11 +240,14 @@ public class ChitterNode extends RIONode {
                     return;
                 }
 
-                if (pendingRPC == null || !pendingRPC.getMethodName().equals(
-                    rpcResult.getMethodName())) {
-                    logOutput("Unexpected RPC reply: "
-                        + rpcResult.getMethodName()
-                        + " expected: " + pendingRPC.getMethodName());
+                if (pendingRPC == null || !pendingRPC.getMethodName().equals(rpcResult.getMethodName())) {
+                    logOutput("Unexpected RPC reply  " +rpcResult.getMethodName() );
+                    if (pendingRPC != null) {
+                        logOutput("expected: " + pendingRPC.getMethodName());
+
+                    }
+                        //+ rpcResult.getMethodName()
+                        //+ " expected: " + pendingRPC == null ? "none" : pendingRPC.getMethodName());
                     return;
                 }
 
@@ -307,6 +310,7 @@ public class ChitterNode extends RIONode {
     @Override
 	public void onRIODrop(int seqNum) {
         if (seqNum == pendingRPCSeq) {
+            logOutput("RPC call droppped");
             rpcReplies.add(null);
             pendingRPC = null;
             pendingRPCSeq = 0;
@@ -363,6 +367,7 @@ public class ChitterNode extends RIONode {
 
     public void onTimeoutRPC(Integer seq) {
         if (pendingRPCSeq == seq) {
+            logOutput("RPC call timed out");
             rpcReplies.add(null);
             pendingRPC = null;
             pendingRPCSeq = 0;

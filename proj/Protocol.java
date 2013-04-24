@@ -11,6 +11,7 @@ public class Protocol {
 	public static final int ACK = 1;
 	public static final int INITIATE_SESSION = 2;
 	public static final int ACK_SESSION = 3;
+	public static final int REJOIN_SESSION = 4;
 
 	// Protocols for 2PC
 	public static final int VOTEREQ_PKT = 10;
@@ -36,7 +37,7 @@ public class Protocol {
 	 */
 	public static boolean isPktProtocolValid(int protocol) {
 		return (protocol == DATA || protocol == ACK || protocol == VOTEREQ_PKT
-                || protocol == INITIATE_SESSION || protocol == ACK_SESSION
+                || protocol == INITIATE_SESSION || protocol == ACK_SESSION || protocol == REJOIN_SESSION
 				|| protocol == VOTE_PKT || protocol == DECISION_PKT || protocol == DECISIONREQ_PKT);
 	}
 
@@ -53,6 +54,7 @@ public class Protocol {
 		return (protocol == VOTEREQ_PKT || protocol == VOTE_PKT
 				|| protocol == DECISION_PKT || protocol == DECISIONREQ_PKT
                 || protocol == RIOTEST_PKT 
+                || protocol == INITIATE_SESSION
                 || protocol == CHITTER_RPC_REQUEST
                 || protocol == CHITTER_RPC_REPLY);
 	}

@@ -1,8 +1,5 @@
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.UUID;
-import java.util.Iterator;
+import java.util.*;
 
 import edu.washington.cs.cse490h.lib.Callback;
 import edu.washington.cs.cse490h.lib.Utility;
@@ -16,7 +13,7 @@ import edu.washington.cs.cse490h.lib.Utility;
  * reliable, in-order message delivery, even in the presence of node failures.
  */
 public class ReliableInOrderMsgLayer {
-	public static int TIMEOUT = 3;
+	public static int TIMEOUT = 5;
 	
 	private HashMap<Integer, InChannel> inConnections;
 	private HashMap<Integer, OutChannel> outConnections;
@@ -52,46 +49,57 @@ public class ReliableInOrderMsgLayer {
 	 *            The Packet of data
 	 */
 	public void RIODataReceive(int from, byte[] msg) {
+
 		RIOPacket riopkt = RIOPacket.unpack(msg);
+
+        System.out.println("Recv: " + from + " id " + riopkt.getSessionId());
+
+        // this was a request for a session
+        if (riopkt.getProtocol() == Protocol.INITIATE_SESSION) {
+            long id = Long.parseLong(Utility.byteArrayToString(riopkt.getPayload()));
+            n.peerSessions.put(from, id);
+            System.out.println("session init, " + from + " -> " + id);
+            // anything we had outbound to them should be pulled
+            //if (outConnections.get(from) != null)
+            //    outConnections.get(from).clear();
+        }
+
+        // if the UUID is incorrect, then initiate a new session
+        if (riopkt.getSessionId() != n.getUUID()) {
+            System.out.println("Bad id, sending session setup");
+            String tmp = "" + n.getUUID();
+            n.peerSessions.put(from, riopkt.getSessionId());
+            RIOSend(from, Protocol.INITIATE_SESSION, tmp.getBytes());
+            // clean up
+			inConnections.put(from, new InChannel());
+            if (outConnections.get(from) != null)
+                outConnections.get(from).clear();
+        }
+
+        if (riopkt.getProtocol() == Protocol.INITIATE_SESSION
+            || riopkt.getSessionId() == n.getUUID()) {
+            // at-most-once semantics
+            byte[] seqNumByteArray = Utility.stringToByteArray("" + riopkt.getSeqNum());
+            n.send(from, Protocol.ACK, seqNumByteArray);
+            ////System.out.println("ACK");
+        } else {
+            //System.out.println("NO ACK");
+        }
 
 		InChannel in = inConnections.get(from);
 		if(in == null) {
 			in = new InChannel();
 			inConnections.put(from, in);
-
-
-            // new connection, we want to establish a session
-            long proposedSessionId = UUID.randomUUID().getMostSignificantBits();
-            in.sessionId = proposedSessionId;
-            in.awaitingSessionAck = true;
-            in.sessionResends = 0;
-
-            byte[] sessionIdByteArray = Utility.stringToByteArray("" + proposedSessionId);
-            n.send(from, Protocol.INITIATE_SESSION, sessionIdByteArray);
-
-            // setup a timeout
-            try {
-                Method onTimeoutMethod = Callback.getMethod("onTimeoutSession", this,
-                    new String[]{ "java.lang.Integer", "java.lang.Long" });
-                n.addTimeout(new Callback(onTimeoutMethod, this, new Object[]
-                    { from, proposedSessionId }), ReliableInOrderMsgLayer.TIMEOUT);
-            } catch (Exception e) {}
-            return;
-		}
-
-        // only ack and such if we have a session and it matches the packet
-        if (!in.awaitingSessionAck && in.sessionId == riopkt.getSessionId()) {
-            // at-most-once semantics
-            byte[] seqNumByteArray = Utility.stringToByteArray("" + riopkt.getSeqNum());
-            n.send(from, Protocol.ACK, seqNumByteArray);
-
+        }
+    
+        if (riopkt.getProtocol() != Protocol.INITIATE_SESSION
+            && riopkt.getSessionId() == n.getUUID()) {
             LinkedList<RIOPacket> toBeDelivered = in.gotPacket(riopkt);
             for(RIOPacket p: toBeDelivered) {
                 // deliver in-order the next sequence of packets
                 n.onRIOReceive(from, p.getProtocol(), p.getPayload());
+                //System.out.println("deliver!");
             }
-        } else {
-            //System.out.println("Packet ignored, session: " + riopkt.getSessionId());
         }
 	}
 	
@@ -104,26 +112,11 @@ public class ReliableInOrderMsgLayer {
 	 *            The Packet of data
 	 */
 	public void RIOAckReceive(int from, byte[] msg) {
-		int seqNum = Integer.parseInt( Utility.byteArrayToString(msg) );
-		outConnections.get(from).gotACK(seqNum);
+        if (outConnections.get(from) != null) {
+            int seqNum = Integer.parseInt( Utility.byteArrayToString(msg) );
+            outConnections.get(from).gotACK(seqNum);
+        }
 	}
-
-	public void RIOSessionReceive(int from, byte[] msg) {
-        long session = Long.parseLong(Utility.byteArrayToString(msg));
-        OutChannel out = outConnections.get(from);
-		out.sessionId = session;
-
-        // we'll send back the lowest seqnum
-        byte[] seqByteArray = Utility.stringToByteArray("" + out.getSeq());
-        n.send(from, Protocol.ACK_SESSION, seqByteArray);
-	}
-        
-	public void RIOSessionAck(int from, byte[] msg) {
-        // we've gotten an ack, yay
-		inConnections.get(from).awaitingSessionAck = false;
-		int seqNum = Integer.parseInt( Utility.byteArrayToString(msg) );
-        inConnections.get(from).setSeqNum(seqNum);
-    }
 
 	/**
 	 * Send a packet using this reliable, in-order messaging layer. Note that
@@ -161,7 +154,7 @@ public class ReliableInOrderMsgLayer {
 		outConnections.get(destAddr).onTimeout(n, seqNum);
 	}
 
-	public void onTimeoutSession(Integer addr, Long sessionNum) {
+	/*public void onTimeoutSession(Integer addr, Long sessionNum) {
         if (inConnections.get(addr).awaitingSessionAck) {
             InChannel in = inConnections.get(addr);
             in.sessionResends++;
@@ -171,7 +164,7 @@ public class ReliableInOrderMsgLayer {
                 n.send(addr, Protocol.INITIATE_SESSION, sessionIdByteArray);
 
                 try {
-                    // setup a timeout
+                    // setup another timeout
                     Method onTimeoutMethod = Callback.getMethod("onTimeoutSession", this,
                         new String[]{ "java.lang.Integer", "java.lang.Long" });
                     n.addTimeout(new Callback(onTimeoutMethod, this, new Object[]
@@ -179,7 +172,7 @@ public class ReliableInOrderMsgLayer {
                 } catch (Exception e) {}
             } // else { give up for now }
         }
-	}
+	}*/
 	
 	@Override
 	public String toString() {
@@ -199,17 +192,9 @@ class InChannel {
 	private int lastSeqNumDelivered;
 	private HashMap<Integer, RIOPacket> outOfOrderMsgs;
 
-    // session info
-    public long sessionId;
-    public boolean awaitingSessionAck;
-    public int sessionResends;
-	
 	InChannel(){
 		lastSeqNumDelivered = -1;
 		outOfOrderMsgs = new HashMap<Integer, RIOPacket>();
-        this.sessionId = -1;
-        this.sessionResends = 0;
-        this.awaitingSessionAck = false;
 	}
 
     public void setSeqNum(int num) {
@@ -254,6 +239,25 @@ class InChannel {
 			pktsToBeDelivered.add(outOfOrderMsgs.remove(lastSeqNumDelivered));
 		}
 	}
+
+    public int getLatestSeq() {
+        if (outOfOrderMsgs.isEmpty()) {
+            return lastSeqNumDelivered;
+        }
+        int max = 0;
+        Iterator it = outOfOrderMsgs.keySet().iterator();
+        while(it.hasNext()) {
+            int k = (Integer)it.next();
+            if (k > max) {
+                max = k;
+            }
+        }
+        return max + 1;
+    }
+
+    public void dropMessages() {
+        outOfOrderMsgs.clear();
+    }
 	
 	@Override
 	public String toString() {
@@ -270,15 +274,12 @@ class OutChannel {
 	private ReliableInOrderMsgLayer parent;
 	private int destAddr;
 
-    // session info
-    public long sessionId;
 	
 	OutChannel(ReliableInOrderMsgLayer parent, int destAddr){
 		lastSeqNumSent = -1;
 		unACKedPackets = new HashMap<Integer, RIOPacket>();
 		this.parent = parent;
 		this.destAddr = destAddr;
-        this.sessionId = -1;
 	}
 	
 	/**
@@ -294,10 +295,19 @@ class OutChannel {
 	protected int sendRIOPacket(RIONode n, int protocol, byte[] payload) {
 		try{
 			Method onTimeoutMethod = Callback.getMethod("onTimeout", parent, new String[]{ "java.lang.Integer", "java.lang.Integer" });
-			RIOPacket newPkt = new RIOPacket(protocol, ++lastSeqNumSent, sessionId, payload);
+            long out_uuid = n.getUUID();
+            if (n.peerSessions.get(destAddr) != null) {
+                out_uuid = n.peerSessions.get(destAddr);
+                //System.out.println("Sending to uuid " + out_uuid);
+            } else {
+                //System.out.println("Sending from uuid " + out_uuid);
+            }
+			RIOPacket newPkt = new RIOPacket(protocol, ++lastSeqNumSent, out_uuid, payload);
 			unACKedPackets.put(lastSeqNumSent, newPkt);
 			
 			n.send(destAddr, Protocol.DATA, newPkt.pack());
+
+            //System.out.println("timeout");
 			n.addTimeout(new Callback(onTimeoutMethod, parent, new Object[]{ destAddr, lastSeqNumSent }), ReliableInOrderMsgLayer.TIMEOUT);
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -331,6 +341,11 @@ class OutChannel {
 		unACKedPackets.remove(seqNum);
 	}
 
+    public void clear() {
+        unACKedPackets.clear();
+        lastSeqNumSent = -1;
+    }
+
     public int getSeq() {
         if (unACKedPackets.isEmpty()) {
             return lastSeqNumSent;
@@ -345,6 +360,10 @@ class OutChannel {
         }
         return min - 1;
     }
+
+    public void setSeq(int s) {
+        lastSeqNumSent = s;
+    }
 	
 	/**
 	 * Resend an unACKed packet.
@@ -355,15 +374,22 @@ class OutChannel {
 	 *            The sequence number of the unACKed packet
 	 */
 	private void resendRIOPacket(RIONode n, int seqNum) {
+        System.out.println("RESEND");
 		try{
 			Method onTimeoutMethod = Callback.getMethod("onTimeout", parent, new String[]{ "java.lang.Integer", "java.lang.Integer" });
 			RIOPacket riopkt = unACKedPackets.get(seqNum);
-            riopkt.setSessionId(sessionId);
+            if (n.peerSessions.get(destAddr) != null) {
+                riopkt.setSessionId(n.peerSessions.get(destAddr));
+            } else {
+                riopkt.setSessionId(n.getUUID());
+            }
+
+            System.out.println("proto: " + riopkt.getProtocol());
 
             // If we fail to get acked for too long, give up
             if (riopkt.numResends > ReliableInOrderMsgLayer.NUM_RESENDS) {
                 unACKedPackets.remove(seqNum);
-                //System.out.println("PACKET DROPPED");
+                System.out.println("PACKET DROPPED");
                 return;
             }
             riopkt.numResends++;
