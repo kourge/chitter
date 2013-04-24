@@ -71,6 +71,10 @@ public class ChitterFSOperations {
             return -1;
         }
 
+        if (version != -1 && version != Utility.fileTimestamp(node, filename)) {
+            return -1;
+        }
+
         try {
             BufferedWriter writer = node.getWriter(filename, true);
             writer.append(new String(data));
