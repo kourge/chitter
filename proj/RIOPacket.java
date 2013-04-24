@@ -74,6 +74,10 @@ public class RIOPacket {
         this.sessionId = id;
     }
 
+    public void setSeqNum(int num) {
+      this.seqNum = num;
+    }
+
 	/**
 	 * Convert the RIOPacket packet object into a byte array for sending over the wire.
 	 * Format:

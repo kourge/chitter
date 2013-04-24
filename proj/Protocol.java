@@ -9,9 +9,12 @@ public class Protocol {
 	// TODO: make these enums so it's clearer when to use RIOPacket, or something else
 	public static final int DATA = 0;
 	public static final int ACK = 1;
+
+    // initiate a new session
 	public static final int INITIATE_SESSION = 2;
+
+    // acknowledge that a session is all set
 	public static final int ACK_SESSION = 3;
-	public static final int REJOIN_SESSION = 4;
 
 	// Protocols for 2PC
 	public static final int VOTEREQ_PKT = 10;
@@ -37,7 +40,7 @@ public class Protocol {
 	 */
 	public static boolean isPktProtocolValid(int protocol) {
 		return (protocol == DATA || protocol == ACK || protocol == VOTEREQ_PKT
-                || protocol == INITIATE_SESSION || protocol == ACK_SESSION || protocol == REJOIN_SESSION
+                || protocol == INITIATE_SESSION || protocol == ACK_SESSION
 				|| protocol == VOTE_PKT || protocol == DECISION_PKT || protocol == DECISIONREQ_PKT);
 	}
 

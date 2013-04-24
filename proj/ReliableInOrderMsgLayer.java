@@ -17,6 +17,7 @@ public class ReliableInOrderMsgLayer {
 	
 	private HashMap<Integer, InChannel> inConnections;
 	private HashMap<Integer, OutChannel> outConnections;
+	private HashMap<Integer, Integer> sessionsWaiting;
 	private RIONode n;
 
     // how many resends before we give up
@@ -37,6 +38,7 @@ public class ReliableInOrderMsgLayer {
 	public ReliableInOrderMsgLayer(RIONode n) {
 		inConnections = new HashMap<Integer, InChannel>();
 		outConnections = new HashMap<Integer, OutChannel>();
+		sessionsWaiting = new HashMap<Integer, Integer>();
 		this.n = n;
 	}
 	
@@ -52,38 +54,28 @@ public class ReliableInOrderMsgLayer {
 
 		RIOPacket riopkt = RIOPacket.unpack(msg);
 
-        System.out.println("Recv: " + from + " id " + riopkt.getSessionId());
-
-        // this was a request for a session
-        if (riopkt.getProtocol() == Protocol.INITIATE_SESSION) {
-            long id = Long.parseLong(Utility.byteArrayToString(riopkt.getPayload()));
-            n.peerSessions.put(from, id);
-            System.out.println("session init, " + from + " -> " + id);
-            // anything we had outbound to them should be pulled
-            //if (outConnections.get(from) != null)
-            //    outConnections.get(from).clear();
-        }
-
         // if the UUID is incorrect, then initiate a new session
         if (riopkt.getSessionId() != n.getUUID()) {
             System.out.println("Bad id, sending session setup");
-            String tmp = "" + n.getUUID();
-            n.peerSessions.put(from, riopkt.getSessionId());
-            RIOSend(from, Protocol.INITIATE_SESSION, tmp.getBytes());
+
             // clean up
 			inConnections.put(from, new InChannel());
             if (outConnections.get(from) != null)
-                outConnections.get(from).clear();
-        }
+                outConnections.put(from, new OutChannel(this, from));
 
-        if (riopkt.getProtocol() == Protocol.INITIATE_SESSION
-            || riopkt.getSessionId() == n.getUUID()) {
-            // at-most-once semantics
-            byte[] seqNumByteArray = Utility.stringToByteArray("" + riopkt.getSeqNum());
-            n.send(from, Protocol.ACK, seqNumByteArray);
-            ////System.out.println("ACK");
-        } else {
-            //System.out.println("NO ACK");
+            String tmp = "" + n.getUUID();
+            n.send(from, Protocol.INITIATE_SESSION, tmp.getBytes());
+
+            // mark that we're waiting on an ACK
+            sessionsWaiting.put(from, 0);
+
+            // add callback for resends
+            try {
+                Method onTimeoutMethod = Callback.getMethod("onTimeoutSession", this,
+                    new String[]{ "java.lang.Integer", "java.lang.Long" });
+                n.addTimeout(new Callback(onTimeoutMethod, this,
+                    new Object[]{ from, n.getUUID() }), ReliableInOrderMsgLayer.TIMEOUT);
+            } catch (Exception e) {}
         }
 
 		InChannel in = inConnections.get(from);
@@ -92,13 +84,11 @@ public class ReliableInOrderMsgLayer {
 			inConnections.put(from, in);
         }
     
-        if (riopkt.getProtocol() != Protocol.INITIATE_SESSION
-            && riopkt.getSessionId() == n.getUUID()) {
+        if (riopkt.getSessionId() == n.getUUID()) {
             LinkedList<RIOPacket> toBeDelivered = in.gotPacket(riopkt);
             for(RIOPacket p: toBeDelivered) {
                 // deliver in-order the next sequence of packets
                 n.onRIOReceive(from, p.getProtocol(), p.getPayload());
-                //System.out.println("deliver!");
             }
         }
 	}
@@ -116,6 +106,35 @@ public class ReliableInOrderMsgLayer {
             int seqNum = Integer.parseInt( Utility.byteArrayToString(msg) );
             outConnections.get(from).gotACK(seqNum);
         }
+	}
+
+	public void RIOSessionReceive(int from, byte[] msg) {
+        
+        // we need to start a new session...
+        
+        // set id
+        long id = Long.parseLong( Utility.byteArrayToString(msg) );
+        n.peerSessions.put(from, id);
+
+        // renumber in-flight packets
+        if (outConnections.get(from) != null) {
+            outConnections.get(from).resetSequence(id);
+        }
+
+        // and restart in channel
+        inConnections.put(from, new InChannel());
+
+        // send ack with out UUID
+        byte[] sessionIdByteArray = Utility.stringToByteArray("" + n.getUUID());
+        n.send(from, Protocol.ACK_SESSION, sessionIdByteArray);
+	}
+
+	public void RIOSessionAck(int from, byte[] msg) {
+        long id = Long.parseLong( Utility.byteArrayToString(msg) );
+        if (sessionsWaiting.get(from) != null) {
+            sessionsWaiting.remove(from);
+        }
+        n.peerSessions.put(from, id);
 	}
 
 	/**
@@ -154,25 +173,27 @@ public class ReliableInOrderMsgLayer {
 		outConnections.get(destAddr).onTimeout(n, seqNum);
 	}
 
-	/*public void onTimeoutSession(Integer addr, Long sessionNum) {
-        if (inConnections.get(addr).awaitingSessionAck) {
-            InChannel in = inConnections.get(addr);
-            in.sessionResends++;
-            if (in.sessionResends < MAX_SESSION_RESENDS) {
+	public void onTimeoutSession(Integer addr, Long sessionNum) {
+        if (sessionsWaiting.get(addr) != null) {
+            if (sessionsWaiting.get(addr) < MAX_SESSION_RESENDS) {
                 // if we're still awaiting a session by now, then resend
                 byte[] sessionIdByteArray = Utility.stringToByteArray("" + sessionNum);
                 n.send(addr, Protocol.INITIATE_SESSION, sessionIdByteArray);
+
+                System.out.println("Resending session init: " + sessionNum);
 
                 try {
                     // setup another timeout
                     Method onTimeoutMethod = Callback.getMethod("onTimeoutSession", this,
                         new String[]{ "java.lang.Integer", "java.lang.Long" });
                     n.addTimeout(new Callback(onTimeoutMethod, this, new Object[]
-                        { addr, sessionNum }), ReliableInOrderMsgLayer.TIMEOUT * in.sessionResends);
+                        { addr, sessionNum }), ReliableInOrderMsgLayer.TIMEOUT);
                 } catch (Exception e) {}
-            } // else { give up for now }
+            } else {
+                System.out.println("Drop session init");
+            }
         }
-	}*/
+	}
 	
 	@Override
 	public String toString() {
@@ -240,21 +261,6 @@ class InChannel {
 		}
 	}
 
-    public int getLatestSeq() {
-        if (outOfOrderMsgs.isEmpty()) {
-            return lastSeqNumDelivered;
-        }
-        int max = 0;
-        Iterator it = outOfOrderMsgs.keySet().iterator();
-        while(it.hasNext()) {
-            int k = (Integer)it.next();
-            if (k > max) {
-                max = k;
-            }
-        }
-        return max + 1;
-    }
-
     public void dropMessages() {
         outOfOrderMsgs.clear();
     }
@@ -269,7 +275,7 @@ class InChannel {
  * Representation of an outgoing channel to this node
  */
 class OutChannel {
-	private HashMap<Integer, RIOPacket> unACKedPackets;
+	private TreeMap<Integer, RIOPacket> unACKedPackets;
 	private int lastSeqNumSent;
 	private ReliableInOrderMsgLayer parent;
 	private int destAddr;
@@ -277,10 +283,24 @@ class OutChannel {
 	
 	OutChannel(ReliableInOrderMsgLayer parent, int destAddr){
 		lastSeqNumSent = -1;
-		unACKedPackets = new HashMap<Integer, RIOPacket>();
+		unACKedPackets = new TreeMap<Integer, RIOPacket>();
 		this.parent = parent;
 		this.destAddr = destAddr;
 	}
+
+    public void resetSequence(long session) {
+        // renumber unacked packets and reset sequence number
+        TreeMap<Integer, RIOPacket> newPackets = new TreeMap<Integer, RIOPacket>();
+        Iterator it = unACKedPackets.keySet().iterator();
+        int count = 0;
+        while (it.hasNext()) {
+            RIOPacket p = unACKedPackets.get(it.next());
+            p.setSessionId(session);
+            p.setSeqNum(newPackets.size());
+            lastSeqNumSent = newPackets.size();
+            newPackets.put(newPackets.size(), p);
+        }
+    }
 	
 	/**
 	 * Send a new RIOPacket out on this channel.
@@ -329,7 +349,6 @@ class OutChannel {
 		}
 	}
 
-	
 	/**
 	 * Called when we get an ACK back. Removes the outstanding packet if it is
 	 * still in unACKedPackets.
@@ -340,26 +359,6 @@ class OutChannel {
 	protected void gotACK(int seqNum) {
 		unACKedPackets.remove(seqNum);
 	}
-
-    public void clear() {
-        unACKedPackets.clear();
-        lastSeqNumSent = -1;
-    }
-
-    public int getSeq() {
-        if (unACKedPackets.isEmpty()) {
-            return lastSeqNumSent;
-        }
-        int min = 0;
-        Iterator it = unACKedPackets.keySet().iterator();
-        while(it.hasNext()) {
-            int k = (Integer)it.next();
-            if (k < min) {
-                min = k;
-            }
-        }
-        return min - 1;
-    }
 
     public void setSeq(int s) {
         lastSeqNumSent = s;
