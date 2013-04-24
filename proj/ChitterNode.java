@@ -331,8 +331,7 @@ public class ChitterNode extends RIONode {
     }
 
     public void logOutput(String output) {
-        if (!suppressOutput)
-            log(output, System.out);
+        log(output, suppressOutput ? System.err : System.out);
     }
 
     private static final int LOG_CALL_DEPTH = 2;
@@ -349,10 +348,6 @@ public class ChitterNode extends RIONode {
         }
 
         stream.format("Node %d %s: %s\n", addr, method, output);
-    }
-
-    public void log(String output, PrintStream stream) {
-        stream.println("Node " + addr + ": " + output);
     }
 
     public boolean sendRPC(Invocation iv, int destination) {
