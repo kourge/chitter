@@ -372,7 +372,8 @@ public class Emulator extends Manager {
 				}
 			}
 		} else if (cmdInputType == InputType.CONSOLE) {
-            //ChitterConsole c = new ChitterConsole();
+            Console c = new Console();
+            c.run();
         }
 
 		stop();
