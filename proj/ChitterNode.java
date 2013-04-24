@@ -335,6 +335,22 @@ public class ChitterNode extends RIONode {
             log(output, System.out);
     }
 
+    private static final int LOG_CALL_DEPTH = 2;
+    public void log(String output, PrintStream stream) {
+        String method = "";
+        try {
+            throw new Exception();
+        } catch (Exception e) {
+            StackTraceElement[] trace = e.getStackTrace();
+            if (trace.length > LOG_CALL_DEPTH) {
+                StackTraceElement frame = trace[LOG_CALL_DEPTH];
+                method = frame.getClassName() + "::" + frame.getMethodName();
+            }
+        }
+
+        stream.format("Node %d %s: %s\n", addr, method, output);
+    }
+
     public void log(String output, PrintStream stream) {
         stream.println("Node " + addr + ": " + output);
     }
