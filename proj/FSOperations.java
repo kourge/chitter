@@ -10,11 +10,11 @@ import edu.washington.cs.cse490h.lib.PersistentStorageInputStream;
 import edu.washington.cs.cse490h.lib.PersistentStorageOutputStream;
 import edu.washington.cs.cse490h.lib.Utility;
 
-public class ChitterFSOperations {
+public class FSOperations {
 
     private ChitterNode node;
 
-    public ChitterFSOperations(ChitterNode n) {
+    public FSOperations(ChitterNode n) {
         node = n;
     }
 

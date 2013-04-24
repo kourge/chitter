@@ -25,15 +25,15 @@ public class ChitterNode extends RIONode {
     public boolean suppressOutput; // running in console mode, manager will suppress logging
 
     // Server
-    protected ChitterFSOperations fsOps;
+    protected FSOperations fsOps;
 
     // Client
     protected Invocation pendingRPC; // A pending RPC call
     protected int pendingRPCSeq;     // seq number, so we know when it fails :(
     // rpcs that we should send next:
-    protected Queue<Pair<Invocation, Integer> > pendingRPCs;
+    protected Queue<Pair<Invocation, Integer>> pendingRPCs;
     // replies to commands in the order they were invoked:
-    protected Queue<Pair<Invocation, Integer> > rpcReplies;
+    protected Queue<Pair<Invocation, Integer>> rpcReplies;
     // commands to be applied next
     protected Queue<Command> pendingCommands;
 
@@ -43,10 +43,10 @@ public class ChitterNode extends RIONode {
      * Create a new node and initialize everything
      */
     public ChitterNode() {
-        fsOps = new ChitterFSOperations(this);
+        fsOps = new FSOperations(this);
         pendingRPC = null;
-        pendingRPCs = new LinkedList<Pair<Invocation, Integer> >();
-        rpcReplies = new LinkedList<Pair<Invocation, Integer> >();
+        pendingRPCs = new LinkedList<Pair<Invocation, Integer>>();
+        rpcReplies = new LinkedList<Pair<Invocation, Integer>>();
         pendingCommands = new LinkedList<Command>();
         currentCommand = null;
     }
@@ -130,7 +130,6 @@ public class ChitterNode extends RIONode {
 
     @Override
     public void onCommand(String command) {
-
         try {
             log.write(command + "\n");
         } catch (IOException e) {
@@ -167,11 +166,11 @@ public class ChitterNode extends RIONode {
             || cmd.equals("delete")
             || cmd.equals("read")) {
             String filename = s.next();
-            iv = Invocation.of(ChitterFSOperations.class, cmd, filename);
+            iv = Invocation.of(FSOperations.class, cmd, filename);
         } else if (cmd.equals("hasChanged")) {
             String filename = s.next();
             long v = s.nextLong();
-            iv = Invocation.of(ChitterFSOperations.class, cmd, filename, v);
+            iv = Invocation.of(FSOperations.class, cmd, filename, v);
         } else if (cmd.equals("appendIfNotChanged")
                    || cmd.equals("overwriteIfNotChanged")) {
             String filename = s.next();
@@ -184,8 +183,9 @@ public class ChitterNode extends RIONode {
             } else {
                 payload = command.substring(startIdx + 1, endIdx);
             }
-            iv = Invocation.of(ChitterFSOperations.class, cmd, filename,
-                payload.getBytes(), v);
+            iv = Invocation.of(
+                FSOperations.class, cmd, filename, payload.getBytes(), v
+            );
         } else {
             return null;
         }
@@ -207,7 +207,7 @@ public class ChitterNode extends RIONode {
     @Override
 	public void onRIOReceive(Integer from, int protocol, byte[] msg) {
         // ...
-        switch(protocol) {
+        switch (protocol) {
             case Protocol.CHITTER_RPC_REQUEST:
                 // we've been sent an RPC, we should invoke it..
                 logOutput("RPC request received.");
@@ -241,18 +241,15 @@ public class ChitterNode extends RIONode {
                     return;
                 }
 
-                if (pendingRPC == null || !pendingRPC.getMethodName().equals(rpcResult.getMethodName())) {
-                    logOutput("Unexpected RPC reply  " +rpcResult.getMethodName() );
+                if (pendingRPC == null || !pendingRPC.equalsIgnoreValues(rpcResult)) {
+                    logOutput("Unexpected RPC reply  " + rpcResult);
                     if (pendingRPC != null) {
-                        logOutput("expected: " + pendingRPC.getMethodName());
-
+                        logOutput("expected: " + pendingRPC);
                     }
-                        //+ rpcResult.getMethodName()
-                        //+ " expected: " + pendingRPC == null ? "none" : pendingRPC.getMethodName());
                     return;
                 }
 
-                logOutput("RPC reply received: " + rpcResult.getMethodName());
+                logOutput("RPC reply received: " + rpcResult);
                 // add to the reply queue so the caller can consume it
                 rpcReplies.add(Pair.of(rpcResult, from));
                 pendingRPC = null;
@@ -299,7 +296,9 @@ public class ChitterNode extends RIONode {
                         return;
                     }
                     pendingRPC = inv;
-                    pendingRPCSeq = RIOSend(destination, Protocol.CHITTER_RPC_REQUEST, payload);
+                    pendingRPCSeq = RIOSend(
+                        destination, Protocol.CHITTER_RPC_REQUEST, payload
+                    );
                 }
 
                 break;
@@ -309,7 +308,7 @@ public class ChitterNode extends RIONode {
     }
 
     @Override
-	public void onRIODrop(int seqNum) {
+    public void onRIODrop(int seqNum) {
         if (seqNum == pendingRPCSeq) {
             logOutput("RPC call droppped");
             rpcReplies.add(null);
@@ -350,15 +349,14 @@ public class ChitterNode extends RIONode {
             }
             pendingRPC = iv;
 
-            pendingRPCSeq = RIOSend(destination, Protocol.CHITTER_RPC_REQUEST,
-                                    payload);
+            pendingRPCSeq = RIOSend(
+                destination, Protocol.CHITTER_RPC_REQUEST, payload
+            );
             try {
-                Method onTimeoutMethod = Callback.getMethod("onTimeoutRPC", this,
-                                                            new String[] {
-                                                            "java.lang.Integer"});
-                addTimeout(new Callback(onTimeoutMethod, this, new Object[] {
-                            pendingRPCSeq}),
-                           RPC_REPLY_TIMEOUT);
+                addTimeout(
+                    Invocation.call(this, "onTimeoutRPC", pendingRPCSeq),
+                    RPC_REPLY_TIMEOUT
+                );
             } catch (Exception e) {
                 e.printStackTrace();
                 fail();
