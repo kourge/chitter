@@ -6,12 +6,14 @@ time
 0 exists 1 foo.txt
 time
 0 overwriteIfNotChanged 1 foo.txt -1 "YO"
+fail 0
 time
 0 read 1 foo.txt
 time
 0 appendIfNotChanged 1 foo.txt -1 "LO"
 time
 0 read 1 foo.txt
+time
 time
 time
 time
