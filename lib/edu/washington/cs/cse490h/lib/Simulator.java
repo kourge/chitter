@@ -216,8 +216,37 @@ public class Simulator extends Manager {
 
             }
 		} else if (cmdInputType == InputType.CONSOLE) {
-            Console c = new Console(consoleOperationsDescription);
-            c.run();
+            // start client/server
+            ArrayList<Event> currentRoundEvents = new ArrayList<Event>();
+            currentRoundEvents.add(parser.parseLine("start 0"));
+            currentRoundEvents.add(parser.parseLine("start 1"));
+            doTimestep(currentRoundEvents);
+
+            // event loop; send all commands to node 0 (assume it to be the
+            // client)
+            Console console = new Console(consoleOperationsDescription, true);
+            while (true) {
+                currentRoundEvents = new ArrayList<Event>();
+
+                // just in case an exception is thrown or input is null
+                Event ev = null;
+
+                // Process user input if there is any
+                // TODO integrate Console and Replay somehow
+                // String input = Replay.getLine();
+                String input = console.readLine();
+
+                if (input != null) {
+                    // A command will be converted into an Event.
+                    ev = parser.parseLine(input);
+                }
+
+                if (ev != null) {
+                    currentRoundEvents.add(ev);
+                }
+
+                doTimestep(currentRoundEvents);
+            }
         }
 
         stop();
@@ -282,6 +311,11 @@ public class Simulator extends Manager {
         Node newNode;
         try {
             newNode = nodeImpl.newInstance();
+            try {
+                nodeImpl.getField("suppressOutput").set(newNode, cmdInputType == InputType.CONSOLE);
+            } catch (Exception e) {
+                // DO NOTHING
+            }
         } catch (Exception e) {
             System.err.println("Error while contructing node: " + e);
             failNode(node);
@@ -651,9 +685,13 @@ public class Simulator extends Manager {
             } while (doAgain);
         } else {
             Collections.shuffle(currentRoundEvents, Utility.getRNG());
-            System.out.println("Executing with order: ");
+            if (cmdInputType != InputType.CONSOLE) {
+                System.out.println("Executing with order: ");
+            }
             for (Event ev : currentRoundEvents) {
-                System.out.println(ev.toString());
+                if (cmdInputType != InputType.CONSOLE) {
+                    System.out.println(ev.toString());
+                }
                 handleEvent(ev);
             }
         }

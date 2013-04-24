@@ -22,19 +22,23 @@ public class ChitterNode extends RIONode {
     protected PersistentStorageWriter log;
 
     public static Map<String, String> consoleOperationsDescription = Operation.getDescriptionMap();
+    public boolean suppressOutput; // running in console mode, manager will suppress logging
 
     // Server
-    protected ChitterFSOperations fsOps;
+    protected FSOperations fsOps;
 
     // Client
     protected Invocation pendingRPC; // A pending RPC call
     protected int pendingRPCSeq;     // seq number, so we know when it fails :(
+
     // rpcs that we should send next:
-    protected Queue<Pair<Invocation, Integer> > pendingRPCs; 
+    protected Queue<Pair<Invocation, Integer>> pendingRPCs;
+
     // replies to commands in the order they were invoked:
-    protected Queue<Pair<Invocation, Integer> > rpcReplies; 
+    protected Queue<Pair<Invocation, Integer>> rpcReplies;
+
     // commands to be applied next
-    protected Queue<Command> pendingCommands; 
+    protected Queue<Command> pendingCommands;
 
     Command currentCommand;
 
@@ -42,10 +46,10 @@ public class ChitterNode extends RIONode {
      * Create a new node and initialize everything
      */
     public ChitterNode() {
-        fsOps = new ChitterFSOperations(this);
+        fsOps = new FSOperations(this);
         pendingRPC = null;
-        pendingRPCs = new LinkedList<Pair<Invocation, Integer> >();
-        rpcReplies = new LinkedList<Pair<Invocation, Integer> >();
+        pendingRPCs = new LinkedList<Pair<Invocation, Integer>>();
+        rpcReplies = new LinkedList<Pair<Invocation, Integer>>();
         pendingCommands = new LinkedList<Command>();
         currentCommand = null;
     }
@@ -74,7 +78,7 @@ public class ChitterNode extends RIONode {
     /**
      * Recover using a log saved in persistent storage. We will attempt to use
      * the log to decide.
-     * 
+     *
      * @throws IOException
      */
     private void recoverWithLog() throws IOException {
@@ -97,7 +101,7 @@ public class ChitterNode extends RIONode {
                 String command = cmds.poll();
                 Command c = null;
                 if ((c = matchFSOperation(command)) != null) {
-                    // 
+                    //
                 } else {
                     logError("Unrecognized command: " + command);
                     return;
@@ -129,7 +133,6 @@ public class ChitterNode extends RIONode {
 
     @Override
     public void onCommand(String command) {
-
         try {
             log.write(command + "\n");
         } catch (IOException e) {
@@ -141,7 +144,7 @@ public class ChitterNode extends RIONode {
 
         Command c = null;
         if ((c = matchFSOperation(command)) != null) {
-            // 
+            //
         } else {
             logError("Unrecognized command: " + command);
             return;
@@ -166,11 +169,11 @@ public class ChitterNode extends RIONode {
             || cmd.equals("delete")
             || cmd.equals("read")) {
             String filename = s.next();
-            iv = Invocation.of(ChitterFSOperations.class, cmd, filename);
+            iv = Invocation.of(FSOperations.class, cmd, filename);
         } else if (cmd.equals("hasChanged")) {
             String filename = s.next();
             long v = s.nextLong();
-            iv = Invocation.of(ChitterFSOperations.class, cmd, filename, v);
+            iv = Invocation.of(FSOperations.class, cmd, filename, v);
         } else if (cmd.equals("appendIfNotChanged")
                    || cmd.equals("overwriteIfNotChanged")) {
             String filename = s.next();
@@ -183,8 +186,9 @@ public class ChitterNode extends RIONode {
             } else {
                 payload = command.substring(startIdx + 1, endIdx);
             }
-            iv = Invocation.of(ChitterFSOperations.class, cmd, filename,
-                payload.getBytes(), v);
+            iv = Invocation.of(
+                FSOperations.class, cmd, filename, payload.getBytes(), v
+            );
         } else {
             return null;
         }
@@ -195,7 +199,7 @@ public class ChitterNode extends RIONode {
 
     /**
      * Actually process a packet.
-     * 
+     *
      * @param from
      *            The address of the sender
      * @param protocol
@@ -204,111 +208,110 @@ public class ChitterNode extends RIONode {
      *            The message object that was sent
      */
     @Override
-	public void onRIOReceive(Integer from, int protocol, byte[] msg) {
-        // ...
-        switch(protocol) {
-            case Protocol.CHITTER_RPC_REQUEST:
-                // we've been sent an RPC, we should invoke it..
-                logOutput("RPC request received.");
-                Invocation iv;
-                byte[] out;
+	  public void onRIOReceive(Integer from, int protocol, byte[] msg) {
+        switch (protocol) {
+        case Protocol.CHITTER_RPC_REQUEST:
+            // we've been sent an RPC, we should invoke it..
+            logOutput("RPC request received.");
+            Invocation iv;
+            byte[] out;
+
+            try {
+                iv = (Invocation)Serialization.decode(msg);
+                iv.invokeOn(fsOps);
+                out = Serialization.encode(iv);
+            } catch (Serialization.DecodingException e) {
+                logOutput("Failed to decode RPC request.");
+                return;
+            } catch (InvocationException e) {
+                logOutput("RPC invocation failed. " + e);
+                return;
+            } catch (Serialization.EncodingException e) {
+                logOutput("Failed to encode RPC response.");
+                return;
+            }
+
+            // send it back (including return value)
+            RIOSend(from, Protocol.CHITTER_RPC_REPLY, out);
+            break;
+
+        case Protocol.CHITTER_RPC_REPLY:
+            Invocation rpcResult;
+            try {
+                rpcResult = (Invocation)Serialization.decode(msg);
+            } catch (Serialization.DecodingException e) {
+                logOutput("Failed to decode RPC reply.");
+                return;
+            }
+
+            if (pendingRPC == null || !pendingRPC.equalsIgnoreValues(rpcResult)) {
+                logOutput("Unexpected RPC reply  " + rpcResult);
+                if (pendingRPC != null) {
+                    logOutput("expected: " + pendingRPC);
+                }
+                return;
+            }
+
+            logOutput("RPC reply received: " + rpcResult);
+            // add to the reply queue so the caller can consume it
+            rpcReplies.add(Pair.of(rpcResult, from));
+            pendingRPC = null;
+
+            // now that we have a new reply, try to advance command state
+            if (currentCommand != null) {
+                currentCommand.execute(rpcReplies);
+            }
+
+            if (currentCommand.hasCompleted()) {
+                logOutput("Command finished");
 
                 try {
-                    iv = (Invocation)Serialization.decode(msg);
-                    iv.invokeOn(fsOps);
-                    out = Serialization.encode(iv);
-                } catch (Serialization.DecodingException e) {
-                    logOutput("Failed to decode RPC request.");
-                    return;
-                } catch (InvocationException e) {
-                    logOutput("RPC invocation failed. " + e);
-                    return;
+                    // note that we completed a command
+                    log.write("COMPLETE\n");
+                } catch (IOException e) {
+                    // failed to complete, we'll rerun the command
+                    logOutput("Failed to write command completion to logfile.");
+                    fail();
+                }
+                currentCommand = null;
+            } else if (currentCommand.hasFailed()) {
+                // oh well, maybe reissue the command at least once? For now just
+                // fail and call it good (ok with at-most-once)
+                logOutput("Command failed! :(");
+                currentCommand = null;
+            }
+
+            if (currentCommand == null && !pendingCommands.isEmpty()) {
+                currentCommand = pendingCommands.poll();
+                currentCommand.execute(rpcReplies);
+            }
+
+            // if there are rpcs queued up, then run the next one now
+            if (!pendingRPCs.isEmpty()) {
+                Pair<Invocation, Integer> cmd = pendingRPCs.poll();
+                Invocation inv = cmd.first();
+                int destination = cmd.second();
+                byte[] payload;
+                try {
+                    payload = Serialization.encode(inv);
                 } catch (Serialization.EncodingException e) {
-                    logOutput("Failed to encode RPC response.");
+                    logOutput("Failed to encode RPC request.");
                     return;
                 }
+                pendingRPC = inv;
+                pendingRPCSeq = RIOSend(
+                    destination, Protocol.CHITTER_RPC_REQUEST, payload
+                );
+            }
 
-                // send it back (including return value)
-                RIOSend(from, Protocol.CHITTER_RPC_REPLY, out);
-                break;
-            case Protocol.CHITTER_RPC_REPLY:
-                Invocation rpcResult;
-                try {
-                    rpcResult = (Invocation)Serialization.decode(msg);
-                } catch (Serialization.DecodingException e) {
-                    logOutput("Failed to decode RPC reply.");
-                    return;
-                }
-
-                if (pendingRPC == null || !pendingRPC.getMethodName().equals(rpcResult.getMethodName())) {
-                    logOutput("Unexpected RPC reply  " +rpcResult.getMethodName() );
-                    if (pendingRPC != null) {
-                        logOutput("expected: " + pendingRPC.getMethodName());
-
-                    }
-                        //+ rpcResult.getMethodName()
-                        //+ " expected: " + pendingRPC == null ? "none" : pendingRPC.getMethodName());
-                    return;
-                }
-
-                logOutput("RPC reply received: " + rpcResult.getMethodName());
-                // add to the reply queue so the caller can consume it
-                rpcReplies.add(Pair.of(rpcResult, from));
-                pendingRPC = null;
-
-                // now that we have a new reply, try to advance command state
-                if (currentCommand != null) {
-                    currentCommand.execute(rpcReplies);
-                }
-
-                if (currentCommand.hasCompleted()) {
-                    logOutput("Command finished");
-
-                    try {
-                        // note that we completed a command
-                        log.write("COMPLETE\n");
-                    } catch (IOException e) {
-                        // failed to complete, we'll rerun the command
-                        logOutput("Failed to write command completion to logfile.");
-                        fail();
-                    }
-                    currentCommand = null;
-                } else if (currentCommand.hasFailed()) {
-                    // oh well, maybe reissue the command at least once? For now just
-                    // fail and call it good (ok with at-most-once)
-                    logOutput("Command failed! :(");
-                    currentCommand = null;
-                }
-
-                if (currentCommand == null && !pendingCommands.isEmpty()) {
-                    currentCommand = pendingCommands.poll();
-                    currentCommand.execute(rpcReplies);
-                }
-
-                // if there are rpcs queued up, then run the next one now
-                if (!pendingRPCs.isEmpty()) {
-                    Pair<Invocation, Integer> cmd = pendingRPCs.poll();
-                    Invocation inv = cmd.first();
-                    int destination = cmd.second();
-                    byte[] payload;
-                    try {
-                        payload = Serialization.encode(inv);
-                    } catch (Serialization.EncodingException e) {
-                        logOutput("Failed to encode RPC request.");
-                        return;
-                    }
-                    pendingRPC = inv;
-                    pendingRPCSeq = RIOSend(destination, Protocol.CHITTER_RPC_REQUEST, payload);
-                }
-
-                break;
-            default:
-                logOutput("Unknown protocol packet: " + protocol);
+            break;
+        default:
+            logOutput("Unknown protocol packet: " + protocol);
         }
     }
 
     @Override
-	public void onRIODrop(int seqNum) {
+    public void onRIODrop(int seqNum) {
         if (seqNum == pendingRPCSeq) {
             logOutput("RPC call droppped");
             rpcReplies.add(null);
@@ -328,7 +331,8 @@ public class ChitterNode extends RIONode {
     }
 
     public void logOutput(String output) {
-        log(output, System.out);
+        if (!suppressOutput)
+            log(output, System.out);
     }
 
     public void log(String output, PrintStream stream) {
@@ -348,15 +352,14 @@ public class ChitterNode extends RIONode {
             }
             pendingRPC = iv;
 
-            pendingRPCSeq = RIOSend(destination, Protocol.CHITTER_RPC_REQUEST,
-                                    payload);
+            pendingRPCSeq = RIOSend(
+                destination, Protocol.CHITTER_RPC_REQUEST, payload
+            );
             try {
-                Method onTimeoutMethod = Callback.getMethod("onTimeoutRPC", this,
-                                                            new String[] {
-                                                            "java.lang.Integer"});
-                addTimeout(new Callback(onTimeoutMethod, this, new Object[] {
-                            pendingRPCSeq}),
-                           RPC_REPLY_TIMEOUT);
+                addTimeout(
+                    Invocation.call(this, "onTimeoutRPC", pendingRPCSeq),
+                    RPC_REPLY_TIMEOUT
+                );
             } catch (Exception e) {
                 e.printStackTrace();
                 fail();

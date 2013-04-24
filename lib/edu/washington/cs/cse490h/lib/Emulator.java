@@ -372,8 +372,54 @@ public class Emulator extends Manager {
 				}
 			}
 		} else if (cmdInputType == InputType.CONSOLE) {
-            Console c = new Console(consoleOperationsDescription);
-            c.run();
+            Console console = new Console(consoleOperationsDescription);
+			while (node != null || failed) {
+				if (IOFinished && node != null) {
+					System.err.println("Network I/O thread failed, killing the node...");
+
+					failNode();
+				}
+
+				if (node == null) {
+					checkRecover();
+
+					if (userControl.compareTo(FailureLvl.CRASH) < 0) {
+						try {
+							// We sleep here to give a chance for messages to
+							// travel
+							// over the network
+							Thread.sleep(timeStep);
+						} catch (InterruptedException e) {
+						}
+					}
+				} else {
+                    ArrayList<Event> currentRoundEvents = new ArrayList<Event>();
+
+                    // just in case an exception is thrown or input is null
+                    Event ev = null;
+
+                    // Process user input if there is any
+                    // TODO integrate Console and Replay somehow
+                    // String input = Replay.getLine();
+                    String input = console.readLine();
+
+                    if (input != null) {
+                        // A command will be converted into an Event.
+                        ev = parser.parseLine(input);
+                    }
+
+                    if (ev != null) {
+                        currentRoundEvents.add(ev);
+                    }
+
+                    doTimestep(currentRoundEvents);
+                }
+
+                setTime(now() + 1);
+                if (node != null) {
+                    logEventWithNodeField(node, "TIMESTEP time:" + now());
+                }
+			}
         }
 
 		stop();
@@ -423,6 +469,11 @@ public class Emulator extends Manager {
 		// start up the node
 		try {
 			node = nodeImpl.newInstance();
+            try {
+                nodeImpl.getField("suppressOutput").set(node, cmdInputType == InputType.CONSOLE);
+            } catch (Exception e) {
+                // DO NOTHING
+            }
 		} catch (Exception e) {
 			System.err.println("Error while constructing node: " + e);
 			killServer();
@@ -822,9 +873,13 @@ public class Emulator extends Manager {
 			} while (doAgain);
 		} else {
 			Collections.shuffle(currentRoundEvents, Utility.getRNG());
-			System.out.println("Executing with order: ");
+            if (cmdInputType != InputType.CONSOLE) {
+                System.out.println("Executing with order: ");
+            }
 			for (Event ev : currentRoundEvents) {
-				System.out.println(ev.toString());
+                if (cmdInputType != InputType.CONSOLE) {
+                    System.out.println(ev.toString());
+                }
 				handleEvent(ev);
 			}
 		}
