@@ -12,7 +12,6 @@ import edu.washington.cs.cse490h.lib.Utility;
 /** A simple filesystem command, this will be a single RPC, and we
  *  won't even do anything with the results */
 public class FSCommand extends Command {
-
     private Invocation operation;
     private boolean executed;
     private int destination;

@@ -30,10 +30,13 @@ public class ChitterNode extends RIONode {
     // Client
     protected Invocation pendingRPC; // A pending RPC call
     protected int pendingRPCSeq;     // seq number, so we know when it fails :(
+
     // rpcs that we should send next:
     protected Queue<Pair<Invocation, Integer>> pendingRPCs;
+
     // replies to commands in the order they were invoked:
     protected Queue<Pair<Invocation, Integer>> rpcReplies;
+
     // commands to be applied next
     protected Queue<Command> pendingCommands;
 
@@ -205,105 +208,105 @@ public class ChitterNode extends RIONode {
      *            The message object that was sent
      */
     @Override
-	public void onRIOReceive(Integer from, int protocol, byte[] msg) {
-        // ...
+	  public void onRIOReceive(Integer from, int protocol, byte[] msg) {
         switch (protocol) {
-            case Protocol.CHITTER_RPC_REQUEST:
-                // we've been sent an RPC, we should invoke it..
-                logOutput("RPC request received.");
-                Invocation iv;
-                byte[] out;
+        case Protocol.CHITTER_RPC_REQUEST:
+            // we've been sent an RPC, we should invoke it..
+            logOutput("RPC request received.");
+            Invocation iv;
+            byte[] out;
+
+            try {
+                iv = (Invocation)Serialization.decode(msg);
+                iv.invokeOn(fsOps);
+                out = Serialization.encode(iv);
+            } catch (Serialization.DecodingException e) {
+                logOutput("Failed to decode RPC request.");
+                return;
+            } catch (InvocationException e) {
+                logOutput("RPC invocation failed. " + e);
+                return;
+            } catch (Serialization.EncodingException e) {
+                logOutput("Failed to encode RPC response.");
+                return;
+            }
+
+            // send it back (including return value)
+            RIOSend(from, Protocol.CHITTER_RPC_REPLY, out);
+            break;
+
+        case Protocol.CHITTER_RPC_REPLY:
+            Invocation rpcResult;
+            try {
+                rpcResult = (Invocation)Serialization.decode(msg);
+            } catch (Serialization.DecodingException e) {
+                logOutput("Failed to decode RPC reply.");
+                return;
+            }
+
+            if (pendingRPC == null || !pendingRPC.equalsIgnoreValues(rpcResult)) {
+                logOutput("Unexpected RPC reply  " + rpcResult);
+                if (pendingRPC != null) {
+                    logOutput("expected: " + pendingRPC);
+                }
+                return;
+            }
+
+            logOutput("RPC reply received: " + rpcResult);
+            // add to the reply queue so the caller can consume it
+            rpcReplies.add(Pair.of(rpcResult, from));
+            pendingRPC = null;
+
+            // now that we have a new reply, try to advance command state
+            if (currentCommand != null) {
+                currentCommand.execute(rpcReplies);
+            }
+
+            if (currentCommand.hasCompleted()) {
+                logOutput("Command finished");
 
                 try {
-                    iv = (Invocation)Serialization.decode(msg);
-                    iv.invokeOn(fsOps);
-                    out = Serialization.encode(iv);
-                } catch (Serialization.DecodingException e) {
-                    logOutput("Failed to decode RPC request.");
-                    return;
-                } catch (InvocationException e) {
-                    logOutput("RPC invocation failed. " + e);
-                    return;
+                    // note that we completed a command
+                    log.write("COMPLETE\n");
+                } catch (IOException e) {
+                    // failed to complete, we'll rerun the command
+                    logOutput("Failed to write command completion to logfile.");
+                    fail();
+                }
+                currentCommand = null;
+            } else if (currentCommand.hasFailed()) {
+                // oh well, maybe reissue the command at least once? For now just
+                // fail and call it good (ok with at-most-once)
+                logOutput("Command failed! :(");
+                currentCommand = null;
+            }
+
+            if (currentCommand == null && !pendingCommands.isEmpty()) {
+                currentCommand = pendingCommands.poll();
+                currentCommand.execute(rpcReplies);
+            }
+
+            // if there are rpcs queued up, then run the next one now
+            if (!pendingRPCs.isEmpty()) {
+                Pair<Invocation, Integer> cmd = pendingRPCs.poll();
+                Invocation inv = cmd.first();
+                int destination = cmd.second();
+                byte[] payload;
+                try {
+                    payload = Serialization.encode(inv);
                 } catch (Serialization.EncodingException e) {
-                    logOutput("Failed to encode RPC response.");
+                    logOutput("Failed to encode RPC request.");
                     return;
                 }
+                pendingRPC = inv;
+                pendingRPCSeq = RIOSend(
+                    destination, Protocol.CHITTER_RPC_REQUEST, payload
+                );
+            }
 
-                // send it back (including return value)
-                RIOSend(from, Protocol.CHITTER_RPC_REPLY, out);
-                break;
-            case Protocol.CHITTER_RPC_REPLY:
-                Invocation rpcResult;
-                try {
-                    rpcResult = (Invocation)Serialization.decode(msg);
-                } catch (Serialization.DecodingException e) {
-                    logOutput("Failed to decode RPC reply.");
-                    return;
-                }
-
-                if (pendingRPC == null || !pendingRPC.equalsIgnoreValues(rpcResult)) {
-                    logOutput("Unexpected RPC reply  " + rpcResult);
-                    if (pendingRPC != null) {
-                        logOutput("expected: " + pendingRPC);
-                    }
-                    return;
-                }
-
-                logOutput("RPC reply received: " + rpcResult);
-                // add to the reply queue so the caller can consume it
-                rpcReplies.add(Pair.of(rpcResult, from));
-                pendingRPC = null;
-
-                // now that we have a new reply, try to advance command state
-                if (currentCommand != null) {
-                    currentCommand.execute(rpcReplies);
-                }
-
-                if (currentCommand.hasCompleted()) {
-                    logOutput("Command finished");
-
-                    try {
-                        // note that we completed a command
-                        log.write("COMPLETE\n");
-                    } catch (IOException e) {
-                        // failed to complete, we'll rerun the command
-                        logOutput("Failed to write command completion to logfile.");
-                        fail();
-                    }
-                    currentCommand = null;
-                } else if (currentCommand.hasFailed()) {
-                    // oh well, maybe reissue the command at least once? For now just
-                    // fail and call it good (ok with at-most-once)
-                    logOutput("Command failed! :(");
-                    currentCommand = null;
-                }
-
-                if (currentCommand == null && !pendingCommands.isEmpty()) {
-                    currentCommand = pendingCommands.poll();
-                    currentCommand.execute(rpcReplies);
-                }
-
-                // if there are rpcs queued up, then run the next one now
-                if (!pendingRPCs.isEmpty()) {
-                    Pair<Invocation, Integer> cmd = pendingRPCs.poll();
-                    Invocation inv = cmd.first();
-                    int destination = cmd.second();
-                    byte[] payload;
-                    try {
-                        payload = Serialization.encode(inv);
-                    } catch (Serialization.EncodingException e) {
-                        logOutput("Failed to encode RPC request.");
-                        return;
-                    }
-                    pendingRPC = inv;
-                    pendingRPCSeq = RIOSend(
-                        destination, Protocol.CHITTER_RPC_REQUEST, payload
-                    );
-                }
-
-                break;
-            default:
-                logOutput("Unknown protocol packet: " + protocol);
+            break;
+        default:
+            logOutput("Unknown protocol packet: " + protocol);
         }
     }
 
