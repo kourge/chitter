@@ -132,12 +132,17 @@ public class Invocation implements Serializable {
 
     public String toString() {
         return String.format(
-            "(::%s%s%s -> %s%s)",
+            "(%s::%s%s%s -> %s%s)",
+            this.target == null ? "" : className(this.target.getClass().getName()),
             this.procName, Arrays.toString(this.paramTypes),
             this.paramVals == null ? "[void]" : Arrays.toString(this.paramVals),
-            this.returnType.getName(),
+            className(this.returnType.getName()),
             this.hasReturnVal ? "(" + this.returnVal + ")" : ""
         );
+    }
+
+    protected String className(String name) {
+        return name.replace((CharSequence)"java.lang.", (CharSequence)"");
     }
 
     public boolean equals(Object obj) {

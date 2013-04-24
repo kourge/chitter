@@ -1,4 +1,5 @@
 import edu.washington.cs.cse490h.lib.Node;
+import java.util.*;
 
 /**
  * Extension to the Node class that adds support for a reliable, in-order
@@ -11,22 +12,23 @@ import edu.washington.cs.cse490h.lib.Node;
  */
 public abstract class RIONode extends Node {
 	private ReliableInOrderMsgLayer RIOLayer;
+  private long uuid;
+  public HashMap<Integer, Long> peerSessions; // adr -> uuid for peers
 	
 	public RIONode() {
 		RIOLayer = new ReliableInOrderMsgLayer(this);
+    peerSessions = new HashMap<Integer, Long>();
+    uuid = UUID.randomUUID().getMostSignificantBits();
+    //System.out.println("node initialized with uuid: " + uuid);
 	}
 	
 	@Override
 	public void onReceive(Integer from, int protocol, byte[] msg) {
-		if(protocol == Protocol.DATA) {
-			RIOLayer.RIODataReceive(from, msg);
-		} else if(protocol == Protocol.ACK) {
+		if(protocol == Protocol.ACK) {
 			RIOLayer.RIOAckReceive(from, msg);
-		} else if(protocol == Protocol.INITIATE_SESSION) {
-			RIOLayer.RIOSessionReceive(from, msg);
-        } else if(protocol == Protocol.ACK_SESSION) {
-			RIOLayer.RIOSessionAck(from, msg);
-        }
+		} else { //if(protocol == Protocol.ACK) {
+			RIOLayer.RIODataReceive(from, msg);
+		}
 	}
 
 	/**
@@ -61,4 +63,8 @@ public abstract class RIONode extends Node {
 	public String toString() {
 		return RIOLayer.toString();
 	}
+
+  long getUUID() {
+    return uuid;
+  }
 }
