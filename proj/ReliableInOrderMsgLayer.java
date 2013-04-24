@@ -56,7 +56,7 @@ public class ReliableInOrderMsgLayer {
 
         // if the UUID is incorrect, then initiate a new session
         if (riopkt.getSessionId() != n.getUUID()) {
-            System.out.println("Bad id, sending session setup");
+            //System.out.println("Bad id, sending session setup");
 
             // clean up
 			inConnections.put(from, new InChannel());
@@ -180,7 +180,7 @@ public class ReliableInOrderMsgLayer {
                 byte[] sessionIdByteArray = Utility.stringToByteArray("" + sessionNum);
                 n.send(addr, Protocol.INITIATE_SESSION, sessionIdByteArray);
 
-                System.out.println("Resending session init: " + sessionNum);
+                //System.out.println("Resending session init: " + sessionNum);
 
                 try {
                     // setup another timeout
@@ -190,7 +190,7 @@ public class ReliableInOrderMsgLayer {
                         { addr, sessionNum }), ReliableInOrderMsgLayer.TIMEOUT);
                 } catch (Exception e) {}
             } else {
-                System.out.println("Drop session init");
+                //System.out.println("Drop session init");
             }
         }
 	}
@@ -373,7 +373,7 @@ class OutChannel {
 	 *            The sequence number of the unACKed packet
 	 */
 	private void resendRIOPacket(RIONode n, int seqNum) {
-        System.out.println("RESEND");
+        //System.out.println("RESEND");
 		try{
 			Method onTimeoutMethod = Callback.getMethod("onTimeout", parent, new String[]{ "java.lang.Integer", "java.lang.Integer" });
 			RIOPacket riopkt = unACKedPackets.get(seqNum);
@@ -383,12 +383,12 @@ class OutChannel {
                 riopkt.setSessionId(n.getUUID());
             }
 
-            System.out.println("proto: " + riopkt.getProtocol());
+            //System.out.println("proto: " + riopkt.getProtocol());
 
             // If we fail to get acked for too long, give up
             if (riopkt.numResends > ReliableInOrderMsgLayer.NUM_RESENDS) {
                 unACKedPackets.remove(seqNum);
-                System.out.println("PACKET DROPPED");
+                //System.out.println("PACKET DROPPED");
                 return;
             }
             riopkt.numResends++;
