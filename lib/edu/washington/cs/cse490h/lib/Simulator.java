@@ -118,17 +118,24 @@ public class Simulator extends Manager {
      *            The log file for future relays of the current execution
      * @param replayInputFilename
      *            The log file to replay
+     * @param useConsole
+     *            Whether a console is being launched
      * @throws IllegalArgumentException
      *             If the arguments provided to the program are invalid
      * @throws IOException
      *             If creating the user input reader fails
      */
     public Simulator(Class<? extends Node> nodeImpl, FailureLvl failureGen,
-            Long seed, String replayOutputFilename, String replayInputFilename)
+            Long seed, String replayOutputFilename, String replayInputFilename, boolean useConsole)
             throws IllegalArgumentException, IOException {
         this(nodeImpl, seed, replayOutputFilename, replayInputFilename);
 
-        cmdInputType = InputType.USER;
+        if (useConsole) {
+            cmdInputType = InputType.CONSOLE;
+        } else {
+		    cmdInputType = InputType.USER;
+        }
+
         userControl = failureGen;
     }
 
@@ -208,6 +215,8 @@ public class Simulator extends Manager {
                 doTimestep(currentRoundEvents);
 
             }
+		} else if (cmdInputType == InputType.CONSOLE) {
+            //ChitterConsole c = new ChitterConsole();
         }
 
         stop();

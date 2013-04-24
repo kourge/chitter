@@ -52,7 +52,7 @@ public abstract class Manager {
     protected InputType cmdInputType;
 
     protected enum InputType {
-        USER, FILE
+        USER, CONSOLE, FILE
     }
 
     /**

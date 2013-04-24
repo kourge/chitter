@@ -33,7 +33,7 @@ public class Emulator extends Manager {
 	 * Base constructor for the Emulator. Does most of the work, but the command
 	 * input method and failure level should be set before calling this
 	 * constructor.
-	 * 
+	 *
 	 * @param nodeImpl
 	 *            The Class object for the student's node implementation
 	 * @param nodeAddr
@@ -87,7 +87,7 @@ public class Emulator extends Manager {
 			} catch (CorruptPacketException e) {
 				throw new Replay.ReplayException("Address packet expected, but packet was corrupted");
 			}
-			
+
 			// We never want the node to kill itself cause the server did
 			IOFinished = false;
 		} else {
@@ -103,7 +103,7 @@ public class Emulator extends Manager {
 				throw new Replay.ReplayException(e.getMessage());
 			}
 		}
-		
+
 		// We'll store just a single nodeAddr->vtime mapping here.
 		vtimes = new HashMap<Integer, VectorTime>();
 
@@ -115,7 +115,7 @@ public class Emulator extends Manager {
 
 	/**
 	 * Create a new emulator that takes commands through user input
-	 * 
+	 *
 	 * @param nodeImpl
 	 *            The Class object for the student's node implementation
 	 * @param nodeAddr
@@ -129,6 +129,8 @@ public class Emulator extends Manager {
 	 * @param seed
 	 *            Seed for the RNG. This can be null if the failure generator is
 	 *            not a RNG
+     * @param useConsole
+     *            Whether a console is being launched
 	 * @throws UnknownHostException
 	 *             If the router's name cannot be resolved
 	 * @throws IOException
@@ -139,18 +141,24 @@ public class Emulator extends Manager {
 	public Emulator(Class<? extends Node> nodeImpl, int nodeAddr,
 			String routerName, int routerPort, FailureLvl failureGen,
 			Long seed, long timeStep, String replayOutputFilename,
-			String replayInputFilename) throws UnknownHostException,
-			IOException, IllegalArgumentException {
+			String replayInputFilename, boolean useConsole)
+        throws UnknownHostException, IOException, IllegalArgumentException {
+
 		this(nodeImpl, nodeAddr, routerName, routerPort, seed, timeStep,
 				replayOutputFilename, replayInputFilename);
 
-		cmdInputType = InputType.USER;
+        if (useConsole) {
+            cmdInputType = InputType.CONSOLE;
+        } else {
+		    cmdInputType = InputType.USER;
+        }
+
 		userControl = failureGen;
 	}
 
 	/**
 	 * Create a new emulator that takes commands through a file
-	 * 
+	 *
 	 * @param nodeImpl
 	 *            The Class object for the student's node implementation
 	 * @param nodeAddr
@@ -190,7 +198,7 @@ public class Emulator extends Manager {
 
 	/**
 	 * Perform a single emulator time step with a set of events as argument
-	 * 
+	 *
 	 * @param currentRoundEvents
 	 */
 	private void doTimestep(ArrayList<Event> currentRoundEvents) {
@@ -287,7 +295,7 @@ public class Emulator extends Manager {
 						// just in case an exception is thrown or input is null
 						Event ev = null;
 
-						try { 
+						try {
 							// A command will be converted into an Event and passed to the node later in the loop
 							// A quit command will be matched later in this try block
 							// Empty/whitespace will be treated as a skipped
@@ -363,7 +371,9 @@ public class Emulator extends Manager {
 					logEventWithNodeField(node, "TIMESTEP time:" + now());
 				}
 			}
-		}
+		} else if (cmdInputType == InputType.CONSOLE) {
+            //ChitterConsole c = new ChitterConsole();
+        }
 
 		stop();
 	}
@@ -433,7 +443,7 @@ public class Emulator extends Manager {
 	/**
 	 * Fail the node. This attempts to kill both the node/its saved state, and
 	 * the server.
-	 * 
+	 *
 	 * @return The exception thrown after calling the fail() method. This is so,
 	 *         if the stack includes methods in Node, we can rethrow the
 	 *         Exception as necessary
@@ -445,7 +455,7 @@ public class Emulator extends Manager {
 
 	/**
 	 * Kill the node and its associated data structures.
-	 * 
+	 *
 	 * @return The exception thrown after calling the fail() method. See
 	 *         failNode() for why this happens
 	 */
@@ -537,7 +547,7 @@ public class Emulator extends Manager {
 	/**
 	 * Goes through all of the in transit messages and decides whether to drop,
 	 * delay, or deliver.
-	 * 
+	 *
 	 * @param currentRoundEvents
 	 *            The list of the current round's events that we should add to
 	 */
@@ -681,7 +691,7 @@ public class Emulator extends Manager {
 
 	/**
 	 * Checks whether to crash a live node
-	 * 
+	 *
 	 * @param currentRoundEvents
 	 *            The list of the current round's events that we should add to
 	 */
@@ -736,7 +746,7 @@ public class Emulator extends Manager {
 	/**
 	 * Check to see if any timeouts are supposed to fire during the current time
 	 * step
-	 * 
+	 *
 	 * @param currentRoundEvents
 	 *            The list of the current round's events that we should add to
 	 */
@@ -760,7 +770,7 @@ public class Emulator extends Manager {
 	 * Reorders and executes all the events for the current round. Note that
 	 * commands can be executed in a different order than they appear in the
 	 * command file!
-	 * 
+	 *
 	 * @param currentRoundEvents
 	 *            The list of the current round's events that we should add to
 	 */
@@ -821,7 +831,7 @@ public class Emulator extends Manager {
 
 	/**
 	 * Process an event.
-	 * 
+	 *
 	 * @param ev
 	 *            The event that should be processed
 	 */
@@ -873,7 +883,7 @@ public class Emulator extends Manager {
 	 * Create a packet and put it on the channel. Crashes in the middle of a
 	 * broadcast can be modeled by a post-send crash, plus a sequence of dropped
 	 * messages
-	 * 
+	 *
 	 * @param fromNode
 	 *            The node that is sending the packet
 	 * @param to
@@ -904,7 +914,7 @@ public class Emulator extends Manager {
 
 	/**
 	 * Send a packet off to the router.
-	 * 
+	 *
 	 * @param destAddr
 	 *            The virtual address of the destination
 	 * @param pkt
@@ -919,7 +929,7 @@ public class Emulator extends Manager {
 
 	/**
 	 * Actually deliver an in transit packet.
-	 * 
+	 *
 	 * @param pkt
 	 *            The packet that should be delivered
 	 */
@@ -945,7 +955,7 @@ public class Emulator extends Manager {
 
 	/**
 	 * Sends command to the node
-	 * 
+	 *
 	 * @param msg
 	 *            The msg to send to the node
 	 */
@@ -966,7 +976,7 @@ public class Emulator extends Manager {
 	/**
 	 * Log the event in the synoptic log using the simulator's global logical
 	 * ordering with a node field
-	 * 
+	 *
 	 * @param node
 	 *            node generating the event
 	 * @param eventStr

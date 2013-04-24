@@ -31,6 +31,7 @@ import edu.washington.cs.cse490h.lib.Manager.FailureLvl;
  *  -r --seed=<long>                                  - Random seed
  *  -c --commandFile=<string>                         - Command file [default ]
  *  -f --failureLvlInt=<int>                          - Failure level, a number between 0 and 4 [default 4]
+ *  -k --console=<boolean>                            - Launch with console [default false]
  *
  * Debugging Options:
  *  -L --synopticTotallyOrderedLogFilename=<string>   - Synoptic totally ordered log filename [default ]
@@ -122,6 +123,12 @@ public class MessageLayer {
 	 */
 	@Option(value="-f Failure level, a number between 0 and 4", aliases={"-failure-lvl"})
 	public static int failureLvlInt = 4;
+
+	/**
+	 * Whether to launch with console
+	 */
+	@Option(value="-k Console", aliases={"-console"})
+	public static boolean useConsole = false;
 	// end option group "Execution Options"
 
 
@@ -252,14 +259,31 @@ public class MessageLayer {
 						printWarning("Both replay output and input files are specified");
 					} else if (!replayInputFilename.equals("") && seed != null) {
 						printWarning("Both seed and replay input are specified.  Seed will be ignored.");
-					}
+                    } else if(!replayInputFilename.equals("") && useConsole) {
+                        printError("You cannot specify a replay input if you want to use the console");
+                        return;
+                    }
 				}
 
 				try {
 					if(!commandFile.equals("")){
-						manager = new Simulator(nodeImpl, failureLvl, seed, replayOutputFilename, replayInputFilename, commandFile);
+						manager = new Simulator(
+                            nodeImpl,
+                            failureLvl,
+                            seed,
+                            replayOutputFilename,
+                            replayInputFilename,
+                            commandFile
+                        );
 					} else {
-						manager = new Simulator(nodeImpl, failureLvl, seed, replayOutputFilename, replayInputFilename);
+						manager = new Simulator(
+                            nodeImpl,
+                            failureLvl,
+                            seed,
+                            replayOutputFilename,
+                            replayInputFilename,
+                            useConsole
+                        );
 					}
 				} catch (IllegalArgumentException e) {
 					printError("Illegal arguments given to Simulator. Exception: " + e);
@@ -292,13 +316,27 @@ public class MessageLayer {
 					printWarning("Both replay output and input files are specified");
 				} else if (!replayInputFilename.equals("") && seed != null) {
 					printWarning("Both seed and replay input are specified.  Seed will be ignored.");
-				}
+				} else if(!replayInputFilename.equals("") && useConsole) {
+                    printError("You cannot specify a replay input if you want to use the console");
+                    return;
+                }
 
 				try {
 					if (!commandFile.equals("")) {
 						manager = new Emulator(nodeImpl, nodeAddr, routerHostname, routerPort, failureLvl, seed, timestep, replayOutputFilename, replayInputFilename, commandFile);
 					} else {
-						manager = new Emulator(nodeImpl, nodeAddr, routerHostname, routerPort, failureLvl, seed, timestep, replayOutputFilename, replayInputFilename);
+                        manager = new Emulator(
+                            nodeImpl,
+                            nodeAddr,
+                            routerHostname,
+                            routerPort,
+                            failureLvl,
+                            seed,
+                            timestep,
+                            replayOutputFilename,
+                            replayInputFilename,
+                            useConsole
+                        );
 					}
 				} catch(UnknownHostException e) {
 					printError("Router host name is unkown! Exception: " + e);
