@@ -23,6 +23,10 @@ public class ChitterFSOperations {
 
     /** Create a file by name, return version number */
     public long create(String filename) {
+        if (Utility.fileExists(node, filename)) {
+            return Utility.fileTimestamp(node, filename);
+        }
+
         try {
             node.getWriter(filename, false);
             System.out.println("created: " + filename);
@@ -63,6 +67,15 @@ public class ChitterFSOperations {
         }
 
         return Pair.of(out, Utility.fileTimestamp(node, filename));
+    }
+
+    /** Gives the latest version number of a file */
+    public long currentVersion(String filename) {
+        if (!Utility.fileExists(node, filename)) {
+            return -1;
+        }
+
+        return Utility.fileTimestamp(node, filename);
     }
 
     /** Append to a file if not changed since version we have */
