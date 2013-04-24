@@ -1,6 +1,7 @@
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.Collections;
 import java.util.NoSuchElementException;
 
 public enum Operation {
@@ -13,11 +14,13 @@ public enum Operation {
     READ_UNREAD("read_unread");
 
     private final String name;
-    private static final Map<String, Operation> map = new HashMap<String, Operation>();
+    private static final Map<String, Operation> opMap = new HashMap<String, Operation>();
+    private static final Map<String, String> descMap = new HashMap<String, String>();
 
     static {
         for (Operation op : Operation.values()) {
-            map.put(op.name, op);
+            opMap.put(op.name, op);
+            descMap.put(op.name, "");
         }
     }
 
@@ -30,12 +33,16 @@ public enum Operation {
     }
 
     public static Set<String> getNames() {
-        return map.keySet();
+        return opMap.keySet();
+    }
+
+    public static Map<String, String> getDescriptionMap() {
+        return Collections.unmodifiableMap(descMap);
     }
 
     public static Operation fromString(String name) {
-        if (map.containsKey(name)) {
-            return map.get(name);
+        if (opMap.containsKey(name)) {
+            return opMap.get(name);
         }
         throw new NoSuchElementException(name + "not found");
     }

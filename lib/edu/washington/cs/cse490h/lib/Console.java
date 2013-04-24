@@ -1,28 +1,27 @@
+package edu.washington.cs.cse490h.lib;
+
 import java.io.IOException;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
 
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 import jline.console.completer.StringsCompleter;
 
-public class ChitterConsole {
-    private static Set<String> commands;
-
-    static {
-        commands = new HashSet<String>(Operation.getNames());
-        commands.add("help");
-    }
-
+public class Console {
+    private Set<String> commands;
     private ConsoleReader console;
 
-    public static void main(String[] args) {
-        ChitterConsole c = new ChitterConsole();
-        c.run();
-    }
+    public Console(Map<String, String> consoleOperationsDescription) {
+        try {
+            commands = new HashSet<String>(consoleOperationsDescription.keySet());
+        } catch (NullPointerException e) {
+            commands = new HashSet<String>();
+        }
+        commands.add("help");
 
-    public ChitterConsole() {
         try {
             console = new ConsoleReader();
             console.addCompleter(new StringsCompleter(commands));

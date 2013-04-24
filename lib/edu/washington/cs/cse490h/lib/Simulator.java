@@ -216,7 +216,8 @@ public class Simulator extends Manager {
 
             }
 		} else if (cmdInputType == InputType.CONSOLE) {
-            //ChitterConsole c = new ChitterConsole();
+            Console c = new Console(consoleOperationsDescription);
+            c.run();
         }
 
         stop();

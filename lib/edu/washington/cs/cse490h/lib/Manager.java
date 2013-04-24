@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.HashMap;
 
 /**
@@ -54,6 +55,8 @@ public abstract class Manager {
     protected enum InputType {
         USER, CONSOLE, FILE
     }
+
+    protected Map<String, String> consoleOperationsDescription;
 
     /**
      * Class representing a timeout
@@ -115,6 +118,10 @@ public abstract class Manager {
                     (Class<?>[]) null).invoke(null, (Object[]) null);
             delayRate = (Double) nodeImpl.getMethod("getDelayRate",
                     (Class<?>[]) null).invoke(null, (Object[]) null);
+
+            @SuppressWarnings("unchecked")
+            Map<String, String> operationsDescription = (Map<String, String>) nodeImpl.getField("consoleOperationsDescription").get(null);
+            consoleOperationsDescription = operationsDescription;
         } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException(
                     "Error while finding get*rate functions: " + e);
