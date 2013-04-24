@@ -1,10 +1,10 @@
 import java.util.List;
 
-public class ChitterOperation {
-    private ChitterNode node;
+public class ChitterOperations {
+    private ChitterFSOperations fs;
 
-    public ChitterOperation(ChitterNode node) {
-        this.node = node;
+    public ChitterOperations(ChitterFSOperations fsOps) {
+        this.fs = fsOps;
     }
 
     public boolean createUser(String username, String password) {
