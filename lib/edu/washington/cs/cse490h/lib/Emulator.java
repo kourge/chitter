@@ -372,7 +372,7 @@ public class Emulator extends Manager {
 				}
 			}
 		} else if (cmdInputType == InputType.CONSOLE) {
-            Console c = new Console();
+            Console c = new Console(supportedConsoleOperations);
             c.run();
         }
 

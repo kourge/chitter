@@ -21,6 +21,8 @@ public class ChitterNode extends RIONode {
 
     protected PersistentStorageWriter log;
 
+    public static Set<String> supportedConsoleOperations = Operation.getNames();
+
     // Server
     protected ChitterFSOperations fsOps;
 

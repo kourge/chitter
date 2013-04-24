@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 
 /**
  * Node -- Class defining the interface and basic functionality of a node. The
@@ -23,6 +24,8 @@ public abstract class Node {
 	public static double getRecoveryRate() { return 10/100.0; }
 	public static double getDropRate() { return 10/100.0; }
 	public static double getDelayRate() { return 25/100.0; }
+
+    public static Collection<String> supportedConsoleOperations;
 
 	/**
 	 * Special error that is thrown when fail() is called. It is an unchecked

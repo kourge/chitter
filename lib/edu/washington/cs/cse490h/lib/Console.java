@@ -4,23 +4,24 @@ import java.io.IOException;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Collection;
 
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 import jline.console.completer.StringsCompleter;
 
 public class Console {
-    private static Set<String> commands;
-
-    static {
-        // commands = new HashSet<String>(ChitterOperation.Operation.getNames());
-        commands = new HashSet<String>();
-        commands.add("help");
-    }
-
+    private Set<String> commands;
     private ConsoleReader console;
 
-    public Console() {
+    public Console(Collection<String> supportedConsoleOperations) {
+        try {
+            commands = new HashSet<String>(supportedConsoleOperations);
+        } catch (NullPointerException e) {
+            commands = new HashSet<String>();
+        }
+        commands.add("help");
+
         try {
             console = new ConsoleReader();
             console.addCompleter(new StringsCompleter(commands));

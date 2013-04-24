@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Collection;
 
 /**
  * Abstract class defining generic routines for running network code under the
@@ -54,6 +55,8 @@ public abstract class Manager {
     protected enum InputType {
         USER, CONSOLE, FILE
     }
+
+    protected Collection<String> supportedConsoleOperations;
 
     /**
      * Class representing a timeout
@@ -115,6 +118,10 @@ public abstract class Manager {
                     (Class<?>[]) null).invoke(null, (Object[]) null);
             delayRate = (Double) nodeImpl.getMethod("getDelayRate",
                     (Class<?>[]) null).invoke(null, (Object[]) null);
+
+            @SuppressWarnings("unchecked")
+            Collection<String> operations = (Collection<String>) nodeImpl.getField("supportedConsoleOperations").get(null);
+            supportedConsoleOperations = operations;
         } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException(
                     "Error while finding get*rate functions: " + e);
