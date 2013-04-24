@@ -1,10 +1,7 @@
 import edu.washington.cs.cse490h.lib.Node;
 
-public class CreateUserProcedure extends Procedure {
+public class CreateUserProcedure extends ChitterProcedure {
     private CreateUserProcedure() {}
-
-    private static final long FAILURE = -1;
-    private static final char[] INVALID_USERNAME_CHARACTERS = { '\t', '\n' };
 
     private String tweetsFn;
     private String followingFn;
@@ -16,11 +13,7 @@ public class CreateUserProcedure extends Procedure {
     ) {
         populate(node, onComplete);
 
-        for (char invalidCharacter : INVALID_USERNAME_CHARACTERS) {
-            if (username.indexOf(invalidCharacter) != -1) {
-                throw new IllegalArgumentException();
-            }
-        }
+        checkUsername(username);
 
         tweetsFn = "tweets:" + username;
         followingFn = "following:" + username;
