@@ -216,7 +216,7 @@ public class Simulator extends Manager {
 
             }
 		} else if (cmdInputType == InputType.CONSOLE) {
-            Console c = new Console(supportedConsoleOperations);
+            Console c = new Console(consoleOperationsDescription);
             c.run();
         }
 

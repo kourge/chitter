@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import java.util.Set;
 import java.util.HashSet;
-import java.util.Collection;
+import java.util.Map;
 
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
@@ -14,9 +14,9 @@ public class Console {
     private Set<String> commands;
     private ConsoleReader console;
 
-    public Console(Collection<String> supportedConsoleOperations) {
+    public Console(Map<String, String> consoleOperationsDescription) {
         try {
-            commands = new HashSet<String>(supportedConsoleOperations);
+            commands = new HashSet<String>(consoleOperationsDescription.keySet());
         } catch (NullPointerException e) {
             commands = new HashSet<String>();
         }
