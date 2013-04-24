@@ -2,6 +2,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 import java.io.Serializable;
 import java.util.Arrays;
+import edu.washington.cs.cse490h.lib.Callback;
 
 /**
  * Encapsulates the invocation of a Java method, divorced from whatever class
@@ -24,18 +25,20 @@ import java.util.Arrays;
 public class Invocation implements Serializable {
     public static final long serialVersionUID = 0L;
 
-    private String procName;
+    protected String procName;
 
-    private boolean hasReturnVal;
-    private Class<?> returnType;
-    private Object returnVal;
+    protected boolean hasReturnVal;
+    protected Class<?> returnType;
+    protected Object returnVal;
 
-    private Class<?>[] paramTypes;
-    private Object[] paramVals;
+    protected Class<?>[] paramTypes;
+    protected Object[] paramVals;
 
-    private int arity;
+    protected int arity;
 
-    private Invocation(
+    protected transient Object target;
+
+    protected Invocation(
         String name, Class<?> returnType, Class<?>[] paramTypes, Object[] paramVals
     ) {
         this.procName = name;
@@ -60,8 +63,29 @@ public class Invocation implements Serializable {
         return iv;
     }
 
+    public static Invocation on(Object obj, String methodName) {
+        Invocation iv = Invocation.of(obj.getClass(), methodName);
+        iv.setTarget(obj);
+        return iv;
+    }
+
+    public static Invocation on(Object obj, String methodName, Object... args) {
+        Invocation iv = Invocation.on(obj, methodName);
+        iv.setParameterValues(args);
+        return iv;
+    }
+
     public String getMethodName() {
         return this.procName;
+    }
+
+    public Method getMethod() {
+        if (this.getTarget() == null) {
+            return null;
+        }
+
+        Class<?> klass = this.getTarget().getClass();
+        return Invocation.findMethod(klass, this.getMethodName());
     }
 
     public Class<?> getReturnType() {
@@ -95,7 +119,15 @@ public class Invocation implements Serializable {
             throw new IllegalArgumentException("Incorrect param values arity");
         }
 
-        this.paramVals = values;
+        this.paramVals = Arrays.copyOf(values, values.length);
+    }
+
+    public void setTarget(Object obj) {
+        this.target = obj;
+    }
+
+    public Object getTarget() {
+        return this.target;
     }
 
     public String toString() {
@@ -130,10 +162,14 @@ public class Invocation implements Serializable {
     }
 
     public Object invokeOn(Object obj) throws InvocationException {
+        this.setTarget(obj);
+        return this.invoke();
+    }
+
+    public Object invoke() throws InvocationException {
         try {
-            Class<?> klass = obj.getClass();
-            Method method = Invocation.findMethod(klass, procName);
-            Object result = method.invoke(obj, this.paramVals);
+            Method method = this.getMethod();
+            Object result = method.invoke(this.getTarget(), this.getParameterValues());
             this.setReturnValue(result);
             return result;
         } catch (IllegalAccessException e) {
@@ -143,6 +179,14 @@ public class Invocation implements Serializable {
         } catch (InvocationTargetException e) {
             throw new InvocationException(e);
         }
+    }
+
+    public Callback toCallback() {
+        return new Callback(this.getMethod(), this.getTarget(), this.paramVals);
+    }
+
+    public static Callback call(Object obj, String methodName, Object... args) {
+        return Invocation.on(obj, methodName, args).toCallback();
     }
 
     public static Method findMethod(Class<?> klass, String methodName) {
