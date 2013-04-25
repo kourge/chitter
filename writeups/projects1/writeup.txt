@@ -95,6 +95,6 @@ Simple Usage examples:
     Run sim_chitter2.sh to run simple twitter operations (create a couple users,
         follow, tweet)
     Use the following to run a simple interactive console (not super robust just
-        yet...)
+        yet...), type "help" to get a list of commands
         ./execute.pl -n ChitterNode -s -f 0 -k
 
