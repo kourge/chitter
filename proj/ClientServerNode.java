@@ -105,6 +105,7 @@ public abstract class ClientServerNode extends RIONode {
             return false;
         }
         boolean result = this.sendQueue.offer(req);
+        pumpSendQueue();
         return result;
     }
 
