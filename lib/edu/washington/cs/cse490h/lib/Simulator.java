@@ -227,7 +227,7 @@ public class Simulator extends Manager {
             while (true) {
                 currentRoundEvents = new ArrayList<Event>();
 
-                for (int i = 0; i < 15; i++) {
+                for (int i = 0; i < 45; i++) {
                     doTimestep(currentRoundEvents);
                 }
 
