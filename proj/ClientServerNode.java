@@ -111,7 +111,8 @@ public abstract class ClientServerNode extends RIONode {
     }
 
     public void logOutput(String output) {
-        log(output, suppressOutput ? System.err : System.out);
+        // log(output, suppressOutput ? System.err : System.out);
+        log(output, System.out);
     }
 
     private static final int LOG_CALL_DEPTH = 2;
