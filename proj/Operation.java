@@ -50,7 +50,7 @@ public class Operation {
     }
 
     private static Method parserForCommand(String command) {
-        for (Method method : Command.class.getMethods()) {
+        for (Method method : Operation.class.getMethods()) {
             if (method.getName().equals(command) &&
                 method.isAnnotationPresent(Dispatcher.class)) {
                 return method;
