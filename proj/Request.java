@@ -29,6 +29,10 @@ public class Request implements Serializable {
         return this.iv;
     }
 
+    public Invocation getOnComplete() {
+        return this.onComplete;
+    }
+
     public long getSeq() {
         return this.seq;
     }

@@ -88,9 +88,10 @@ public abstract class ClientServerNode extends RIONode {
         Request request = this.pendingRequests.get(req);
         if (request != null) {
             try {
+                request.getInvocation().setReturnValue(req.getInvocation().getReturnValue());
                 request.complete();
             } catch (InvocationException e) {
-                logError("Failed to invoke onComplete callback");
+                logError("Failed to invoke onComplete callback " + request.getOnComplete().getMethodName());
             }
         } else {
             logError("Received unknown response: " + req);

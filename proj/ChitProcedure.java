@@ -1,4 +1,6 @@
 import edu.washington.cs.cse490h.lib.Node;
+import edu.washington.cs.cse490h.lib.Utility;
+import java.util.Arrays;
 
 public class ChitProcedure extends ChitterProcedure {
     private ChitProcedure() {}
@@ -23,7 +25,7 @@ public class ChitProcedure extends ChitterProcedure {
             throw new IllegalArgumentException();
         }
 
-        line = new String(stream) + "\n";
+        line = Utility.byteArrayToString(stream) + "\n";
         tweetsFn = "tweets:" + username;
     }
 
@@ -41,7 +43,7 @@ public class ChitProcedure extends ChitterProcedure {
         doThen(
             Invocation.of(
                 fs, "appendIfNotChanged",
-                tweetsFn, line.getBytes(), version
+                tweetsFn, stream, version
             ),
             Invocation.on(this, "setTweetsV")
         );

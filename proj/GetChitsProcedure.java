@@ -1,8 +1,10 @@
 import edu.washington.cs.cse490h.lib.Node;
+import edu.washington.cs.cse490h.lib.Utility;
 
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.Arrays;
 
 public class GetChitsProcedure extends ChitterProcedure {
     private GetChitsProcedure() {}
@@ -45,7 +47,7 @@ public class GetChitsProcedure extends ChitterProcedure {
             String line = scanner.nextLine();
             Chit chit;
             try {
-                chit = (Chit)Serialization.decode(line.getBytes());
+                chit = (Chit)Serialization.decode(Utility.stringToByteArray(line));
             } catch (Serialization.DecodingException e) {
                 returnValue(null);
                 return;

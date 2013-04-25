@@ -32,8 +32,10 @@ public abstract class Procedure {
         if (isComplete) {
             throw new InvocationException("Already returned once");
         } else {
-            onComplete.setParameterValues(new Object[] { value });
-            onComplete.invoke();
+            if (onComplete != null) {
+                onComplete.setParameterValues(new Object[] { value });
+                onComplete.invoke();
+            }
             isComplete = true;
         }
     }

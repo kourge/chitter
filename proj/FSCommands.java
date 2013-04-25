@@ -25,7 +25,6 @@ public class FSCommands {
 
         try {
             node.getWriter(filename, false);
-            System.out.println("created: " + filename);
             return Utility.fileTimestamp(node, filename);
         } catch (IOException e) {
             return -1;
@@ -35,7 +34,6 @@ public class FSCommands {
     /** Gets whether or not a file exists */
     public boolean exists(String filename) {
         boolean ex = Utility.fileExists(node, filename);
-        System.out.println("checking: " + filename + " exists: " + ex);
         return ex;
     }
 
@@ -56,8 +54,7 @@ public class FSCommands {
             while ((tmp = reader.readLine()) != null) {
                 buf.append(tmp);
             }
-            System.out.println("Read: " + buf.toString());
-            out = buf.toString().getBytes();
+            out = Utility.stringToByteArray(buf.toString());
         } catch (IOException e) {
             return null;
         }
@@ -86,7 +83,7 @@ public class FSCommands {
 
         try {
             BufferedWriter writer = node.getWriter(filename, true);
-            writer.append(new String(data));
+            writer.append(Utility.byteArrayToString(data));
             return Utility.fileTimestamp(node, filename);
         } catch (IOException e) {
             return -1;
