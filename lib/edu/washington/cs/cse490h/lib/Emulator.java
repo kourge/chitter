@@ -395,6 +395,11 @@ public class Emulator extends Manager {
 				} else {
                     ArrayList<Event> currentRoundEvents = new ArrayList<Event>();
 
+                    // TODO: Use Thread.sleep() maybe?
+                    for (int i = 0; i < 15; i++) {
+                        doTimestep(currentRoundEvents);
+                    }
+
                     // just in case an exception is thrown or input is null
                     Event ev = null;
 

@@ -12,8 +12,8 @@ public class ChitterNode extends ClientServerNode {
     // override the default failure rates (never fail for now)
     public static double getFailureRate() { return 0.0; }
     public static double getRecoveryRate() { return 1.0; }
-    public static double getDropRate() { return 0.2; }
-    public static double getDelayRate() { return 0.2; }
+    public static double getDropRate() { return 0.0; }
+    public static double getDelayRate() { return 0.0; }
 
     public static int NUM_NODES = 2;// client and server only for now
     public static int TIMEOUT = 5;
@@ -96,7 +96,7 @@ public class ChitterNode extends ClientServerNode {
     @Override
     public void onCommand(String command) {
         try {
-            log.write(command + "\n");
+            log.append(command + "\n");
         } catch (IOException e) {
             // well, shit, if we failed here, we drop the command completely
             // but this is okay with at most once semantics, so whatevs...
@@ -107,20 +107,7 @@ public class ChitterNode extends ClientServerNode {
         queueDirective(command);
     }
 
-    @Client protected void pumpRecvQueue() {
-        super.pumpRecvQueue();
-        if (!hasOustandingRequests()) {
-            try {
-                log.write("COMPLETE\n");
-            } catch (IOException e) {}
-            if (!pendingCommands.isEmpty()) {
-                queueDirective(pendingCommands.poll());
-            }
-        }
-    }
-
     public void queueDirective(String directive) {
-
         if (hasOustandingRequests()) {
             pendingCommands.offer(directive);
         } else {
@@ -161,7 +148,6 @@ public class ChitterNode extends ClientServerNode {
             break;
 
         case Protocol.CHITTER_RPC_REPLY:
-            logOutput("RPC reply received.");
             this.handleReply(from, msg);
             break;
 
@@ -177,6 +163,16 @@ public class ChitterNode extends ClientServerNode {
     public String toString() {
         String s = "node";
         return s;
+    }
+
+    @Override
+    @Client public void onCommandCompletion() {
+        try {
+            log.append("COMPLETE\n");
+        } catch (IOException e) {}
+        if (!pendingCommands.isEmpty()) {
+            queueDirective(pendingCommands.poll());
+        }
     }
 }
 
