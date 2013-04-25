@@ -28,8 +28,7 @@ public class Operation {
 
         Method parser = parserForCommand(commandName);
         Dispatcher dispatcher = parser.getAnnotation(Dispatcher.class);
-        Object[] arguments = {};
-        arguments = (Object[])parser.invoke(null, args);
+        Object[] arguments = (Object[])parser.invoke(null, args);
 
         Object[] parameters = new Object[arguments.length + 3];
         parameters[0] = node;
