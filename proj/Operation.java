@@ -114,7 +114,7 @@ public class Operation {
     private static Map<String, String> operations;
     static {
         operations = new HashMap<String, String>();
-        for (Method method : Command.class.getMethods()) {
+        for (Method method : Operation.class.getMethods()) {
             if (method.isAnnotationPresent(Dispatcher.class)) {
                 Dispatcher dispatcher = method.getAnnotation(Dispatcher.class);
                 operations.put(method.getName(), dispatcher.desc());
