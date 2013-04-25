@@ -310,11 +310,7 @@ public class Simulator extends Manager {
         Node newNode;
         try {
             newNode = nodeImpl.newInstance();
-            try {
-                nodeImpl.getField("suppressOutput").set(newNode, cmdInputType == InputType.CONSOLE);
-            } catch (Exception e) {
-                // DO NOTHING
-            }
+            newNode.setOutputSuppressionValue(cmdInputType == InputType.CONSOLE);
         } catch (Exception e) {
             System.err.println("Error while contructing node: " + e);
             failNode(node);
