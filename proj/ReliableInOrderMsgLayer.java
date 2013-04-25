@@ -56,7 +56,7 @@ public class ReliableInOrderMsgLayer {
 
         // if the UUID is incorrect, then initiate a new session
         if (riopkt.getSessionId() != n.getUUID()) {
-            //System.out.println("Bad id, sending session setup");
+            //System.out.println("Bad id, sending session setup " + n.addr);
 
             // clean up
 			inConnections.put(from, new InChannel());
@@ -109,12 +109,15 @@ public class ReliableInOrderMsgLayer {
 	}
 
 	public void RIOSessionReceive(int from, byte[] msg) {
-        
+
         // we need to start a new session...
         
         // set id
         long id = Long.parseLong( Utility.byteArrayToString(msg) );
         n.peerSessions.put(from, id);
+
+        //System.out.println("Got a new session " + n.addr + " " + id
+        //    + "...");
 
         // renumber in-flight packets
         if (outConnections.get(from) != null) {
@@ -242,7 +245,9 @@ class InChannel {
 		}else if(seqNum > lastSeqNumDelivered + 1){
 			// We received a subsequent packet and should store it
 			outOfOrderMsgs.put(seqNum, pkt);
-		}
+		} else {
+            //System.out.println("Duplicate dropped " + seqNum + "|" + lastSeqNumDelivered);
+        }
 		// Duplicate packets are ignored
 		
 		return pktsToBeDelivered;
