@@ -44,23 +44,24 @@ public class GetTimelineProcedure extends ChitterProcedure {
             return;
         }
 
-        Scanner scanner = new Scanner(new String(result.first()));
-        long timestamp = scanner.nextLong();
+        // TODO: make subprocedure calling work
+        // Scanner scanner = new Scanner(new String(result.first()));
+        // long timestamp = scanner.nextLong();
 
-        List<Pair<String, Long>> followings = getFollowings(username);
-        for (Pair<String, Long> following : followings) {
-            List<Chit> chits = getChits(following.first());
-            if (chits != null) {
-                long cutoff = Math.max(following.second(), timestamp);
-                for (Chit chit : chits) {
-                    if (chit.getTimestamp() > cutoff) {
-                        list.add(chit);
-                    }
-                }
-            }
-        }
+        // List<Pair<String, Long>> followings = getFollowings(username);
+        // for (Pair<String, Long> following : followings) {
+        //     List<Chit> chits = getChits(following.first());
+        //     if (chits != null) {
+        //         long cutoff = Math.max(following.second(), timestamp);
+        //         for (Chit chit : chits) {
+        //             if (chit.getTimestamp() > cutoff) {
+        //                 list.add(chit);
+        //             }
+        //         }
+        //     }
+        // }
 
-        timestamp = System.currentTimeMillis();
+        Long timestamp = System.currentTimeMillis();
         byte[] payload = Long.toString(timestamp).getBytes();
 
         doThen(
