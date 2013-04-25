@@ -74,13 +74,8 @@ public class Operation {
         return operations;
     }
 
-    public static boolean supports(String operation) {
-        for (String supportedOperation : operations.keySet()) {
-            if (operation.startsWith(supportedOperation)) {
-                return true;
-            }
-        }
-        return false;
+    public static boolean supports(String operationName) {
+        return operations.containsKey(operationName);
     }
 
     @Dispatcher(proc=CreateUserProcedure.class, desc="createUser username")
