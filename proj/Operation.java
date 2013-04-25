@@ -74,6 +74,10 @@ public class Operation {
         return operations;
     }
 
+    public static boolean supports(String commandName) {
+        return operations.containsKey(commandName);
+    }
+
     @Dispatcher(proc=CreateUserProcedure.class, desc="createUser username")
     public static Object[] createUser(List<String> args) {
         assert args.size() == 1;

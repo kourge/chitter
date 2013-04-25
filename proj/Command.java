@@ -67,6 +67,15 @@ public class Command {
         return commands;
     }
 
+    public static boolean supports(String commandName) {
+        for (String supportedCommand : commands) {
+            if (commandName.equals(supportedCommand)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Dispatcher({ "create", "exists", "read", "currentVersion", "delete" })
     public static Invocation dispatchUnary(String command, String args) {
         String filename = (new Scanner(args)).next();
