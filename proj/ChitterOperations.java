@@ -1,6 +1,8 @@
 import java.io.*;
+import java.util.Collections;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ChitterOperations {
@@ -42,7 +44,7 @@ public class ChitterOperations {
             return false;
         }
 
-        String content = String.format("%d", 0);
+        String content = String.format("%d", 0L);
 
         long version = fs.currentVersion(userFn);
         userV = fs.overwriteIfNotChanged(userFn, content.getBytes(), version);
@@ -178,16 +180,58 @@ public class ChitterOperations {
         return list;
     }
 
-    public List<Chit> getChitsSince(String username, long timestamp) {
-        List<Chit> list = getChits(username);
-        List<Chit> result = new LinkedList<Chit>();
+    public List<Pair<String, Long>> getFollowings(String username) {
+        String followingFn = "following:" + username;
+        List<Pair<String, Long>> list = new LinkedList<Pair<String, Long>>();
 
-        for (Chit chit : list) {
-            if (chit.getTimestamp() > timestamp) {
-                result.add(chit);
+        Pair<byte[], Long> result = fs.read(followingFn);
+        if (result == null) {
+            return null;
+        }
+
+        Scanner scanner = new Scanner(new String(result.first()));
+        while (scanner.hasNextLine()) {
+            String followed = scanner.next();
+            long timestamp = scanner.nextLong();
+            list.add(Pair.of(followed, timestamp));
+        }
+
+        return list;
+    }
+
+    public List<Chit> getTimeline(String username) {
+        List<Chit> list = new ArrayList<Chit>();
+
+        String userFn = "users:" + username;
+        Pair<byte[], Long> result = fs.read(userFn);
+        if (result == null) {
+            return null;
+        }
+
+        Scanner scanner = new Scanner(new String(result.first()));
+        long timestamp = scanner.nextLong();
+
+        List<Pair<String, Long>> followings = getFollowings(username);
+        for (Pair<String, Long> following : followings) {
+            List<Chit> chits = getChits(following.first());
+            if (chits != null) {
+                long cutoff = Math.max(following.second(), timestamp);
+                for (Chit chit : chits) {
+                    if (chit.getTimestamp() > cutoff) {
+                        list.add(chit);
+                    }
+                }
             }
         }
 
-        return result;
+        timestamp = System.currentTimeMillis();
+        byte[] payload = Long.toString(timestamp).getBytes();
+        long version = fs.overwriteIfNotChanged(userFn, payload, -1);
+        if (version == -1) {
+            ;
+        }
+
+        Collections.sort(list, new Chit.Comparator());
+        return list;
     }
 }
