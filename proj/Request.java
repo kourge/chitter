@@ -46,7 +46,7 @@ public class Request implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("<Req dest=%d seq=%d %s", this.dest, this.seq, this.iv);
+        return String.format("<Req dest=%d seq=%d %s>", this.dest, this.seq, this.iv);
     }
 
     @Override
