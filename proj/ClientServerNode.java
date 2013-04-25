@@ -1,5 +1,8 @@
 import java.util.*;
 import java.io.*;
+import edu.washington.cs.cse490h.lib.Callback;
+import edu.washington.cs.cse490h.lib.Utility;
+import java.lang.reflect.Method;
 
 public abstract class ClientServerNode extends RIONode {
     protected @interface Client {}
@@ -10,6 +13,7 @@ public abstract class ClientServerNode extends RIONode {
     @Client protected Queue<Request> sendQueue;
     @Client protected Queue<Request> recvQueue;
     @Client protected Map<Request, Request> pendingRequests;
+    @Client protected byte[] rpcPayload;
 
     public ClientServerNode() {
         fs = new FSCommands(this);
@@ -66,16 +70,22 @@ public abstract class ClientServerNode extends RIONode {
             return;
         }
 
-        byte[] out = {};
+        //byte[] out = {};
         try {
-            out = Serialization.encode(req);
+            rpcPayload = Serialization.encode(req);
         } catch (Serialization.EncodingException e) {
             logOutput("Failed to encode request.");
         }
 
-        if (out.length != 0) {
-            RIOSend(req.getDestination(), Protocol.CHITTER_RPC_REQUEST, out);
+        if (rpcPayload.length != 0) {
+            RIOSend(req.getDestination(), Protocol.CHITTER_RPC_REQUEST, rpcPayload);
             this.pendingRequests.put(req, req);
+            try {
+                Method onTimeoutMethod = Callback.getMethod("onRPCTimeout", this,
+                    new String[]{ "Request" });
+                addTimeout(new Callback(onTimeoutMethod, this, new Object[]
+                    { req }), 5);
+            } catch (Exception e) {}
         }
     }
 
@@ -91,6 +101,9 @@ public abstract class ClientServerNode extends RIONode {
             try {
                 request.getInvocation().setReturnValue(req.getInvocation().getReturnValue());
                 request.complete();
+                if (!hasOustandingRequests()) {
+                    onCommandCompletion();
+                }
             } catch (InvocationException e) {
                 logError("Failed to invoke onComplete callback " + request.getOnComplete().getMethodName());
             }
@@ -133,7 +146,25 @@ public abstract class ClientServerNode extends RIONode {
         stream.format("Node %d %s: %s\n", addr, method, output);
     }
 
-    public boolean hasOustandingRequests() {
+    @Client public boolean hasOustandingRequests() {
         return !this.pendingRequests.isEmpty();
     }
+
+    /**
+     * Resend an RPC that we didn't get a reply from in time
+     *  */
+    @Client public void onRPCTimeout(Request req) {
+        if (pendingRequests.containsKey(req)) {
+            int addr = req.getDestination();
+            RIOSend(addr, Protocol.CHITTER_RPC_REQUEST, rpcPayload);
+            try {
+                Method onTimeoutMethod = Callback.getMethod("onRPCTimeout", this,
+                    new String[]{ "Request" });
+                addTimeout(new Callback(onTimeoutMethod, this, new Object[]
+                    { req }), 5);
+            } catch (Exception e) {}
+        }
+    }
+
+    @Client public abstract void onCommandCompletion();
 }
