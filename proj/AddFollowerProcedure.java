@@ -9,10 +9,10 @@ public class AddFollowerProcedure extends ChitterProcedure {
     private String followingFn;
 
     public AddFollowerProcedure(
-        ClientServerNode node, Invocation onComplete,
+        ClientServerNode node, Invocation onComplete, int destination,
         String username, String follower
     ) {
-        populate(node, onComplete);
+        populate(node, onComplete, destination);
 
         checkUsername(username);
         checkUsername(follower);

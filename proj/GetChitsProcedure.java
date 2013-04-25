@@ -11,10 +11,10 @@ public class GetChitsProcedure extends ChitterProcedure {
     private String tweetsFn;
 
     public GetChitsProcedure(
-        ClientServerNode node, Invocation onComplete,
+        ClientServerNode node, Invocation onComplete, int destination,
         String username
     ) {
-        populate(node, onComplete);
+        populate(node, onComplete, destination);
 
         checkUsername(username);
 
