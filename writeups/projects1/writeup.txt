@@ -94,4 +94,7 @@ Simple Usage examples:
     Run sim_chitter.sh to run simple filesystem calls (create, write, etc)
     Run sim_chitter2.sh to run simple twitter operations (create a couple users,
         follow, tweet)
-    
+    Use the following to run a simple interactive console (not super robust just
+        yet...)
+        ./execute.pl -n ChitterNode -s -f 0 -k
+
