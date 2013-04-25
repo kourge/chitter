@@ -1,0 +1,14 @@
+1 createUser james
+1 createUser jon
+1 addFollower james jon
+1 addFollower jon james
+1 chit jon hi im jon
+1 chit james hi im james
+COMPLETE
+1 getChits jon
+COMPLETE
+COMPLETE
+COMPLETE
+COMPLETE
+COMPLETE
+COMPLETE
