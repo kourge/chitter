@@ -160,8 +160,8 @@ public class ChitterNode extends RIONode {
 
     private Command matchFSOperation(String command) {
         Scanner s = new Scanner(command);
-        String cmd = s.next();
         int destination = s.nextInt();
+        String cmd = s.next();
 
         Invocation iv;
         if (cmd.equals("create")
