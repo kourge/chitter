@@ -36,7 +36,7 @@ public class Simulator extends Manager {
      * Base constructor for the Simulator. Does most of the work, but the
      * command input method and failure level should be set before calling this
      * constructor.
-     * 
+     *
      * @param nodeImpl
      *            The Class object for the student's node implementation
      * @param seed
@@ -72,7 +72,7 @@ public class Simulator extends Manager {
 
     /**
      * Constructor for a simulator that takes commands from a file.
-     * 
+     *
      * @param nodeImpl
      *            The Class object for the student's node implementation
      * @param failureGen
@@ -107,7 +107,7 @@ public class Simulator extends Manager {
 
     /**
      * Constructor for a simulator that takes commands from the user.
-     * 
+     *
      * @param nodeImpl
      *            The Class object for the student's node implementation
      * @param failureGen
@@ -222,10 +222,14 @@ public class Simulator extends Manager {
             currentRoundEvents.add(parser.parseLine("start 1"));
             doTimestep(currentRoundEvents);
 
-            // event loop; assume client is node 0 
+            // event loop; assume client is node 0
             Console console = new Console(0, 1, consoleOperationsDescription, true);
             while (true) {
                 currentRoundEvents = new ArrayList<Event>();
+
+                for (int i = 0; i < 15; i++) {
+                    doTimestep(currentRoundEvents);
+                }
 
                 // just in case an exception is thrown or input is null
                 Event ev = null;
@@ -253,7 +257,7 @@ public class Simulator extends Manager {
 
     /**
      * Perform a single simulator time step with a set of events as argument
-     * 
+     *
      * @param currentRoundEvents
      */
     private void doTimestep(ArrayList<Event> currentRoundEvents) {
@@ -293,7 +297,7 @@ public class Simulator extends Manager {
     /**
      * Start up a node, crashed or brand new. If the node is alive, this method
      * will crash it first.
-     * 
+     *
      * @param node
      *            The address at which to start the node
      */
@@ -336,7 +340,7 @@ public class Simulator extends Manager {
     /**
      * Fail a node. This method updates data structures, removes the failed
      * nodes's timeouts and calls its fail() method
-     * 
+     *
      * @param node
      *            The node address to fail
      * @return The exception thrown after calling the fail() method. This is so,
@@ -433,7 +437,7 @@ public class Simulator extends Manager {
     /**
      * Goes through all of the in transit messages and decides whether to drop,
      * delay, or deliver.
-     * 
+     *
      * @param currentRoundEvents
      *            The list of the current round's events that we should add to
      */
@@ -541,7 +545,7 @@ public class Simulator extends Manager {
 
     /**
      * Checks whether to crash any live node or restart any failed node
-     * 
+     *
      * @param currentRoundEvents
      *            The list of the current round's events that we should add to
      */
@@ -607,13 +611,13 @@ public class Simulator extends Manager {
     /**
      * Check to see if any timeouts are supposed to fire during the current time
      * step
-     * 
+     *
      * @param currentRoundEvents
      *            The list of the current round's events that we should add to
      */
     private void checkTimeouts(ArrayList<Event> currentRoundEvents) {
     	currentTimeouts = new HashSet<Timeout>();
-    	
+
         Iterator<Timeout> iter = waitingTOs.iterator();
         while (iter.hasNext()) {
             Timeout to = iter.next();
@@ -629,7 +633,7 @@ public class Simulator extends Manager {
      * Reorders and executes all the events for the current round. Note that
      * commands can be executed in a different order than they appear in the
      * command file!
-     * 
+     *
      * @param currentRoundEvents
      *            The list of the current round's events that we should add to
      */
@@ -694,7 +698,7 @@ public class Simulator extends Manager {
 
     /**
      * Process an event.
-     * 
+     *
      * @param ev
      *            The event that should be processed
      */
@@ -754,7 +758,7 @@ public class Simulator extends Manager {
      * Create a packet and put it on the channel. Crashes in the middle of a
      * broadcast can be modeled by a post-send crash, plus a sequence of dropped
      * messages
-     * 
+     *
      * @param fromNode
      *            The node that is sending the packet
      * @param to
@@ -804,7 +808,7 @@ public class Simulator extends Manager {
 
     /**
      * Actually deliver an in transit packet to its intended destination.
-     * 
+     *
      * @param destAddr
      *            The address of the recipient
      * @param destNode
@@ -835,7 +839,7 @@ public class Simulator extends Manager {
 
     /**
      * Sends command to the specified node
-     * 
+     *
      * @param nodeAddr
      *            Address of the node to whom the message should be sent
      * @param msg
@@ -859,7 +863,7 @@ public class Simulator extends Manager {
 
     /**
      * Check if the address is valid
-     * 
+     *
      * @param addr
      *            The address to check
      * @return true if the address is valid, false otherwise
@@ -872,7 +876,7 @@ public class Simulator extends Manager {
      * Check whether a given node is live and therefore valid to give msgs/cmds.
      * Additionally, an error message will print out if the address itself is
      * invalid.
-     * 
+     *
      * @param nodeAddr
      *            The node for which we want to check validity
      * @return true If the node is alive, false if not.
@@ -927,7 +931,7 @@ public class Simulator extends Manager {
     /**
      * Log the event in the synoptic log using the simulator's global logical
      * ordering with a node field.
-     * 
+     *
      * @param node
      *            node generating the event
      * @param eventStr
@@ -946,7 +950,7 @@ public class Simulator extends Manager {
      * Log the event in the synoptic log using the simulator's global logical
      * ordering, and call super.logEvent to log the event using the implicit
      * partial ordering.
-     * 
+     *
      * @param node
      *            node generating the event
      * @param eventStr
@@ -965,7 +969,7 @@ public class Simulator extends Manager {
     /**
      * Logs a simulator event across ALL the simulated nodes. The TIMESTEP event
      * is of this form -- its reported for every node that is simulated.
-     * 
+     *
      * @param eventStr
      *            the event string description of the event
      */

@@ -38,6 +38,17 @@ public abstract class Node {
         return suppressOutput;
     }
 
+    // Node has a reference to the console
+    protected Console console;
+
+    public void setConsole(Console console) {
+        this.console = console;
+    }
+
+    public Console getConsole() {
+        return console;
+    }
+
 	/**
 	 * Special error that is thrown when fail() is called. It is an unchecked
 	 * exception, which allows us to interrupt execution of the node opaquely.
