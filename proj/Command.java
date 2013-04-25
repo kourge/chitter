@@ -61,7 +61,7 @@ public class Command {
                 }
             }
         }
-        commands = list.toArray(commands);
+        commands = list.toArray(new String[] {});
     }
     public static String[] getCommands() {
         return commands;
