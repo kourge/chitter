@@ -3,15 +3,12 @@ start 1
 time
 0 1 create foo.txt
 time
-fail 0
 time
 0 1 exists foo.txt
 time
-fail 1
 time
 0 1 overwriteIfNotChanged foo.txt -1 "YO"
 time
-fail 1
 time
 0 1 read foo.txt
 time

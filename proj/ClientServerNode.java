@@ -77,7 +77,7 @@ public abstract class ClientServerNode extends RIONode {
         }
 
         if (out.length != 0) {
-            RIOSend(req.getDestination(), Protocol.CHITTER_RPC_REPLY, out);
+            RIOSend(req.getDestination(), Protocol.CHITTER_RPC_REQUEST, out);
             this.pendingRequests.put(req, req);
         }
     }
