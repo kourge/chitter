@@ -1,11 +1,11 @@
 import edu.washington.cs.cse490h.lib.Node;
 
 public abstract class Procedure {
-    protected Node node;
+    protected ClientServerNode node;
     protected Invocation onComplete;
     private boolean isComplete;
 
-    protected void populate(Node node, Invocation onComplete) {
+    protected void populate(ClientServerNode node, Invocation onComplete) {
         this.node = node;
         this.onComplete = onComplete;
     }

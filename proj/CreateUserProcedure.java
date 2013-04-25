@@ -8,7 +8,7 @@ public class CreateUserProcedure extends ChitterProcedure {
     private String userFn;
 
     public CreateUserProcedure(
-        Node node, Invocation onComplete,
+        ClientServerNode node, Invocation onComplete,
         String username
     ) {
         populate(node, onComplete);

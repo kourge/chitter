@@ -11,15 +11,11 @@ import edu.washington.cs.cse490h.lib.PersistentStorageOutputStream;
 import edu.washington.cs.cse490h.lib.Utility;
 
 public class FSOperations {
+    private ClientServerNode node;
 
-    private ChitterNode node;
-
-    public FSOperations(ChitterNode n) {
+    public FSOperations(ClientServerNode n) {
         node = n;
     }
-
-    //-------------------------------------
-    // basic operations offered via RPC:
 
     /** Create a file by name, return version number */
     public long create(String filename) {
@@ -132,7 +128,4 @@ public class FSOperations {
 
         return true;
     }
-
-    //
-    //-------------------------------------
 }

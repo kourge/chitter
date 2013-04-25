@@ -5,20 +5,20 @@ import java.util.Arrays;
 import edu.washington.cs.cse490h.lib.Callback;
 
 /**
- * Encapsulates the invocation of a Java method, divorced from whatever class
- * in which said method may be defined.
+ * Encapsulates the invocation of a Java method, potentially divorced from
+ * whatever class in which said method may be defined.
  *
- * The only valid way to instantiate this class is to use the static method
- * `of`, which takes the class in which a method is defined and the name of the
+ * A valid way to instantiate this class is to use the static method `of`,
+ * which takes the class in which a method is defined and the name of the
  * method. Useful runtime information crucial for invocation via reflection
  * is automatically and naively extracted. Thus, an Invocation cannot be used
  * with overloaded methods.
  *
- * The actual invocation can be performed by calling `invokeOn`, which returns
- * the result of the invocation. This result can also be retrieved through
- * the `getReturnValue` method. Take caution and make sure that the method
- * signatures match when passing arguments. Nasal demons may occur if this
- * caution is not taken.
+ * Another valid static constructor is `on`, which also takes an invocation
+ * target. In this sense, the constructed Invocation is equivalent to a
+ * Callback. In fact, `toCallback` can be called to perform the conversion.
+ * The static constructor `call` is the constructor `on` chained with
+ * `toCallback`. It provides a cleaner way of instantiating a Callback object.
  *
  * This class is fully serializable.
  */

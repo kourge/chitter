@@ -9,7 +9,7 @@ public class ChitProcedure extends ChitterProcedure {
     private String tweetsFn;
 
     public ChitProcedure(
-        Node node, Invocation onComplete,
+        ClientServerNode node, Invocation onComplete,
         String username, String text
     ) {
         populate(node, onComplete);

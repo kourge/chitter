@@ -1,31 +1,84 @@
+import java.util.Scanner;
+import java.util.List;
+import java.util.ArrayList;
 import java.lang.reflect.Method;
-import java.util.*;
-import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.annotation.*;
 
-import edu.washington.cs.cse490h.lib.Callback;
-import edu.washington.cs.cse490h.lib.Node;
-import edu.washington.cs.cse490h.lib.PersistentStorageReader;
-import edu.washington.cs.cse490h.lib.PersistentStorageWriter;
-import edu.washington.cs.cse490h.lib.Utility;
+public class Command {
+    private Command() {}
 
-
-/** A command object, composed of a series of RPCs and application
- *  logic. */
-public abstract class Command {
-    
-    protected ChitterNode node;
-    
-    public Command(ChitterNode n) {
-        this.node = n;
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    private @interface Dispatcher {
+        String[] value();
     }
 
-    /** update our state, given most recent RPC results (nulls indicate
-     *  failed RPCs) */
-    public abstract void execute(Queue<Pair<Invocation, Integer>> results);
+    public static Request asRequest(String command) {
+        Scanner scanner = new Scanner(command);
 
-    /** Should return true iff it 100% sucessfully completed */
-    public abstract boolean hasCompleted();
+        int destination = scanner.nextInt();
+        String commandName = scanner.next();
+        List<String> args = new ArrayList<String>();
+        while (scanner.hasNext()) {
+            args.add(scanner.next());
+        }
 
-    /** Should return true if an RPC failed or some other error condition */
-    public abstract boolean hasFailed();
+        Method method = methodForCommand(commandName);
+        if (method == null) {
+            return null;
+        }
+
+        try {
+            Invocation iv = (Invocation)method.invoke(null, commandName, args);
+            return Request.to(destination, iv, null);
+        } catch (IllegalAccessException e) {
+            return null;
+        } catch (InvocationTargetException e) {
+            return null;
+        }
+    }
+
+    private static Method methodForCommand(String command) {
+        for (Method method : Command.class.getMethods()) {
+            if (method.isAnnotationPresent(Dispatcher.class)) {
+                Dispatcher dispatcher = method.getAnnotation(Dispatcher.class);
+                for (String supportedCommand : dispatcher.value()) {
+                    if (supportedCommand.equals(command)) {
+                        return method;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Dispatcher({ "create", "exists", "read", "currentVersion", "delete" })
+    public static Invocation dispatchUnary(String command, List<String> args) {
+        assert args.size() == 1;
+        String filename = args.get(0);
+        return Invocation.of(FSOperations.class, command, filename);
+    }
+
+    @Dispatcher("hasChanged")
+    public static Invocation dispatchBinary(String command, List<String> args) {
+        assert args.size() == 2;
+        String filename = args.get(0);
+        long version = Long.parseLong(args.get(1));
+        return Invocation.of(FSOperations.class, command, filename, version);
+    }
+
+    @Dispatcher({ "appendIfNotChanged", "overwriteIfNotChanged" })
+    public static Invocation dispatchRest(String command, List<String> args) {
+        String filename = args.get(0);
+        long version = Long.parseLong(args.get(1));
+
+        StringBuffer payload = new StringBuffer();
+        for (int i = 0; i < args.size(); i++) {
+            payload.append(args.get(i));
+        }
+
+        byte[] data = payload.toString().getBytes();
+        return Invocation.of(FSOperations.class, command, data, version);
+    }
 }
