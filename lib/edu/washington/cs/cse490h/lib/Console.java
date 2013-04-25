@@ -17,12 +17,15 @@ public class Console {
     private Set<String> opCommands;
     private Set<String> auxCommands = new HashSet<String>() {{
         add("help");
+        add("login");
+        add("logout");
         add("echo");
         add("exit");
     }};
     private Map<String, String> descMap;
     private Boolean isSimulator;
     private ConsoleReader console;
+    private boolean loggedIn;
 
     public Console(int clientAddr, int serverAddr, Map<String, String> consoleOperationsDescription) {
         this(clientAddr, serverAddr, consoleOperationsDescription, false);
@@ -32,8 +35,11 @@ public class Console {
         this.clientAddr = clientAddr;
         this.serverAddr = serverAddr;
         descMap = new HashMap<String, String>(consoleOperationsDescription);
-        descMap.put("echo", "Echoes text");
-        descMap.put("exit", "Exits the console");
+        descMap.put("help", "help <optional command>");
+        descMap.put("login", "login username");
+        descMap.put("logout", "logout");
+        descMap.put("echo", "echo text");
+        descMap.put("exit", "exit");
 
         this.isSimulator = isSimulator;
 
@@ -93,6 +99,8 @@ public class Console {
             if (cmd[0].equals("help")) {
                 help(cmd);
                 return "";
+            } else if(cmd[0].equals("login") || cmd[0].equals("logout")) {
+                System.out.println("This command is currently not supported.");
             } else {
                 return line;
             }
@@ -103,6 +111,25 @@ public class Console {
     }
 
     private void help(String[] cmd) {
-        System.out.println("helping you");
+        if (cmd.length > 0) {
+            System.out.println();
+
+            if (cmd.length == 1) {
+                System.out.println("***Usage***");
+                for (String helpItem : descMap.keySet()) {
+                    System.out.println(helpItem + ": " + descMap.get(helpItem));
+                }
+            } else {
+                String desc = descMap.get(cmd[1]);
+                if (desc != null) {
+                    System.out.println("***Usage***");
+                    System.out.println(cmd[1] + ": " + desc);
+                } else {
+                    System.out.println(cmd[1] + " not found");
+                }
+            }
+
+            System.out.println();
+        }
     }
 }
