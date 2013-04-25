@@ -1,23 +1,23 @@
 start 0
 start 1
 time
-0 create 1 foo.txt
+0 1 create foo.txt
 time
 fail 0
 time
-0 exists 1 foo.txt
+0 1 exists foo.txt
 time
 fail 1
 time
-0 overwriteIfNotChanged 1 foo.txt -1 "YO"
+0 1 overwriteIfNotChanged foo.txt -1 "YO"
 time
 fail 1
 time
-0 read 1 foo.txt
+0 1 read foo.txt
 time
-0 appendIfNotChanged 1 foo.txt -1 "LO"
+0 1 appendIfNotChanged foo.txt -1 "LO"
 time
-0 read 1 foo.txt
+0 1 read foo.txt
 time
 time
 time
