@@ -12,8 +12,8 @@ public class ChitterNode extends ClientServerNode {
     // override the default failure rates (never fail for now)
     public static double getFailureRate() { return 0.0; }
     public static double getRecoveryRate() { return 1.0; }
-    public static double getDropRate() { return 0.0; }
-    public static double getDelayRate() { return 0.0; }
+    public static double getDropRate() { return 0.2; }
+    public static double getDelayRate() { return 0.2; }
 
     public static int NUM_NODES = 2;// client and server only for now
     public static int TIMEOUT = 5;

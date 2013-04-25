@@ -1,0 +1,48 @@
+start 0
+start 1
+time
+time
+0 1 createUser jon
+0 1 createUser james
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+0 1 addFollower jon james
+0 1 addFollower james jon
+time
+time
+0 1 chit jon hi im jon
+time
+0 1 chit james hi im james
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+0 1 getChits jon
+time
