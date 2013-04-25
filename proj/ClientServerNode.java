@@ -5,9 +5,6 @@ public abstract class ClientServerNode extends RIONode {
     protected @interface Client {}
     protected @interface Server {}
 
-    // running in console mode, manager will suppress logging
-    public boolean suppressOutput;
-
     @Server protected FSCommands fs;
 
     @Client protected Queue<Request> sendQueue;

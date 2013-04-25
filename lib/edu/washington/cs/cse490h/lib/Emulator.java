@@ -469,11 +469,7 @@ public class Emulator extends Manager {
 		// start up the node
 		try {
 			node = nodeImpl.newInstance();
-            try {
-                nodeImpl.getField("suppressOutput").set(node, cmdInputType == InputType.CONSOLE);
-            } catch (Exception e) {
-                // DO NOTHING
-            }
+            node.setOutputSuppressionValue(cmdInputType == InputType.CONSOLE);
 		} catch (Exception e) {
 			System.err.println("Error while constructing node: " + e);
 			killServer();

@@ -27,6 +27,17 @@ public abstract class Node {
 
     public static Map<String, String> consoleOperationsDescription;
 
+    // STDOUT should be suppressed when in console mode
+    protected boolean suppressOutput;
+
+    public void setOutputSuppressionValue(boolean value) {
+        suppressOutput = value;
+    }
+
+    public boolean getOutputSuppressionValue() {
+        return suppressOutput;
+    }
+
 	/**
 	 * Special error that is thrown when fail() is called. It is an unchecked
 	 * exception, which allows us to interrupt execution of the node opaquely.
