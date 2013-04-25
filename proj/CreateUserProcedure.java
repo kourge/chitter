@@ -22,7 +22,7 @@ public class CreateUserProcedure extends ChitterProcedure {
 
     public void call() throws Exception {
         doThen(
-            Invocation.of(FSOperations.class, "create", tweetsFn),
+            Invocation.of(fs, "create", tweetsFn),
             Invocation.on(this, "setTweetsFn")
         );
     }
@@ -36,7 +36,7 @@ public class CreateUserProcedure extends ChitterProcedure {
         }
 
         doThen(
-            Invocation.of(FSOperations.class, "create", followingFn),
+            Invocation.of(fs, "create", followingFn),
             Invocation.on(this, "setFollowingV")
         );
     }
@@ -50,7 +50,7 @@ public class CreateUserProcedure extends ChitterProcedure {
         }
 
         doThen(
-            Invocation.of(FSOperations.class, "create", userFn),
+            Invocation.of(fs, "create", userFn),
             Invocation.on(this, "setUserV")
         );
     }
@@ -64,7 +64,7 @@ public class CreateUserProcedure extends ChitterProcedure {
         }
 
         doThen(
-            Invocation.of(FSOperations.class, "currentVersion", userFn),
+            Invocation.of(fs, "currentVersion", userFn),
             Invocation.on(this, "setVersion")
         );
     }
@@ -76,7 +76,7 @@ public class CreateUserProcedure extends ChitterProcedure {
 
         doThen(
             Invocation.of(
-                FSOperations.class, "overwriteIfNotChanged",
+                fs, "overwriteIfNotChanged",
                 userFn, content.getBytes(), version
             ),
             Invocation.on(this, "setUserV2")

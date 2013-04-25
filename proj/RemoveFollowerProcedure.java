@@ -23,7 +23,7 @@ public class RemoveFollowerProcedure extends ChitterProcedure {
 
     public void call() throws Exception {
         doThen(
-            Invocation.of(FSOperations.class, "read", followingFn),
+            Invocation.of(fs, "read", followingFn),
             Invocation.on(this, "setResult")
         );
     }
@@ -62,7 +62,7 @@ public class RemoveFollowerProcedure extends ChitterProcedure {
         
         doThen(
             Invocation.of(
-                FSOperations.class, "overwriteIfNotChanged",
+                fs, "overwriteIfNotChanged",
                 followingFn, out.toString().getBytes(), version
             ),
             Invocation.on(this, "setFollowingV")

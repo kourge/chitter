@@ -8,14 +8,14 @@ public abstract class ClientServerNode extends RIONode {
     // running in console mode, manager will suppress logging
     public boolean suppressOutput;
 
-    @Server protected FSOperations fsOps;
+    @Server protected FSCommands fs;
 
     @Client protected Queue<Request> sendQueue;
     @Client protected Queue<Request> recvQueue;
     @Client protected Map<Request, Request> pendingRequests;
 
     public ClientServerNode() {
-        fsOps = new FSOperations(this);
+        fs = new FSCommands(this);
 
         sendQueue = new LinkedList<Request>();
         recvQueue = new LinkedList<Request>();
@@ -28,7 +28,7 @@ public abstract class ClientServerNode extends RIONode {
 
         try {
             req = (Request)Serialization.decode(msg);
-            req.getInvocation().invokeOn(fsOps);
+            req.getInvocation().invokeOn(fs);
             out = Serialization.encode(req);
         } catch (Serialization.DecodingException e) {
             logOutput("Failed to decode RPC request.");

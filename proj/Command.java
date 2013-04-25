@@ -57,7 +57,7 @@ public class Command {
     public static Invocation dispatchUnary(String command, List<String> args) {
         assert args.size() == 1;
         String filename = args.get(0);
-        return Invocation.of(FSOperations.class, command, filename);
+        return Invocation.of(FSCommands.class, command, filename);
     }
 
     @Dispatcher("hasChanged")
@@ -65,7 +65,7 @@ public class Command {
         assert args.size() == 2;
         String filename = args.get(0);
         long version = Long.parseLong(args.get(1));
-        return Invocation.of(FSOperations.class, command, filename, version);
+        return Invocation.of(FSCommands.class, command, filename, version);
     }
 
     @Dispatcher({ "appendIfNotChanged", "overwriteIfNotChanged" })
@@ -79,6 +79,6 @@ public class Command {
         }
 
         byte[] data = payload.toString().getBytes();
-        return Invocation.of(FSOperations.class, command, data, version);
+        return Invocation.of(FSCommands.class, command, data, version);
     }
 }

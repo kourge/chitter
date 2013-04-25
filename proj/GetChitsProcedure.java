@@ -24,7 +24,7 @@ public class GetChitsProcedure extends ChitterProcedure {
 
     public void call() throws Exception {
         doThen(
-            Invocation.of(FSOperations.class, "read", tweetsFn),
+            Invocation.of(fs, "read", tweetsFn),
             Invocation.on(this, "setResult")
         );
     }

@@ -23,7 +23,7 @@ public class AddFollowerProcedure extends ChitterProcedure {
 
     public void call() throws Exception {
         doThen(
-            Invocation.of(FSOperations.class, "read", followingFn),
+            Invocation.of(fs, "read", followingFn),
             Invocation.on(this, "setResult")
         );
     }
@@ -58,7 +58,7 @@ public class AddFollowerProcedure extends ChitterProcedure {
         
         doThen(
             Invocation.of(
-                FSOperations.class, "appendIfNotChanged",
+                fs, "appendIfNotChanged",
                 followingFn, line.getBytes(), version
             ),
             Invocation.on(this, "setFollowingV")

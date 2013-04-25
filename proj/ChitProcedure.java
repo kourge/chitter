@@ -29,7 +29,7 @@ public class ChitProcedure extends ChitterProcedure {
 
     public void call() throws Exception {
         doThen(
-            Invocation.of(FSOperations.class, "currentVersion", tweetsFn),
+            Invocation.of(fs, "currentVersion", tweetsFn),
             Invocation.on(this, "setVersion")
         );
     }
@@ -40,7 +40,7 @@ public class ChitProcedure extends ChitterProcedure {
 
         doThen(
             Invocation.of(
-                FSOperations.class, "appendIfNotChanged",
+                fs, "appendIfNotChanged",
                 tweetsFn, line.getBytes(), version
             ),
             Invocation.on(this, "setTweetsV")

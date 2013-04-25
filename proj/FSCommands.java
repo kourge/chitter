@@ -10,10 +10,10 @@ import edu.washington.cs.cse490h.lib.PersistentStorageInputStream;
 import edu.washington.cs.cse490h.lib.PersistentStorageOutputStream;
 import edu.washington.cs.cse490h.lib.Utility;
 
-public class FSOperations {
+public class FSCommands {
     private ClientServerNode node;
 
-    public FSOperations(ClientServerNode n) {
+    public FSCommands(ClientServerNode n) {
         node = n;
     }
 
