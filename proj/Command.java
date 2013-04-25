@@ -74,11 +74,11 @@ public class Command {
         long version = Long.parseLong(args.get(1));
 
         StringBuffer payload = new StringBuffer();
-        for (int i = 0; i < args.size(); i++) {
+        for (int i = 2; i < args.size(); i++) {
             payload.append(args.get(i));
         }
 
         byte[] data = payload.toString().getBytes();
-        return Invocation.of(FSCommands.class, command, data, version);
+        return Invocation.of(FSCommands.class, command, filename, data, version);
     }
 }
