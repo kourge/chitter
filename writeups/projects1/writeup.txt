@@ -1,0 +1,100 @@
+Riley Adams, Suman Jandhyala, Wilson Lee
+
+CSE 452 Project 1 Writeup (adapted from our design document)
+
+See the other files in this directory for example output, and
+filesystem_state/ for a sample storage state from a run of our
+application.
+
+Message Layer
+To make the message layer handle node failures we will make it stop resending
+un-acknowledged messages after some cutoff point with exponential backoff (so
+if the node we're sending to fails we don't keep infinitely sending messages
+nor do we continuously hammer the node with a torrent of messages).
+
+When a node fails its sequence number and related state will be incorrect,
+so to facilitate making sure this is correct we establish simple "sessions"
+between nodes: basically, each node gets a unique UUID on startup, and all
+packets sent to it must contain that UUID (so if a node fails, gets a new ID
+and receives an old packet, it will know when it sees the old packet's ID is
+different from its own, in knows to initiate a new session). When a session is
+initiated, nodes exchange UUIDs and reset their sequence numbers, also, any
+un-acked "in-flight" packets at the start of a session get renumbered so that
+they will be accepted by the new session.
+
+Named File Storage
+We will implement RPC by sending a serialized Java object containing the RPC
+name and parameters through the provided messaging framework.
+
+Here is a high level (pseudo-C) overview of the basic RPC calls and their signatures:
+
+These first few are just standard file operations, no surprises here:
+
+typedef int version_t;
+version_t create(string filename);
+bool exists(string filename);
+(bool, byte[]) read(string filename);
+version_t appendIfChanged(string filename, byte[] data, version_t version);
+version_t overwriteIfChanged(string filename, byte[] data, version_t version);
+bool hasChanged(string filename, version_t version);
+version_t getVersion(string filename);
+bool delete(string filename);
+
+Twitter Operations Overview:
+
+Necessary files:
+tweets:{username}, each file contains one tweet per line, storing timestamp
+    and text
+following:{username}, each file contains one user per line, each someone the
+    user is following, storing timestamp of when user followed someone on each line
+users:{username}, each file contains
+    imestamp of last posts checked
+
+Operation overview
+Create a user - given a username `foo`, and a password `pass`:
+    create files:
+    `tweets/foo`
+    empty to begin with
+    `following/foo`
+    empty to begin with
+    `users/foo`
+    contains 0 for timestamp of last posts check
+Login/logout as user -
+    All we really need to do is verify the username exists, login state is
+    stored in the client interface
+Post to a twitter stream -
+    given a username `foo` and a tweet, append to file `tweets/foo`
+Add/delete a follower to/from a twitter stream -
+    given a user `bar` corresponding to some twitter stream and a follower `foo`
+    add: append bar to the file following/foo
+    delete: get following/foo, and rewrite it to the server without bar
+Read all (unread) posts that a user is following -
+    given a username `foo`, read and fetch timestamp of last posts checked,
+    fetch all people that the user is following, fetch all of their tweets,
+    and filter out any tweet that was made before the timestamp of the last
+    time the user checked unread posts or before the timestamp of when the
+    user started following the tweet's owner
+
+Handling Failures:
+On the client we log whenever we get a command (say, "createUser"), and then
+we log when a command completes. Upon recovery we see which commands were not
+completed and resend them. We take care to ensure that repeating a complete
+operation is acceptable, so that repeating a command that failed at any stage
+is recoverable simply by restarting it.
+
+We use "command" above to refer to at least one RPC plus some logic,
+so a very simple command would simply be a file system operation, but a high
+level twitter operation will be a chain of RPCs with logic interspersed. We
+implement these compound operations using continuation-passing-style, (basically,
+an rpc is sent with an associated callback, when the rpc returns, its result is
+passed to a callback which may itself spawn another RPC and so on, until the full
+operation is complete).
+
+Simple Usage examples:
+    Run sim_chitter.sh to run simple filesystem calls (create, write, etc)
+    Run sim_chitter2.sh to run simple twitter operations (create a couple users,
+        follow, tweet)
+    Use the following to run a simple interactive console (not super robust just
+        yet...)
+        ./execute.pl -n ChitterNode -s -f 0 -k
+

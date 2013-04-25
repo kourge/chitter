@@ -1,0 +1,1155 @@
+Starting simulation with seed: 1366932051327
+Warning: unable to open logfile '' for writing.
+...continuing
+Warning: unable to open logfile '' for writing.
+...continuing
+
+Time: 0
+Executing with order: 
+START 0
+Node 0 ChitterNode::start: Started fresh.
+START 1
+Node 1 ChitterNode::start: Started fresh.
+
+Time: 1
+Executing with order: 
+
+Time: 2
+Executing with order: 
+COMMAND 0 executes 1 createUser james
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=659240438170115373 (::create[class java.lang.String][tweets:james] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+COMMAND 0 executes 1 createUser jon
+
+Time: 3
+Executing with order: 
+COMMAND 0 executes 1 addFollower james jon
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+COMMAND 0 executes 1 addFollower jon james
+
+Time: 4
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 2 contents: -7631198951999648643
+
+Time: 5
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 3 contents: -4947299389475831308
+COMMAND 0 executes 1 chit jon hi im jon
+
+Time: 6
+Executing with order: 
+COMMAND 0 executes 1 chit james hi im james
+
+Time: 7
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@7a3570b0) at 7
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@4a79717e) at 7
+
+Time: 8
+Executing with order: 
+TIMEOUT 1: onTimeoutSession([Ljava.lang.Object;@5289cf1e) at 8
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+
+Time: 9
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=-2144295462416190065 (::create[class java.lang.String][following:james] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+
+Time: 10
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+
+Time: 11
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=3837875982518836820 (::create[class java.lang.String][users:james] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+
+Time: 12
+Executing with order: 
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@2aca0115) at 12
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@7b112783) at 12
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@23394894) at 12
+
+Time: 13
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@54bb7759) at 13
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@5f989f84) at 13
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=-6324999117438435041 (::currentVersion[class java.lang.String][users:james] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+
+Time: 14
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@10382a9) at 14
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@d7725c4) at 14
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+
+Time: 15
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=4348240783774305950 (::overwriteIfNotChanged[class java.lang.String, class [B, long][users:james, [B@204f80d6, 1366932051000] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@528acf6e) at 15
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 16
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@5b40c281) at 16
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@78a1d1f4) at 16
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 17
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=7106353227643647232 (::create[class java.lang.String][tweets:jon] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@5c73a7ab) at 17
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@2d04faf8) at 17
+
+Time: 18
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@6d62dbb6) at 18
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@7546c1d4) at 18
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@785f8172) at 18
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@462ba11b) at 18
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+
+Time: 19
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@4d865b28) at 19
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@2fcac6db) at 19
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=7038905041297500281 (::create[class java.lang.String][following:jon] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+
+Time: 20
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+COMMAND 0 executes 1 getChits jon
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@7825d2b2) at 20
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@7b2be1bd) at 20
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@26ee7a14) at 20
+
+Time: 21
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@1be1a408) at 21
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@7ad81784) at 21
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=6229574347521152288 (::create[class java.lang.String][users:jon] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 22
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@1cb8deef) at 22
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@2d342ba4) at 22
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@3c1d332b) at 22
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@210a6ae2) at 22
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 23
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=620715744756782752 (::currentVersion[class java.lang.String][users:jon] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@c0b76fa) at 23
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@44b01d43) at 23
+
+Time: 24
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@2b76e552) at 24
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@ac980c9) at 24
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@851052d) at 24
+
+Time: 25
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=2962437055247202716 (::overwriteIfNotChanged[class java.lang.String, class [B, long][users:jon, [B@159b5217, 1366932051000] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@1a84da23) at 25
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@80d3d6f) at 25
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 26
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@a39ab89) at 26
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@502cb49d) at 26
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@2993a66f) at 26
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+
+Time: 27
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@2d5253d5) at 27
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@77fddc31) at 27
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@3b835282) at 27
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=8900662330553328560 (::read[class java.lang.String][following:jon] -> Pair)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+
+Time: 28
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@418c56d) at 28
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@51b48197) at 28
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@21a80a69) at 28
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@1f4384c2) at 28
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@9c0ec97) at 28
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+
+Time: 29
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@52c05d3b) at 29
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=8557151629748918901 (::appendIfNotChanged[class java.lang.String, class [B, long][following:jon, [B@6766afb3, 1366932051000] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@5975d6ab) at 29
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@4760a26f) at 29
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 30
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@c75e4fc) at 30
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@100c62c8) at 30
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@5464ea66) at 30
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@2d58f9d3) at 30
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 31
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@214a55f2) at 31
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@175093f1) at 31
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=1262546665783004922 (::read[class java.lang.String][following:james] -> Pair)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@68da4b71) at 31
+
+Time: 32
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@7745c859) at 32
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@303020ad) at 32
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@27b15692) at 32
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@6baa9f99) at 32
+
+Time: 33
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@5c07f4ec) at 33
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=-6511271608441855356 (::appendIfNotChanged[class java.lang.String, class [B, long][following:james, [B@e60e128, 1366932051000] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@6581ed9e) at 33
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@35175422) at 33
+
+Time: 34
+Executing with order: 
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@61c80b01) at 34
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@144aa0ce) at 34
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@2f833eca) at 34
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@518f5824) at 34
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+
+Time: 35
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@5f70bea5) at 35
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@62f47396) at 35
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@1ed0af9b) at 35
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=7705957674357070490 (::currentVersion[class java.lang.String][tweets:jon] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 36
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@6542bece) at 36
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@fcfa52) at 36
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@60961dff) at 36
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@5cac6a45) at 36
+
+Time: 37
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@2c19e15c) at 37
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@571a75a2) at 37
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@a210b5b) at 37
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=-7487453186166309461 (::appendIfNotChanged[class java.lang.String, class [B, long][tweets:jon, [B@351563ff, 1366932051000] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@7776cad3) at 37
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 38
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@335856a5) at 38
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@6ca084f8) at 38
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@1e79ed7f) at 38
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@56d73c7a) at 38
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 39
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@647109c4) at 39
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=6625791431150659272 (::currentVersion[class java.lang.String][tweets:james] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@625dcec6) at 39
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@7cb25b9d) at 39
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 40
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@3a56f631) at 40
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@4476128) at 40
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@c9be79a) at 40
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@4f8235ed) at 40
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 41
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@23309e87) at 41
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@4cf7c31d) at 41
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=980755151130777165 (::appendIfNotChanged[class java.lang.String, class [B, long][tweets:james, [B@1e2acc65, 1366932051000] -> long)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@6076ab2f) at 41
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 42
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@26b4e29b) at 42
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@546c585a) at 42
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@151ca803) at 42
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@c5a67c9) at 42
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@353c375) at 42
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 43
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@5488e2dd) at 43
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@66e64686) at 43
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@18203c31) at 43
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@6c4fc156) at 43
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = [<Req dest=1 seq=-7190604595107680659 (::read[class java.lang.String][tweets:jon] -> Pair)>]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@704f459c) at 43
+
+Time: 44
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@97494c8) at 44
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@44d3db51) at 44
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@30e3c624) at 44
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@39e57e8f) at 44
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@9d7fbfb) at 44
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+Node 1 ChitterNode::onRIOReceive: RPC request received.
+Node 1 ClientServerNode::pumpSendQueue: sendQueue = []
+
+Time: 45
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@2f774b9b) at 45
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+Node 0 ClientServerNode::pumpSendQueue: sendQueue = []
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@3295cfbe) at 45
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@979dce4) at 45
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@1f950198) at 45
+
+Time: 46
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@403ef810) at 46
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@66100363) at 46
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@254e8cee) at 46
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@48067064) at 46
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@1ebcda2d) at 46
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 47
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@62da3a1e) at 47
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@651dba45) at 47
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@2b03be0) at 47
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@2af081) at 47
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 48
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@716925b0) at 48
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@2e297ffb) at 48
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@26914f6a) at 48
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@df4cbee) at 48
+TIMEOUT 0: onRPCTimeout([Ljava.lang.Object;@42787d6a) at 48
+
+Time: 49
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@2f8a49e0) at 49
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@1ff82982) at 49
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@5d6d2633) at 49
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@28e70e30) at 49
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 50
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@54520eb) at 50
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@7d742700) at 50
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@54acb158) at 50
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 51
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@76b33d0a) at 51
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@716c9867) at 51
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@1089cc5e) at 51
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 52
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@7e3bc473) at 52
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@5de9ac4) at 52
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@5982bcde) at 52
+
+Time: 53
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@4e513d61) at 53
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@3794d372) at 53
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@bc5fde0) at 53
+
+Time: 54
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@7b2884e0) at 54
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@77ce3fc5) at 54
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@5bcdbf6) at 54
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 55
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@420f9c40) at 55
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@edb4fa2) at 55
+
+Time: 56
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@296f25a7) at 56
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@40110c31) at 56
+
+Time: 57
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@2565a3c2) at 57
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@33e228bc) at 57
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@44e06940) at 57
+
+Time: 58
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@19bb5c09) at 58
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@5b976011) at 58
+
+Time: 59
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@2937d090) at 59
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@f5db314) at 59
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 60
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@9a68ef9) at 60
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@15f48262) at 60
+
+Time: 61
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@68814013) at 61
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@7d95d4fe) at 61
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 62
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@7dc05ffd) at 62
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@60de1b8a) at 62
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@15e232b5) at 62
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 63
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@236acdd1) at 63
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@38ee6681) at 63
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@2b8bbc5a) at 63
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@62facf0b) at 63
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 64
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@d0721b0) at 64
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@4f34b07e) at 64
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@c2f48d2) at 64
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 65
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@7054c4ad) at 65
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@4d3c7378) at 65
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 66
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@5af6ac0b) at 66
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@789934d4) at 66
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 67
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@48082d37) at 67
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@10d09ad3) at 67
+
+Time: 68
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@426295eb) at 68
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@56609959) at 68
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 69
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@5ecd2e33) at 69
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@709446e4) at 69
+
+Time: 70
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@f5e0873) at 70
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@667cbde6) at 70
+
+Time: 71
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@7c2e1f1f) at 71
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@37fd6bea) at 71
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 72
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@48e61a35) at 72
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@7ac2b2f6) at 72
+
+Time: 73
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@69e328e0) at 73
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@4090c06f) at 73
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 74
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@5c1fe88d) at 74
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@32dcb03b) at 74
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 75
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@24148662) at 75
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@3f829e6f) at 75
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 76
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@2980f96c) at 76
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@527736bd) at 76
+
+Time: 77
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@3f3f210f) at 77
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@49938039) at 77
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 78
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@388530b8) at 78
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@30419d05) at 78
+
+Time: 79
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@4026e9f9) at 79
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@3acafb56) at 79
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 80
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@4dd36dfe) at 80
+
+Time: 81
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@786c730) at 81
+
+Time: 82
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@5812f9ee) at 82
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@45d6a56e) at 82
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 83
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@13b06041) at 83
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 84
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@506f9b8e) at 84
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 85
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@75982fc1) at 85
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 86
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@39e4853f) at 86
+
+Time: 87
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@2802bd3a) at 87
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@4bd53f5b) at 87
+
+Time: 88
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@7c138c63) at 88
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@6765f738) at 88
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@5749b290) at 88
+
+Time: 89
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@6855a338) at 89
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@4e4ee70b) at 89
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 90
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@6825c828) at 90
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@877ef83) at 90
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 91
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@1fa12495) at 91
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@c68c26c) at 91
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 92
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@6c01bde4) at 92
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@6659fb21) at 92
+
+Time: 93
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@68ed662d) at 93
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@39cf4a2c) at 93
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 94
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@77addb59) at 94
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@371bed71) at 94
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 95
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@3f9f3736) at 95
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@6de1dadb) at 95
+
+Time: 96
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@4911b910) at 96
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@2a8ceeea) at 96
+
+Time: 97
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@6b687e7c) at 97
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@194835fb) at 97
+
+Time: 98
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@3c01d5a0) at 98
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@1c701a27) at 98
+
+Time: 99
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@53f64158) at 99
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@4c3c2378) at 99
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 100
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@14fdb00d) at 100
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 101
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@3a56860b) at 101
+
+Time: 102
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@4ab122a1) at 102
+
+Time: 103
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@7f033a6f) at 103
+
+Time: 104
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@26c623af) at 104
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 105
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@2e00e753) at 105
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 106
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@18b1aebf) at 106
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 107
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@7c65216) at 107
+
+Time: 108
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@3fb6101e) at 108
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 109
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@1b815bfb) at 109
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 110
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@4b0ea9ba) at 110
+
+Time: 111
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@69d6065) at 111
+
+Time: 112
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@255d17d7) at 112
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@2c8376b) at 112
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 113
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@7eda18ac) at 113
+
+Time: 114
+Executing with order: 
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@455fc40c) at 114
+
+Time: 115
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@2cba5bdb) at 115
+
+Time: 116
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@53343ed0) at 116
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 117
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@470b9279) at 117
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@48bd6a5f) at 117
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 118
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@2c979e8b) at 118
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@1629ce8c) at 118
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@12b754b2) at 118
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 119
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@63b0bdc8) at 119
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@687bc899) at 119
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 120
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@50059a34) at 120
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@1fcef4f7) at 120
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+
+Time: 121
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@579d75ee) at 121
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@22a98932) at 121
+
+Time: 122
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@36d1c778) at 122
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@67eb366) at 122
+
+Time: 123
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@24c0f1ec) at 123
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@774acfcd) at 123
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+
+Time: 124
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@27b62aab) at 124
+DELIVERY Packet: 0->1 protocol: 0 contents: [binary]
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@28ab54eb) at 124
+
+Time: 125
+Executing with order: 
+DELIVERY Packet: 1->0 protocol: 0 contents: [binary]
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@4c53ab04) at 125
+
+Time: 126
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@ee51b2c) at 126
+
+Time: 127
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@66941db6) at 127
+
+Time: 128
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@63cd66ea) at 128
+
+Time: 129
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@326b9c84) at 129
+
+Time: 130
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@75be16f5) at 130
+
+Time: 131
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@7971f189) at 131
+
+Time: 132
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@2d7cec96) at 132
+
+Time: 133
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@4b947496) at 133
+
+Time: 134
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@2880cac9) at 134
+
+Time: 135
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@688a548b) at 135
+
+Time: 136
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@2b5356d5) at 136
+
+Time: 137
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@16e1eea8) at 137
+
+Time: 138
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@3e364641) at 138
+
+Time: 139
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@2f87c55c) at 139
+
+Time: 140
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@42b02928) at 140
+
+Time: 141
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@215f7107) at 141
+
+Time: 142
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@7ab2c6a6) at 142
+
+Time: 143
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@236527f) at 143
+
+Time: 144
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@4a48edb5) at 144
+
+Time: 145
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@3963b3e) at 145
+
+Time: 146
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@50269997) at 146
+
+Time: 147
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@11e7c5cb) at 147
+
+Time: 148
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@2c09505f) at 148
+
+Time: 149
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@362f0d54) at 149
+
+Time: 150
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@16a9255c) at 150
+
+Time: 151
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@25961581) at 151
+
+Time: 152
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@71f1235b) at 152
+
+Time: 153
+Executing with order: 
+TIMEOUT 0: onTimeout([Ljava.lang.Object;@3313beb5) at 153
+
+Time: 154
+Executing with order: 
+TIMEOUT 1: onTimeout([Ljava.lang.Object;@50d17ec3) at 154
+MessageLayer exiting.
+Number of packets sent: 282
+Random Seed: 1366932051327
+0: node
+1: node
