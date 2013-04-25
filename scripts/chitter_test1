@@ -7,12 +7,12 @@ time
 0 1 exists foo.txt
 time
 time
-0 1 overwriteIfNotChanged foo.txt -1 "YO"
+0 1 overwriteIfNotChanged foo.txt -1 YO
 time
 time
 0 1 read foo.txt
 time
-0 1 appendIfNotChanged foo.txt -1 "LO"
+0 1 appendIfNotChanged foo.txt -1 LO
 time
 0 1 read foo.txt
 time
