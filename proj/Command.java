@@ -50,6 +50,23 @@ public class Command {
         return null;
     }
 
+    private static String[] commands;
+    static {
+        List<String> list = new ArrayList<String>();
+        for (Method method : Command.class.getMethods()) {
+            if (method.isAnnotationPresent(Dispatcher.class)) {
+                Dispatcher dispatcher = method.getAnnotation(Dispatcher.class);
+                for (String supportedCommand : dispatcher.value()) {
+                    list.add(supportedCommand);
+                }
+            }
+        }
+        commands = list.toArray(commands);
+    }
+    public static String[] getCommands() {
+        return commands;
+    }
+
     @Dispatcher({ "create", "exists", "read", "currentVersion", "delete" })
     public static Invocation dispatchUnary(String command, String args) {
         String filename = (new Scanner(args)).next();

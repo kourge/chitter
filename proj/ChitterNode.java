@@ -21,7 +21,7 @@ public class ChitterNode extends ClientServerNode {
 
     protected PersistentStorageWriter log;
 
-    public static Map<String, String> consoleOperationsDescription = Operation.getDescriptionMap();
+    public static Map<String, String> consoleOperationsDescription = Operation.getOperations();
 
     /**
      * Create a new node and initialize everything
