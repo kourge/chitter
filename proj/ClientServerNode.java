@@ -86,6 +86,7 @@ public abstract class ClientServerNode extends RIONode {
         }
 
         Request request = this.pendingRequests.get(req);
+        this.pendingRequests.remove(req);
         if (request != null) {
             try {
                 request.getInvocation().setReturnValue(req.getInvocation().getReturnValue());
@@ -130,5 +131,9 @@ public abstract class ClientServerNode extends RIONode {
         }
 
         stream.format("Node %d %s: %s\n", addr, method, output);
+    }
+
+    public boolean hasOustandingRequests() {
+        return !this.pendingRequests.isEmpty();
     }
 }

@@ -22,12 +22,14 @@ public class ChitterNode extends ClientServerNode {
     protected PersistentStorageWriter log;
 
     public static Map<String, String> consoleOperationsDescription = Operation.getOperations();
+    private static Queue<String> pendingCommands;
 
     /**
      * Create a new node and initialize everything
      */
     public ChitterNode() {
         super();
+        pendingCommands = new LinkedList<String>();
     }
 
     /**
@@ -105,22 +107,39 @@ public class ChitterNode extends ClientServerNode {
         queueDirective(command);
     }
 
-    public void queueDirective(String directive) {
-        Scanner scanner = new Scanner(directive);
-        int destination = scanner.nextInt();
-        String directiveName = scanner.next();
-
-        if (Command.supports(directiveName)) {
-            Request req = Command.asRequest(directive);
-            logOutput("request = " + req);
-            sendRPC(req);
-        } else if (Operation.supports(directiveName)) {
+    @Client protected void pumpRecvQueue() {
+        super.pumpRecvQueue();
+        if (!hasOustandingRequests()) {
             try {
-                Operation.performOn(this, directive);
-            } catch (Exception e) {
+                log.write("COMPLETE\n");
+            } catch (IOException e) {}
+            if (!pendingCommands.isEmpty()) {
+                queueDirective(pendingCommands.poll());
             }
         }
-        pumpSendQueue();
+    }
+
+    public void queueDirective(String directive) {
+
+        if (hasOustandingRequests()) {
+            pendingCommands.offer(directive);
+        } else {
+            Scanner scanner = new Scanner(directive);
+            int destination = scanner.nextInt();
+            String directiveName = scanner.next();
+
+            if (Command.supports(directiveName)) {
+                Request req = Command.asRequest(directive);
+                logOutput("request = " + req);
+                sendRPC(req);
+            } else if (Operation.supports(directiveName)) {
+                try {
+                    Operation.performOn(this, directive);
+                } catch (Exception e) {
+                }
+            }
+            pumpSendQueue();
+        }
     }
 
     /**
