@@ -106,11 +106,15 @@ public class ChitterNode extends ClientServerNode {
     }
 
     public void queueDirective(String directive) {
-        if (Command.supports(directive)) {
+        Scanner scanner = new Scanner(directive);
+        int destination = scanner.nextInt();
+        String directiveName = scanner.next();
+
+        if (Command.supports(directiveName)) {
             Request req = Command.asRequest(directive);
             logOutput("request = " + req);
             sendRPC(req);
-        } else if (Operation.supports(directive)) {
+        } else if (Operation.supports(directiveName)) {
             try {
                 Operation.performOn(this, directive);
             } catch (Exception e) {

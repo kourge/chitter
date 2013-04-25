@@ -67,9 +67,9 @@ public class Command {
         return commands;
     }
 
-    public static boolean supports(String command) {
+    public static boolean supports(String commandName) {
         for (String supportedCommand : commands) {
-            if (command.startsWith(supportedCommand)) {
+            if (commandName.equals(supportedCommand)) {
                 return true;
             }
         }
