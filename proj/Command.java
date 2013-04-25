@@ -19,10 +19,7 @@ public class Command {
 
         int destination = scanner.nextInt();
         String commandName = scanner.next();
-        List<String> args = new ArrayList<String>();
-        while (scanner.hasNext()) {
-            args.add(scanner.next());
-        }
+        String args = scanner.nextLine();
 
         Method method = methodForCommand(commandName);
         if (method == null) {
@@ -54,31 +51,25 @@ public class Command {
     }
 
     @Dispatcher({ "create", "exists", "read", "currentVersion", "delete" })
-    public static Invocation dispatchUnary(String command, List<String> args) {
-        assert args.size() == 1;
-        String filename = args.get(0);
+    public static Invocation dispatchUnary(String command, String args) {
+        String filename = (new Scanner(args)).next();
         return Invocation.of(FSCommands.class, command, filename);
     }
 
     @Dispatcher("hasChanged")
-    public static Invocation dispatchBinary(String command, List<String> args) {
-        assert args.size() == 2;
-        String filename = args.get(0);
-        long version = Long.parseLong(args.get(1));
+    public static Invocation dispatchBinary(String command, String args) {
+        Scanner scanner = new Scanner(args);
+        String filename = scanner.next();
+        long version = scanner.nextLong();
         return Invocation.of(FSCommands.class, command, filename, version);
     }
 
     @Dispatcher({ "appendIfNotChanged", "overwriteIfNotChanged" })
-    public static Invocation dispatchRest(String command, List<String> args) {
-        String filename = args.get(0);
-        long version = Long.parseLong(args.get(1));
-
-        StringBuffer payload = new StringBuffer();
-        for (int i = 2; i < args.size(); i++) {
-            payload.append(args.get(i));
-        }
-
-        byte[] data = payload.toString().getBytes();
+    public static Invocation dispatchRest(String command, String args) {
+        Scanner scanner = new Scanner(args);
+        String filename = scanner.next();
+        long version = scanner.nextLong();
+        byte[] data = scanner.nextLine().trim().getBytes();
         return Invocation.of(FSCommands.class, command, filename, data, version);
     }
 }
