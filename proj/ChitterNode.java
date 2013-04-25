@@ -74,7 +74,7 @@ public class ChitterNode extends ClientServerNode {
             // Restart all unfinished commands
             while (!cmds.isEmpty()) {
                 String command = cmds.poll();
-                queueCommand(command);
+                queueDirective(command);
             }
 
             log = getWriter("log", true);
@@ -102,13 +102,20 @@ public class ChitterNode extends ClientServerNode {
             fail();
         }
 
-        queueCommand(command);
+        queueDirective(command);
     }
 
-    public void queueCommand(String command) {
-        Request req = Command.asRequest(command);
-        logOutput("request = " + req);
-        sendRPC(req);
+    public void queueDirective(String directive) {
+        if (Command.supports(directive)) {
+            Request req = Command.asRequest(directive);
+            logOutput("request = " + req);
+            sendRPC(req);
+        } else if (Operation.supports(directive)) {
+            try {
+                Operation.performOn(this, directive);
+            } catch (Exception e) {
+            }
+        }
         pumpSendQueue();
     }
 
