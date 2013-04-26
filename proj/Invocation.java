@@ -132,13 +132,27 @@ public class Invocation implements Serializable {
 
     public String toString() {
         return String.format(
-            "(%s::%s%s%s -> %s%s)",
+            "(%s::%s%s -> %s%s)",
             this.target == null ? "" : className(this.target.getClass().getName()),
-            this.procName, Arrays.toString(this.paramTypes),
-            this.paramVals == null ? "[void]" : Arrays.toString(this.paramVals),
+            this.procName, Arrays.toString(this.formatParams()),
             className(this.returnType.getName()),
             this.hasReturnVal ? "(" + this.returnVal + ")" : ""
         );
+    }
+
+    protected String[] formatParams() {
+        String[] params = new String[this.paramTypes.length];
+
+        for (int i = 0; i < this.paramTypes.length; i++) {
+            Class<?> klass = this.paramTypes[i];
+            params[i] = className(klass.getName());
+
+            if (this.paramVals != null && this.paramVals.length != 0) {
+                params[i] += "(" + this.paramVals[i].toString() + ")";
+            }
+        }
+
+        return params;
     }
 
     protected String className(String name) {
