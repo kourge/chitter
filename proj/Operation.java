@@ -32,7 +32,8 @@ public class Operation {
 
         Object[] parameters = new Object[arguments.length + 3];
         parameters[0] = node;
-        parameters[1] = Invocation.of(Operation.class, "printResult");
+        //parameters[1] = Invocation.of(Operation.class, "printResult");
+        parameters[1] = null;//Invocation.of(Operation.class, "printResult");
         parameters[2] = destination;
         System.arraycopy(arguments, 0, parameters, 3, arguments.length);
 

@@ -51,7 +51,7 @@ public class Chit implements Serializable {
 
     public static class Comparator implements java.util.Comparator<Chit> {
         public int compare(Chit c1, Chit c2) {
-            return Long.compare(c2.getTimestamp(), c1.getTimestamp());
+            return (int)(c2.getTimestamp() - c1.getTimestamp());
         }
     }
 }
