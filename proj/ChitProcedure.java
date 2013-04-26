@@ -1,9 +1,23 @@
-import edu.washington.cs.cse490h.lib.Node;
 import edu.washington.cs.cse490h.lib.Utility;
+import java.util.Scanner;
 import java.util.Arrays;
 
 public class ChitProcedure extends ChitterProcedure {
     private ChitProcedure() {}
+
+    @Proc(name="chit", desc="chit username text")
+    public static ChitProcedure make(
+        ClientServerNode node, Invocation onComplete, int destination,
+        String commandString
+    ) {
+        Scanner scanner = new Scanner(commandString);
+        String username = scanner.next();
+        String text = scanner.nextLine();
+
+        return new ChitProcedure(
+            node, onComplete, destination, username, text
+        );
+    }
 
     private Chit chit;
     private byte[] stream;

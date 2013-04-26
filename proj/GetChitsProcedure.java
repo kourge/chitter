@@ -1,4 +1,3 @@
-import edu.washington.cs.cse490h.lib.Node;
 import edu.washington.cs.cse490h.lib.Utility;
 
 import java.util.List;
@@ -8,6 +7,19 @@ import java.util.Arrays;
 
 public class GetChitsProcedure extends ChitterProcedure {
     private GetChitsProcedure() {}
+
+    @Proc(name="getChits", desc="getChits username")
+    public static GetChitsProcedure make(
+        ClientServerNode node, Invocation onComplete, int destination,
+        String commandString
+    ) {
+        Scanner scanner = new Scanner(commandString);
+        String username = scanner.next();
+
+        return new GetChitsProcedure(
+            node, onComplete, destination, username
+        );
+    }
 
     private List<Chit> list;
     private String tweetsFn;

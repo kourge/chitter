@@ -1,4 +1,3 @@
-import edu.washington.cs.cse490h.lib.Node;
 import edu.washington.cs.cse490h.lib.Utility;
 
 import java.util.List;
@@ -7,6 +6,19 @@ import java.util.Scanner;
 
 public class GetFollowingsProcedure extends ChitterProcedure {
     private GetFollowingsProcedure() {}
+
+    @Proc(name="getFollowings", desc="getFollowings username")
+    public static GetFollowingsProcedure make(
+        ClientServerNode node, Invocation onComplete, int destination,
+        String commandString
+    ) {
+        Scanner scanner = new Scanner(commandString);
+        String username = scanner.next();
+
+        return new GetFollowingsProcedure(
+            node, onComplete, destination, username
+        );
+    }
 
     String followingFn;
     List<Pair<String, Long>> list;

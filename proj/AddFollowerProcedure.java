@@ -1,9 +1,21 @@
-import edu.washington.cs.cse490h.lib.Node;
-
 import java.util.Scanner;
 
 public class AddFollowerProcedure extends ChitterProcedure {
     private AddFollowerProcedure() {}
+
+    @Proc(name="addFollower", desc="addFollower username follower")
+    public static AddFollowerProcedure make(
+        ClientServerNode node, Invocation onComplete, int destination,
+        String commandString
+    ) {
+        Scanner scanner = new Scanner(commandString);
+        String username = scanner.next();
+        String follower = scanner.next();
+
+        return new AddFollowerProcedure(
+            node, onComplete, destination, username, follower
+        );
+    }
 
     private String username;
     private String followingFn;
@@ -27,7 +39,7 @@ public class AddFollowerProcedure extends ChitterProcedure {
             Invocation.on(this, "setResult")
         );
     }
-    
+
     private Pair<byte[], Long> result;
     @SuppressWarnings("unchecked")
     public void setResult(Object obj) throws Exception {
@@ -55,7 +67,7 @@ public class AddFollowerProcedure extends ChitterProcedure {
         String line = String.format(
             "%s\t%d\n", username, System.currentTimeMillis()
         );
-        
+
         doThen(
             Invocation.of(
                 fs, "appendIfNotChanged",

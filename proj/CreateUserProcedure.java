@@ -1,7 +1,21 @@
 import edu.washington.cs.cse490h.lib.Node;
+import java.util.Scanner;
 
 public class CreateUserProcedure extends ChitterProcedure {
     private CreateUserProcedure() {}
+
+    @Proc(name="createUser", desc="createUser username")
+    public static CreateUserProcedure make(
+        ClientServerNode node, Invocation onComplete, int destination,
+        String commandString
+    ) {
+        Scanner scanner = new Scanner(commandString);
+        String username = scanner.next();
+
+        return new CreateUserProcedure(
+            node, onComplete, destination, username
+        );
+    }
 
     private String tweetsFn;
     private String followingFn;

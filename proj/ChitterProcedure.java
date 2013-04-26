@@ -1,4 +1,13 @@
+import java.lang.annotation.*;
+
 public abstract class ChitterProcedure extends Procedure {
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    public static @interface Proc {
+        String name();
+        String desc();
+    }
+
     protected static final Class<?> fs = FSCommands.class;
     protected static final long FAILURE = -1;
 

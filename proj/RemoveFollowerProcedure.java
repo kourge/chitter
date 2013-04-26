@@ -1,9 +1,21 @@
-import edu.washington.cs.cse490h.lib.Node;
-
 import java.util.Scanner;
 
 public class RemoveFollowerProcedure extends ChitterProcedure {
     private RemoveFollowerProcedure() {}
+
+    @Proc(name="removeFollower", desc="removeFollower username follower")
+    public static RemoveFollowerProcedure make(
+        ClientServerNode node, Invocation onComplete, int destination,
+        String commandString
+    ) {
+        Scanner scanner = new Scanner(commandString);
+        String username = scanner.next();
+        String follower = scanner.next();
+
+        return new RemoveFollowerProcedure(
+            node, onComplete, destination, username, follower
+        );
+    }
 
     private String username;
     private String followingFn;

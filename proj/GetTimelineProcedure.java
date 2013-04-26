@@ -1,4 +1,3 @@
-import edu.washington.cs.cse490h.lib.Node;
 import edu.washington.cs.cse490h.lib.Utility;
 
 import java.util.List;
@@ -9,6 +8,19 @@ import java.util.Collections;
 
 public class GetTimelineProcedure extends ChitterProcedure {
     private GetTimelineProcedure() {}
+
+    @Proc(name="getTimeline", desc="getTimeline username")
+    public static GetTimelineProcedure make(
+        ClientServerNode node, Invocation onComplete, int destination,
+        String commandString
+    ) {
+        Scanner scanner = new Scanner(commandString);
+        String username = scanner.next();
+
+        return new GetTimelineProcedure(
+            node, onComplete, destination, username
+        );
+    }
 
     List<Chit> list;
     String userFn;

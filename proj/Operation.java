@@ -1,5 +1,3 @@
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -8,113 +6,84 @@ import java.lang.annotation.*;
 import java.lang.reflect.*;
 
 public class Operation {
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    private @interface Dispatcher {
-        Class<?> proc();
-        String desc();
-    }
-
     public static void performOn(ClientServerNode node, String command)
     throws Exception {
         Scanner scanner = new Scanner(command);
 
         int destination = scanner.nextInt();
         String commandName = scanner.next();
-        List<String> args = new ArrayList<String>();
-        while (scanner.hasNext()) {
-            args.add(scanner.next());
+        String commandString = scanner.nextLine();
+
+        Method maker = makerForCommand(commandName);
+        System.out.println(maker);
+        if (maker == null) {
+            throw new IllegalArgumentException(
+                "Operation '" + commandName + "' does not exist"
+            );
         }
 
-        Method parser = parserForCommand(commandName);
-        Dispatcher dispatcher = parser.getAnnotation(Dispatcher.class);
-        Object[] arguments = (Object[])parser.invoke(null, args);
-
-        Object[] parameters = new Object[arguments.length + 3];
-        parameters[0] = node;
-        //parameters[1] = Invocation.of(Operation.class, "printResult");
-        parameters[1] = null;//Invocation.of(Operation.class, "printResult");
-        parameters[2] = destination;
-        System.arraycopy(arguments, 0, parameters, 3, arguments.length);
-
-        int maxConstructorArity = 0;
-        Constructor<?> ctor = null;
-        for (Constructor<?> constructor : dispatcher.proc().getConstructors()) {
-            if (constructor.getParameterTypes().length > maxConstructorArity) {
-                ctor = constructor;
-            }
-        }
-
-        assert ctor.getParameterTypes().length == parameters.length;
-        ChitterProcedure instance = (ChitterProcedure)ctor.newInstance(parameters);
+        assert maker.getParameterTypes().length == 4;
+        ChitterProcedure instance = (ChitterProcedure)maker.invoke(
+            null, node, null, destination, commandString
+        );
         instance.call();
     }
 
-    private static Method parserForCommand(String command) {
-        for (Method method : Operation.class.getMethods()) {
-            if (method.getName().equals(command) &&
-                method.isAnnotationPresent(Dispatcher.class)) {
+    private static Method makerForCommand(String commandName) {
+        Class<?> klass = classForCommand(commandName);
+        if (klass == null) {
+            return null;
+        }
+
+        for (Method method : klass.getMethods()) {
+            if (method.getName().equals("make") &&
+                Modifier.isStatic(method.getModifiers())) {
                 return method;
             }
         }
         return null;
     }
 
+    private static Class<?> classForCommand(String commandName) {
+        char[] command = commandName.toCharArray();
+        command[0] = Character.toUpperCase(command[0]);
+        commandName = new String(command);
+        try {
+            return Class.forName(commandName + "Procedure");
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+
     public static void printResult(Object obj) {
         System.out.println(obj);
     }
 
+    private static Class<ChitterProcedure.Proc> p = ChitterProcedure.Proc.class;
+    private static Class<?>[] procedures = {
+        AddFollowerProcedure.class, ChitProcedure.class,
+        CreateUserProcedure.class, GetChitsProcedure.class,
+        GetFollowingsProcedure.class, GetTimelineProcedure.class,
+        RemoveFollowerProcedure.class
+    };
     private static Map<String, String> operations;
     static {
         operations = new HashMap<String, String>();
-        for (Method method : Operation.class.getMethods()) {
-            if (method.isAnnotationPresent(Dispatcher.class)) {
-                Dispatcher dispatcher = method.getAnnotation(Dispatcher.class);
-                operations.put(method.getName(), dispatcher.desc());
+        for (Class<?> klass : procedures) {
+            for (Method method : klass.getMethods()) {
+                if (method.isAnnotationPresent(p)) {
+                    ChitterProcedure.Proc proc = method.getAnnotation(p);
+                    operations.put(proc.name(), proc.desc());
+                }
             }
         }
     }
+
     public static Map<String, String> getOperations() {
         return operations;
     }
 
     public static boolean supports(String operationName) {
         return operations.containsKey(operationName);
-    }
-
-    @Dispatcher(proc=CreateUserProcedure.class, desc="createUser username")
-    public static Object[] createUser(List<String> args) {
-        assert args.size() == 1;
-        return new Object[] { args.get(0) };
-    }
-
-    @Dispatcher(proc=ChitProcedure.class, desc="chit username text")
-    public static Object[] chit(List<String> args) {
-        StringBuffer buffer = new StringBuffer();
-        for (int i = 1; i < args.size(); i++) {
-            buffer.append(args.get(i));
-        }
-
-        return new Object[] { args.get(0), buffer.toString() };
-    }
-
-    @Dispatcher(proc=AddFollowerProcedure.class, desc="addFollower username follower")
-    public static Object[] addFollower(List<String> args) {
-        assert args.size() == 2;
-        return new Object[] { args.get(0), args.get(1) };
-    }
-
-    @Dispatcher(
-        proc=RemoveFollowerProcedure.class, desc="removeFollower username follower"
-    )
-    public static Object[] removeFollower(List<String> args) {
-        assert args.size() == 2;
-        return new Object[] { args.get(0), args.get(1) };
-    }
-
-    @Dispatcher(proc=GetChitsProcedure.class, desc="getChits username")
-    public static Object[] getChits(List<String> args) {
-        assert args.size() == 1;
-        return new Object[] { args.get(0) };
     }
 }
