@@ -39,13 +39,13 @@ public abstract class Node {
     }
 
     // Node has a reference to the console
-    protected Console console;
+    protected ConsoleType console;
 
-    public void setConsole(Console console) {
+    public void setConsole(ConsoleType console) {
         this.console = console;
     }
 
-    public Console getConsole() {
+    public ConsoleType getConsole() {
         return console;
     }
 

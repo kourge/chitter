@@ -11,7 +11,7 @@ import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 import jline.console.completer.StringsCompleter;
 
-public class Console {
+public class Console implements ConsoleType {
     private int clientAddr;
     private int serverAddr;
     private Set<String> opCommands;
@@ -81,7 +81,7 @@ public class Console {
         }
     }
 
-    private String handle(String line) {
+    public String handle(String line) {
 		String[] cmd = line.split("\\s+");
 		if (cmd.length < 1) {
 			System.err.println("Command is too short: " + line);
@@ -110,7 +110,7 @@ public class Console {
         return "";
     }
 
-    private void help(String[] cmd) {
+    public void help(String[] cmd) {
         if (cmd.length > 0) {
             System.out.println();
 
