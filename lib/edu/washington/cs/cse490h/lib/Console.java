@@ -11,7 +11,7 @@ import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 import jline.console.completer.StringsCompleter;
 
-public class Console {
+public class Console implements ConsoleType {
     private int clientAddr;
     private int serverAddr;
     private Set<String> opCommands;

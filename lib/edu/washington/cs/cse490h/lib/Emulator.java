@@ -10,6 +10,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 
+// jython stuff
+import org.python.core.Py;
+import org.python.core.PyString;
+import org.python.core.PySystemState;
+import org.plyjy.factory.PySystemObjectFactory;
+
 import edu.washington.cs.cse490h.lib.Node.NodeCrashException;
 import edu.washington.cs.cse490h.lib.Packet.CorruptPacketException;
 
@@ -372,7 +378,17 @@ public class Emulator extends Manager {
 				}
 			}
 		} else if (cmdInputType == InputType.CONSOLE) {
-            Console console = new Console(0, 1, consoleOperationsDescription);
+            PySystemState sys = Py.getSystemState();
+            sys.path.append(new PyString("lib/edu/washington/cs/cse490h/lib/"));
+            PySystemObjectFactory factory = new PySystemObjectFactory(
+                ConsoleType.class,
+                "pyconsole",
+                "Console"
+            );
+
+            ConsoleType console = (ConsoleType) factory.createObject(0, 1, consoleOperationsDescription);
+
+            // ConsoleType console = new Console(0, 1, consoleOperationsDescription);
 			while (node != null || failed) {
 				if (IOFinished && node != null) {
 					System.err.println("Network I/O thread failed, killing the node...");

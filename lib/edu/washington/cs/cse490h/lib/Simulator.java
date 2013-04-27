@@ -10,6 +10,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 
+// jython stuff
+import org.python.core.Py;
+import org.python.core.PyString;
+import org.python.core.PySystemState;
+import org.plyjy.factory.PySystemObjectFactory;
+
 import edu.washington.cs.cse490h.lib.Node.NodeCrashException;
 
 /**
@@ -222,8 +228,18 @@ public class Simulator extends Manager {
             currentRoundEvents.add(parser.parseLine("start 1"));
             doTimestep(currentRoundEvents);
 
+            PySystemState sys = Py.getSystemState();
+            sys.path.append(new PyString("lib/edu/washington/cs/cse490h/lib/"));
+            PySystemObjectFactory factory = new PySystemObjectFactory(
+                ConsoleType.class,
+                "pyconsole",
+                "Console"
+            );
+
+            ConsoleType console = (ConsoleType) factory.createObject(0, 1, consoleOperationsDescription, true);
+
             // event loop; assume client is node 0
-            Console console = new Console(0, 1, consoleOperationsDescription, true);
+            // ConsoleType console = new Console(0, 1, consoleOperationsDescription, true);
             while (true) {
                 currentRoundEvents = new ArrayList<Event>();
 
