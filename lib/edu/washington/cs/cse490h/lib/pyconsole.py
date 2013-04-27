@@ -8,31 +8,31 @@ from jline.console import ConsoleReader
 from jline.console.completer import StringsCompleter
 
 class Console(ConsoleType):
-    def __init__(self, client_addr, server_addr, j_operation_desc, is_simulator=False):
+    def __init__(self, client_addr, server_addr, operations_map, is_simulator=False):
         self.client_addr = client_addr
         self.server_addr = server_addr
         self.is_simulator = is_simulator
 
-        self.desc_map = dict(j_operation_desc)
-        self.desc_map["help"] = "help <optional command>"
-        self.desc_map["login"] = "login username"
-        self.desc_map["logout"] = "logout"
-        self.desc_map["echo"] = "echo text"
-        self.desc_map["exit"] = "exit"
+        self.operations = dict(operations_map)
+        self.operations["help"] = "help <optional command>"
+        self.operations["login"] = "login username"
+        self.operations["logout"] = "logout"
+        self.operations["echo"] = "echo text"
+        self.operations["exit"] = "exit"
 
         self.aux_commands = {"help", "login", "logout", "echo", "exit"}
 
-        self.op_commands = set(j_operation_desc.keySet())
+        self.op_commands = set(operations_map.keySet())
         self.all_commands = set(self.op_commands)
         self.all_commands.update(self.aux_commands)
 
-        j_all_commands = HashSet()
+        all_commands_set = HashSet()
         for x in self.all_commands:
-            j_all_commands.add(x)
+            all_commands_set.add(x)
 
         try:
             self.console = ConsoleReader()
-            self.console.addCompleter(StringsCompleter(j_all_commands))
+            self.console.addCompleter(StringsCompleter(all_commands_set))
             self.console.setPrompt("prompt> ")
         except IOException as err:
             err.printStackTrace()
@@ -82,10 +82,10 @@ class Console(ConsoleType):
             
             if len(cmd) == 1:
                 print "***Usage***"
-                for help_item in self.desc_map.items():
+                for help_item in self.operations.items():
                     print "%s: %s" % help_item
             else:
-                desc = self.desc_map[cmd[1]]
+                desc = self.operations[cmd[1]]
                 if desc is not None:
                     print "***Usage***"
                     print "%s: %s" % (cmd[1], desc)
