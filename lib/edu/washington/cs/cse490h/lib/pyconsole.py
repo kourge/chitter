@@ -64,7 +64,7 @@ class Console(ConsoleType):
             if self.is_simulator:
                 return "%d %d %s" % (self.client_addr, self.server_addr, line)
             else:
-                return "%d %s" % (self.server_addr, line) 
+                return "%d %s" % (self.server_addr, line)
         if cmd[0] in self.aux_commands:
             if cmd[0] == "help":
                 self.help(cmd)
@@ -75,11 +75,11 @@ class Console(ConsoleType):
 
         return ""
 
-    
+
     def help(self, cmd):
         if len(cmd) > 0:
             print ""
-            
+
             if len(cmd) == 1:
                 print "***Usage***"
                 for help_item in self.operations.items():
