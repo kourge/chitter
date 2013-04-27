@@ -11,7 +11,6 @@ class Console(ConsoleType):
     def __init__(self, client_addr, server_addr, j_operation_desc, is_simulator=False):
         self.client_addr = client_addr
         self.server_addr = server_addr
-        self.operation_desc = j_operation_desc
         self.is_simulator = is_simulator
 
         self.desc_map = dict(j_operation_desc)
@@ -21,7 +20,7 @@ class Console(ConsoleType):
         self.desc_map["echo"] = "echo text"
         self.desc_map["exit"] = "exit"
 
-        self.aux_commands = set(["help", "login", "logout", "echo", "exit"])
+        self.aux_commands = {"help", "login", "logout", "echo", "exit"}
 
         self.op_commands = set(j_operation_desc.keySet())
         self.all_commands = set(self.op_commands)
