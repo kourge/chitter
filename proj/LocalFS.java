@@ -10,10 +10,10 @@ import edu.washington.cs.cse490h.lib.PersistentStorageInputStream;
 import edu.washington.cs.cse490h.lib.PersistentStorageOutputStream;
 import edu.washington.cs.cse490h.lib.Utility;
 
-public class FSCommands {
+public class LocalFS implements FS {
     private ClientServerNode node;
 
-    public FSCommands(ClientServerNode n) {
+    public LocalFS(ClientServerNode n) {
         node = n;
     }
 

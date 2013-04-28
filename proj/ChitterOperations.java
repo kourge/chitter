@@ -10,11 +10,11 @@ public class ChitterOperations {
         SUCCESS, FAILURE, ALREADY_EXISTS, DOES_NOT_EXIST
     };
 
-    private FSCommands fs;
+    private FS fs;
     private static final long FAILURE = -1;
     private static final char[] INVALID_USERNAME_CHARACTERS = { '\t', '\n' };
 
-    public ChitterOperations(FSCommands fs) {
+    public ChitterOperations(FS fs) {
         this.fs = fs;
     }
 

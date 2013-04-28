@@ -79,7 +79,7 @@ public class Command {
     @Dispatcher({ "create", "exists", "read", "currentVersion", "delete" })
     public static Invocation dispatchUnary(String command, String args) {
         String filename = (new Scanner(args)).next();
-        return Invocation.of(FSCommands.class, command, filename);
+        return Invocation.of(FS.class, command, filename);
     }
 
     @Dispatcher("hasChanged")
@@ -87,7 +87,7 @@ public class Command {
         Scanner scanner = new Scanner(args);
         String filename = scanner.next();
         long version = scanner.nextLong();
-        return Invocation.of(FSCommands.class, command, filename, version);
+        return Invocation.of(FS.class, command, filename, version);
     }
 
     @Dispatcher({ "appendIfNotChanged", "overwriteIfNotChanged" })
@@ -96,6 +96,6 @@ public class Command {
         String filename = scanner.next();
         long version = scanner.nextLong();
         byte[] data = scanner.nextLine().trim().getBytes();
-        return Invocation.of(FSCommands.class, command, filename, data, version);
+        return Invocation.of(FS.class, command, filename, data, version);
     }
 }
