@@ -2,6 +2,10 @@
 
 import sys, subprocess
 
-classpath = "jars/plume.jar:jars/lib.jar"
+classpath = ":".join([
+    "jars/plume.jar",
+    "jars/lib.jar"
+])
+classname = "edu.washington.cs.cse490h.lib.Router"
 
-subprocess.call(["java", "-cp", classpath, "edu.washington.cs.cse490h.lib.Router"] + sys.argv[1:])
+subprocess.call(["java", "-cp", classpath, classname] + sys.argv[1:])
