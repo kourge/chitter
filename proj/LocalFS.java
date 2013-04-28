@@ -1,19 +1,13 @@
 import java.io.*;
-import java.lang.reflect.Method;
-import java.util.HashMap;
 
-import edu.washington.cs.cse490h.lib.Callback;
-import edu.washington.cs.cse490h.lib.Node;
 import edu.washington.cs.cse490h.lib.PersistentStorageReader;
 import edu.washington.cs.cse490h.lib.PersistentStorageWriter;
-import edu.washington.cs.cse490h.lib.PersistentStorageInputStream;
-import edu.washington.cs.cse490h.lib.PersistentStorageOutputStream;
 import edu.washington.cs.cse490h.lib.Utility;
 
-public class FSCommands {
+public class LocalFS implements FS {
     private ClientServerNode node;
 
-    public FSCommands(ClientServerNode n) {
+    public LocalFS(ClientServerNode n) {
         node = n;
     }
 

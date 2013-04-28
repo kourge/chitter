@@ -8,7 +8,7 @@ public abstract class ClientServerNode extends RIONode {
     protected @interface Client {}
     protected @interface Server {}
 
-    @Server protected FSCommands fs;
+    @Server protected FS fs;
 
     @Client protected Queue<Request> sendQueue;
     @Client protected Queue<Request> recvQueue;
@@ -16,7 +16,7 @@ public abstract class ClientServerNode extends RIONode {
     @Client protected byte[] rpcPayload;
 
     public ClientServerNode() {
-        fs = new FSCommands(this);
+        fs = new LocalFS(this);
 
         sendQueue = new LinkedList<Request>();
         recvQueue = new LinkedList<Request>();
