@@ -81,10 +81,7 @@ public abstract class ClientServerNode extends RIONode {
             RIOSend(req.getDestination(), Protocol.CHITTER_RPC_REQUEST, rpcPayload);
             this.pendingRequests.put(req, req);
             try {
-                Method onTimeoutMethod = Callback.getMethod("onRPCTimeout", this,
-                    new String[]{ "Request" });
-                addTimeout(new Callback(onTimeoutMethod, this, new Object[]
-                    { req }), 5);
+                addTimeout(Invocation.call(this, "onRPCTimeout", req), 5);
             } catch (Exception e) {}
         }
     }
@@ -99,13 +96,15 @@ public abstract class ClientServerNode extends RIONode {
         this.pendingRequests.remove(req);
         if (request != null) {
             try {
-                request.getInvocation().setReturnValue(req.getInvocation().getReturnValue());
+                request.getInvocation().setReturnValue(
+                    req.getInvocation().getReturnValue()
+                );
                 request.complete();
                 if (!hasOustandingRequests()) {
                     onCommandCompletion();
                 }
             } catch (InvocationException e) {
-                logError("Failed to invoke onComplete callback " + request.getOnComplete().getMethodName());
+                logError("Failed to invoke onComplete callback " + request.getOnComplete());
             }
         } else {
             logError("Received unknown response: " + req);
@@ -158,10 +157,7 @@ public abstract class ClientServerNode extends RIONode {
             int addr = req.getDestination();
             RIOSend(addr, Protocol.CHITTER_RPC_REQUEST, rpcPayload);
             try {
-                Method onTimeoutMethod = Callback.getMethod("onRPCTimeout", this,
-                    new String[]{ "Request" });
-                addTimeout(new Callback(onTimeoutMethod, this, new Object[]
-                    { req }), 5);
+                addTimeout(Invocation.call(this, "onRPCTimeout", req), 5);
             } catch (Exception e) {}
         }
     }
