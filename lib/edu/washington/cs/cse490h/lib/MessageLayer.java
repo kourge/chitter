@@ -10,9 +10,14 @@ import plume.OptionGroup;
 
 import edu.washington.cs.cse490h.lib.Manager.FailureLvl;
 
+import org.python.core.Py;
+import org.python.core.PyString;
+import org.python.core.PySystemState;
+import org.plyjy.factory.PySystemObjectFactory;
+
 /**
  * <pre>
- * 
+ *
  * Class with main method that starts up a Manager. Either an Emulator or a Simulator
  *
  * Usage: java MessageLayer [options]
@@ -39,7 +44,7 @@ import edu.washington.cs.cse490h.lib.Manager.FailureLvl;
  *  -o --replayOutputFilename=<string>                - Replay output filename [default ]
  *  --replayInputFilename=<string>                    - Replay input filename [default ]
  *
- * </pre>   
+ * </pre>
  */
 public class MessageLayer {
 
@@ -94,10 +99,10 @@ public class MessageLayer {
 	 * Router port
 	 */
 	@Option(value="Router port", aliases={"-router-port"})
-	// TODO: specify a sane default    
+	// TODO: specify a sane default
 	public static int routerPort = -1;
-	
-	@Option(value="-a Node address", aliases={"-node-address"}) 
+
+	@Option(value="-a Node address", aliases={"-node-address"})
 	public static int nodeAddr = -1;
 
 	/**
@@ -140,20 +145,20 @@ public class MessageLayer {
 	@Option(value="-L Synoptic totally ordered log filename", aliases={"-synoptic-totally-ordered-logfile"})
 	// TODO: specify a sane default
 	public static String synopticTotalOrderLogFilename = "";
-	
+
 	/**
 	 * The log filename for partially ordered synoptic output
 	 */
 	@Option(value="-l Synoptic partially ordered log filename", aliases={"-synoptic-partially-ordered-logfile"})
 	// TODO: specify a sane default
 	public static String synopticPartialOrderLogFilename = "";
-	
+
 	/**
 	 * The log filename for replay output
 	 */
 	@Option(value="-o Replay output filename", aliases={"-replay-outfile"})
 	public static String replayOutputFilename = "";
-	
+
 	/**
 	 * The log filename for replay input
 	 */
@@ -169,7 +174,7 @@ public class MessageLayer {
 
 	/**
 	 * Prints out an warning message
-	 * 
+	 *
 	 * @param msg warning msg string
 	 */
 	public static void printWarning(String msg) {
@@ -178,7 +183,7 @@ public class MessageLayer {
 
 	/**
 	 * Prints out an error message
-	 * 
+	 *
 	 * @param msg error msg string
 	 */
 	public static void printError(String msg) {
@@ -192,7 +197,7 @@ public class MessageLayer {
 	public static void main(String[] args) {
 		// this directly sets the static member options of the Main class
 		Options options = new Options (usage_string, MessageLayer.class);
-		
+
 		@SuppressWarnings("unused")
 		String[] cmdLineArgs = options.parse_or_usage(args);
 
@@ -221,7 +226,7 @@ public class MessageLayer {
 		} else {
 			System.out.println("synopticTotalLogFilename = " + synopticTotalOrderLogFilename);
 		}
-		
+
 		if (synopticPartialOrderLogFilename.equals("")) {
 			//printWarning("you did not specify a partially ordered synoptic log file.");	// TODO: re-enable when it's working
 		} else {
@@ -239,13 +244,26 @@ public class MessageLayer {
 					FailureLvl.DELAY,      // 3
 					FailureLvl.EVERYTHING, // 4
 			};
-			failureLvl = possibleFailureLvls[failureLvlInt];	
+			failureLvl = possibleFailureLvls[failureLvlInt];
 		}
 
 		try {
 			Manager manager = null;
 
-			Class<? extends Node> nodeImpl = ClassLoader.getSystemClassLoader().loadClass(nodeClass).asSubclass(Node.class);
+			Class<? extends Node> nodeImpl = null ;
+      if (nodeClass.endsWith(".py")) {
+        PySystemState sys = Py.getSystemState();
+        sys.path.append(new PyString("proj/"));
+
+        String filename = nodeClass.substring(0, nodeClass.lastIndexOf(".py"));
+        PySystemObjectFactory factory = new PySystemObjectFactory(
+            Node.class, filename, Utility.camelize(filename)
+        );
+        Node instance = (Node)factory.createObject();
+        nodeImpl = instance.getClass();
+      } else {
+        nodeImpl = ClassLoader.getSystemClassLoader().loadClass(nodeClass).asSubclass(Node.class);
+      }
 
 			if (simulate) {
 				if(commandFile.equals("")) {
@@ -289,7 +307,7 @@ public class MessageLayer {
 					printError("Illegal arguments given to Simulator. Exception: " + e);
 					return;
 				} catch (FileNotFoundException e) {
-					printError("Incorrect command file name given to Simulator. Exception: " + e);		    
+					printError("Incorrect command file name given to Simulator. Exception: " + e);
 					return;
 				}
 

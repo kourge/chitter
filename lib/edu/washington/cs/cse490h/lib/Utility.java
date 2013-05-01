@@ -89,4 +89,21 @@ public class Utility {
         File f = new File(realFilename(n.addr, filename));
         return f.lastModified();
     }
+
+    public static String camelize(String string) {
+        StringBuffer b = new StringBuffer();
+        b.append(Character.toUpperCase(string.charAt(0)));
+
+        for (int i = 1; i < string.length(); i++) {
+            char c = string.charAt(i);
+
+            if (c == '_' || c == '-') {
+                b.append(Character.toUpperCase(string.charAt(++i)));
+            } else {
+                b.append(c);
+            }
+        }
+
+        return b.toString();
+    }
 }
