@@ -254,6 +254,7 @@ public class MessageLayer {
       if (nodeClass.endsWith(".py")) {
         PySystemState sys = Py.getSystemState();
         sys.path.append(new PyString("proj/"));
+        sys.path.append(new PyString("lib/edu/washington/cs/cse490h/lib/"));
 
         String filename = nodeClass.substring(0, nodeClass.lastIndexOf(".py"));
         PySystemObjectFactory factory = new PySystemObjectFactory(
