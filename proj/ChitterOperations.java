@@ -5,11 +5,7 @@ import java.util.LinkedList;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class ChitterOperations {
-    public enum FollowerChangeResult {
-        SUCCESS, FAILURE, ALREADY_EXISTS, DOES_NOT_EXIST
-    };
-
+public class ChitterOperations implements Op {
     private FS fs;
     private static final long FAILURE = -1;
     private static final char[] INVALID_USERNAME_CHARACTERS = { '\t', '\n' };
@@ -82,12 +78,12 @@ public class ChitterOperations {
         return true;
     }
 
-    public FollowerChangeResult addFollower(String username, String follower) {
+    public Op.FollowerChangeResult addFollower(String username, String follower) {
         String followingFn = "following:" + follower;
 
         Pair<byte[], Long> result = fs.read(followingFn);
         if (result == null) {
-            return FollowerChangeResult.FAILURE;
+            return Op.FollowerChangeResult.FAILURE;
         }
         String lines = new String(result.first());
         long version = result.second();
@@ -99,7 +95,7 @@ public class ChitterOperations {
             String followedUser = line.substring(0, delimiter);
 
             if (followedUser.equals(username)) {
-                return FollowerChangeResult.ALREADY_EXISTS;
+                return Op.FollowerChangeResult.ALREADY_EXISTS;
             }
         }
 
@@ -110,18 +106,18 @@ public class ChitterOperations {
             followingFn, line.getBytes(), version
         );
         if (followingV == FAILURE) {
-            return FollowerChangeResult.FAILURE;
+            return Op.FollowerChangeResult.FAILURE;
         }
 
-        return FollowerChangeResult.SUCCESS;
+        return Op.FollowerChangeResult.SUCCESS;
     }
 
-    public FollowerChangeResult removeFollower(String username, String follower) {
+    public Op.FollowerChangeResult removeFollower(String username, String follower) {
         String followingFn = "following:" + follower;
 
         Pair<byte[], Long> result = fs.read(followingFn);
         if (result == null) {
-            return FollowerChangeResult.FAILURE;
+            return Op.FollowerChangeResult.FAILURE;
         }
         String lines = new String(result.first());
         long version = result.second();
@@ -142,17 +138,17 @@ public class ChitterOperations {
         }
 
         if (absent) {
-            return FollowerChangeResult.DOES_NOT_EXIST;
+            return Op.FollowerChangeResult.DOES_NOT_EXIST;
         }
 
         long followingV = fs.overwriteIfNotChanged(
             followingFn, out.toString().getBytes(), version
         );
         if (followingV == FAILURE) {
-            return FollowerChangeResult.FAILURE;
+            return Op.FollowerChangeResult.FAILURE;
         }
 
-        return FollowerChangeResult.SUCCESS;
+        return Op.FollowerChangeResult.SUCCESS;
     }
 
     public List<Chit> getChits(String username) {
