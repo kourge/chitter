@@ -39,7 +39,7 @@ public class LocalFS implements FS {
         try {
             reader = node.getReader(filename);
         } catch (FileNotFoundException e) {
-            return null;
+            return EMPTY_RESULT;
         }
 
         try {
@@ -50,7 +50,7 @@ public class LocalFS implements FS {
             }
             out = Utility.stringToByteArray(buf.toString());
         } catch (IOException e) {
-            return null;
+            return EMPTY_RESULT;
         }
 
         return Pair.of(out, Utility.fileTimestamp(node, filename));

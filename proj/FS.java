@@ -1,4 +1,6 @@
 public interface FS {
+    public Pair<byte[], Long> EMPTY_RESULT = Pair.of(new byte[] {}, -1L);
+
     /** Create a file by name, return version number */
     public long create(String filename);
 
