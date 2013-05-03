@@ -1,5 +1,7 @@
 public interface FS {
-    public Pair<byte[], Long> EMPTY_RESULT = Pair.of(new byte[] {}, -1L);
+    public long FAILURE = -1L;
+
+    public Pair<byte[], Long> EMPTY_RESULT = Pair.of(new byte[] {}, FAILURE);
 
     /** Create a file by name, return version number */
     public long create(String filename);

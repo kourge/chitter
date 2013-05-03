@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 public class LocalOp implements Op {
     private FS fs;
-    private static final long FAILURE = -1;
+    private static final long FAILURE = FS.FAILURE;
     private static final char[] INVALID_USERNAME_CHARACTERS = { '\t', '\n' };
 
     public LocalOp(FS fs) {
