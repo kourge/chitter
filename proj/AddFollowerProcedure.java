@@ -46,7 +46,7 @@ public class AddFollowerProcedure extends ChitterProcedure {
         result = (Pair<byte[], Long>)obj;
 
         if (result == null) {
-            returnValue(ChitterOperations.FollowerChangeResult.FAILURE);
+            returnValue(Op.FollowerChangeResult.FAILURE);
             return;
         }
         String lines = new String(result.first());
@@ -59,7 +59,7 @@ public class AddFollowerProcedure extends ChitterProcedure {
             String followedUser = line.substring(0, delimiter);
 
             if (followedUser.equals(username)) {
-                returnValue(ChitterOperations.FollowerChangeResult.ALREADY_EXISTS);
+                returnValue(Op.FollowerChangeResult.ALREADY_EXISTS);
                 return;
             }
         }
@@ -81,11 +81,11 @@ public class AddFollowerProcedure extends ChitterProcedure {
     public void setFollowingV(Object obj) throws Exception {
         followingV = (Long)obj;
         if (followingV == FAILURE) {
-            returnValue(ChitterOperations.FollowerChangeResult.FAILURE);
+            returnValue(Op.FollowerChangeResult.FAILURE);
             return;
         }
 
-        returnValue(ChitterOperations.FollowerChangeResult.SUCCESS);
+        returnValue(Op.FollowerChangeResult.SUCCESS);
         return;
     }
 }
