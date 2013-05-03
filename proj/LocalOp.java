@@ -5,12 +5,12 @@ import java.util.LinkedList;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class ChitterOperations implements Op {
+public class LocalOp implements Op {
     private FS fs;
     private static final long FAILURE = -1;
     private static final char[] INVALID_USERNAME_CHARACTERS = { '\t', '\n' };
 
-    public ChitterOperations(FS fs) {
+    public LocalOp(FS fs) {
         this.fs = fs;
     }
 
