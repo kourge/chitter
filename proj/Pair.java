@@ -24,4 +24,17 @@ public class Pair<T, U> implements Serializable {
     public U second() {
         return u;
     }
+
+    public String toString() {
+        return String.format("Pair.of(%s, %s)", t, u);
+    }
+
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Pair)) {
+            return false;
+        }
+        Pair other = (Pair)obj;
+
+        return t.equals(other.first()) && u.equals(other.second());
+    }
 }
