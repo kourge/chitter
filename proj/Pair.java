@@ -1,7 +1,9 @@
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /** A generic pair class */
-public class Pair<T, U> implements Serializable {
+public class Pair<T, U> implements Serializable, Iterable<Object> {
     public static final long serialVersionUID = 0L;
 
     private T t;
@@ -35,5 +37,27 @@ public class Pair<T, U> implements Serializable {
         Pair other = (Pair)obj;
 
         return t.equals(other.first()) && u.equals(other.second());
+    }
+
+    public Iterator<Object> iterator() {
+        return new Iterator<Object>() {
+            private int i;
+
+            public boolean hasNext() {
+                return i < 2;
+            }
+
+            public Object next() {
+                switch (i++) {
+                case 0: return (Object)first();
+                case 1: return (Object)second();
+                default: throw new NoSuchElementException();
+                }
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 }
