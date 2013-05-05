@@ -43,7 +43,7 @@ public class Request implements Serializable {
 
     public void complete() throws InvocationException {
         if (onComplete != null) {
-            onComplete.setParameterValues(new Object[] { this.iv.getReturnValue() });
+            onComplete.setParameterValues(this.iv.getReturnValue(), this);
             onComplete.invoke();
         }
     }
