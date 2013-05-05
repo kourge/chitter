@@ -50,7 +50,10 @@ public class Request implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("<Req dest=%d seq=%d %s>", this.dest, this.seq, this.iv);
+        return String.format(
+            "<Req dest=%d seq=%s %s>",
+            this.dest, Long.toString(this.seq).substring(0, 7), this.iv
+        );
     }
 
     @Override
