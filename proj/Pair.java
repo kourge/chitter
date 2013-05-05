@@ -2,7 +2,6 @@ import java.io.Serializable;
 
 /** A generic pair class */
 public class Pair<T, U> implements Serializable {
-
     public static final long serialVersionUID = 0L;
 
     private T t;
