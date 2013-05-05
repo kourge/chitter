@@ -140,23 +140,21 @@ public class ChitterNode extends ClientServerNode {
      *            The message object that was sent
      */
     @Override
-	  public void onRIOReceive(Integer from, int protocol, byte[] msg) {
+    public void onRIOReceive(Integer from, int protocol, byte[] msg) {
         switch (protocol) {
         case Protocol.CHITTER_RPC_REQUEST:
-            logOutput("RPC request received.");
             this.handleRequest(from, msg);
             break;
 
         case Protocol.CHITTER_RPC_REPLY:
             this.handleReply(from, msg);
+            pumpRecvQueue();
+            pumpSendQueue();
             break;
 
         default:
             logOutput("Unknown protocol packet: " + protocol);
         }
-
-        pumpRecvQueue();
-        pumpSendQueue();
     }
 
     @Override
