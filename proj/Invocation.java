@@ -36,7 +36,7 @@ public class Invocation implements Serializable {
 
     protected int arity;
 
-    protected transient Object target;
+    protected transient Object target = null;
 
     protected Invocation(
         String name, Class<?> returnType, Class<?>[] paramTypes, Object[] paramVals
@@ -114,7 +114,7 @@ public class Invocation implements Serializable {
         return Arrays.copyOf(this.paramVals, this.paramVals.length);
     }
 
-    public void setParameterValues(Object[] values) {
+    public void setParameterValues(Object... values) {
         if (values.length != this.arity) {
             throw new IllegalArgumentException("Incorrect param values arity");
         }
