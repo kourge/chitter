@@ -145,7 +145,7 @@ public abstract class ClientServerNode extends RIONode {
             StackTraceElement[] trace = e.getStackTrace();
             if (trace.length > LOG_CALL_DEPTH) {
                 StackTraceElement frame = trace[LOG_CALL_DEPTH];
-                method = frame.getClassName() + "::" + frame.getMethodName();
+                method = /*frame.getClassName() + "::" + */frame.getMethodName();
             }
         }
 
