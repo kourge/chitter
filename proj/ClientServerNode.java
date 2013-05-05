@@ -31,11 +31,12 @@ public abstract class ClientServerNode extends RIONode {
             req = (Request)Serialization.decode(msg);
             req.getInvocation().invokeOn(fs);
             out = Serialization.encode(req);
+            logOutput(req.toString());
         } catch (Serialization.DecodingException e) {
             logOutput("Failed to decode RPC request.");
             return;
         } catch (InvocationException e) {
-            logOutput("Invocation failed. " + e);
+            logOutput(e.toString() + " " + req);
             return;
         } catch (Serialization.EncodingException e) {
             logOutput("Failed to encode RPC response.");
