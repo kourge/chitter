@@ -64,7 +64,9 @@ public abstract class ClientServerNode extends RIONode {
     }
 
     @Client protected void pumpSendQueue() {
-        logOutput("sendQueue = " + this.sendQueue.toString());
+        if (this.sendQueue.peek() != null) {
+            logOutput("sendQueue = " + this.sendQueue.toString());
+        }
 
         Request req = this.sendQueue.poll();
         if (req == null) {
@@ -88,6 +90,10 @@ public abstract class ClientServerNode extends RIONode {
     }
 
     @Client protected void pumpRecvQueue() {
+        if (this.recvQueue.peek() != null) {
+            logOutput("recvQueue = " + this.recvQueue.toString());
+        }
+
         Request req = this.recvQueue.poll();
         if (req == null) {
             return;
