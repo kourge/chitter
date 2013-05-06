@@ -43,7 +43,13 @@ public class Request implements Serializable {
 
     public void complete() throws InvocationException {
         if (onComplete != null) {
-            onComplete.setParameterValues(this.iv.getReturnValue(), this);
+            if (onComplete.getArity() == 1) {
+                onComplete.setParameterValues(this.iv.getReturnValue());
+            } else if (onComplete.getArity() == 2) {
+                onComplete.setParameterValues(this.iv.getReturnValue(), this);
+            } else {
+                throw new InvocationException("Arity of onComplete is not 1 or 2");
+            }
             onComplete.invoke();
         }
     }
