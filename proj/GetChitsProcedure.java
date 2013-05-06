@@ -52,19 +52,25 @@ public class GetChitsProcedure extends ChitterProcedure {
             returnValue(null);
             return;
         }
-        String lines = new String(result.first());
+        byte[] stream = result.first();
 
-        Scanner scanner = new Scanner(lines);
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
+        int last = 0;
+        for (int i = 0; i < stream.length; i++) {
+            if (stream[i] != (byte)'\n') {
+                continue;
+            }
+            byte[] line = Arrays.copyOfRange(stream, last, i);
+
             Chit chit;
             try {
-                chit = (Chit)Serialization.decode(Utility.stringToByteArray(line));
+                chit = (Chit)Serialization.decode(line);
             } catch (Serialization.DecodingException e) {
                 returnValue(null);
                 return;
             }
             list.add(chit);
+
+            last = i + 1;
         }
 
         returnValue(list);

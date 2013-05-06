@@ -21,7 +21,6 @@ public class ChitProcedure extends ChitterProcedure {
 
     private Chit chit;
     private byte[] stream;
-    private String line;
     private String tweetsFn;
 
     public ChitProcedure(
@@ -39,7 +38,9 @@ public class ChitProcedure extends ChitterProcedure {
             throw new IllegalArgumentException();
         }
 
-        line = Utility.byteArrayToString(stream) + "\n";
+        stream = Arrays.copyOf(stream, stream.length + 1);
+        stream[stream.length - 1] = (byte)'\n';
+
         tweetsFn = "tweets:" + username;
     }
 
