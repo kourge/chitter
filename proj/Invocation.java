@@ -122,6 +122,10 @@ public class Invocation implements Serializable {
         this.paramVals = Arrays.copyOf(values, values.length);
     }
 
+    public int getArity() {
+        return this.arity;
+    }
+
     public void setTarget(Object obj) {
         this.target = obj;
     }
