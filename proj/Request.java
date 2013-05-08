@@ -1,13 +1,9 @@
 import java.io.Serializable;
 import java.util.Random;
+import edu.washington.cs.cse490h.lib.Utility;
 
 public class Request implements Serializable {
     public static final long serialVersionUID = 0L;
-
-    private static final Random random;
-    static {
-        random = new Random();
-    }
 
     private int dest;
     private long seq;
@@ -16,7 +12,7 @@ public class Request implements Serializable {
 
     private Request(int dest, Invocation invocation, Invocation onComplete) {
         this.iv = invocation;
-        this.seq = random.nextLong();
+        this.seq = Utility.getRNG().nextLong();
         this.dest = dest;
         this.onComplete = onComplete;
     }
