@@ -137,9 +137,9 @@ public class Invocation implements Serializable {
     public String toString() {
         return String.format(
             "(%s::%s%s -> %s%s)",
-            this.target == null ? "" : className(this.target.getClass().getName()),
+            this.target == null ? "" : this.target.getClass().getSimpleName(),
             this.procName, Arrays.toString(this.formatParams()),
-            className(this.returnType.getName()),
+            this.returnType.getSimpleName(),
             this.hasReturnVal ? "(" + this.returnVal + ")" : ""
         );
     }
@@ -149,7 +149,7 @@ public class Invocation implements Serializable {
 
         for (int i = 0; i < this.paramTypes.length; i++) {
             Class<?> klass = this.paramTypes[i];
-            params[i] = className(klass.getName());
+            params[i] = klass.getSimpleName();
 
             if (this.paramVals != null && this.paramVals.length != 0) {
                 params[i] += "(" + this.paramVals[i].toString() + ")";
@@ -157,10 +157,6 @@ public class Invocation implements Serializable {
         }
 
         return params;
-    }
-
-    protected String className(String name) {
-        return name.replace((CharSequence)"java.lang.", (CharSequence)"");
     }
 
     public boolean equals(Object obj) {
