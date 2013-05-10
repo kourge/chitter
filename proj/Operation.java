@@ -1,81 +1,103 @@
 import java.util.Map;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Scanner;
-import java.util.Arrays;
-import java.lang.annotation.*;
-import java.lang.reflect.*;
+
+import org.python.core.*;
+import org.python.util.PythonInterpreter;
 
 public class Operation {
-    public static void performOn(ClientServerNode node, String command)
+    private static PyType remoteOp;
+    private static PyType mockFS;
+    static {
+        PythonInterpreter python = new PythonInterpreter();
+        python.exec("from operation import RemoteOp");
+        python.exec("from fs import MockFS");
+        remoteOp = (PyType)python.get("RemoteOp");
+        mockFS = (PyType)python.get("MockFS");
+    }
+
+    private static Map<Request, PyGenerator> pendingOps;
+    static {
+        pendingOps = new HashMap<Request, PyGenerator>();
+    }
+
+    private ClientServerNode node;
+    private int destination;
+
+    public Operation(ClientServerNode node) {
+        this.node = node;
+    }
+
+    public void perform(String command)
     throws Exception {
         Scanner scanner = new Scanner(command);
 
-        int destination = scanner.nextInt();
+        this.destination = scanner.nextInt();
         String commandName = scanner.next();
         String commandString = scanner.nextLine();
 
-        Method maker = makerForCommand(commandName);
-        System.out.println(maker);
-        if (maker == null) {
-            throw new IllegalArgumentException(
-                "Operation '" + commandName + "' does not exist"
-            );
-        }
-
-        assert maker.getParameterTypes().length == 4;
-        ChitterProcedure instance = (ChitterProcedure)maker.invoke(
-            null, node, null, destination, commandString
+        PyObject fs = mockFS.__call__();
+        PyObject instance = remoteOp.__call__(fs);
+        PyGenerator proc = (PyGenerator)instance.__call__(
+            new PyString(commandName), new PyString(commandString)
         );
-        instance.call();
-    }
 
-    private static Method makerForCommand(String commandName) {
-        Class<?> klass = classForCommand(commandName);
-        if (klass == null) {
-            return null;
-        }
+        PyObject value = proc.next();
+        Object javaVal = value.__tojava__(Invocation.class);
 
-        for (Method method : klass.getMethods()) {
-            if (method.getName().equals("make") &&
-                Modifier.isStatic(method.getModifiers())) {
-                return method;
-            }
-        }
-        return null;
-    }
+        if (javaVal instanceof Invocation) {
+            Request req = Request.to(
+                this.destination, (Invocation)javaVal,
+                Invocation.on(this, "onRequestComplete")
+            );
 
-    private static Class<?> classForCommand(String commandName) {
-        char[] command = commandName.toCharArray();
-        command[0] = Character.toUpperCase(command[0]);
-        commandName = new String(command);
-        try {
-            return Class.forName(commandName + "Procedure");
-        } catch (ClassNotFoundException e) {
-            return null;
+            pendingOps.put(req, proc);
+            this.node.sendRPC(req);
+        } else {
+            // We have arrived at our final value
+            System.out.println("Got PyObject as result: " + value);
         }
     }
 
-    public static void printResult(Object obj) {
-        System.out.println(obj);
+    public void onRequestComplete(Object result, Object request) throws Exception {
+        Request req = (Request)request;
+        PyGenerator proc = pendingOps.get(req);
+
+        if (proc == null) {
+            System.out.printf(
+                "onRequestComplete: couldn't find continuation for %s\n",
+                req, result
+            );
+            return;
+        }
+
+        pendingOps.remove(req);
+
+        PyObject value = proc.send(Py.java2py(result));
+        Object javaVal = value.__tojava__(Invocation.class);
+
+        if (javaVal instanceof Invocation) {
+            req = Request.to(
+                this.destination, (Invocation)javaVal,
+                Invocation.on(this, "onRequestComplete")
+            );
+
+            pendingOps.put(req, proc);
+            this.node.sendRPC(req);
+        } else {
+            // We have arrived at our final value
+            System.out.println("Got PyObject as result: " + value);
+        }
     }
 
-    private static Class<ChitterProcedure.Proc> p = ChitterProcedure.Proc.class;
-    private static Class<?>[] procedures = {
-        AddFollowerProcedure.class, ChitProcedure.class,
-        CreateUserProcedure.class, GetChitsProcedure.class,
-        GetFollowingsProcedure.class, GetTimelineProcedure.class,
-        RemoveFollowerProcedure.class
-    };
     private static Map<String, String> operations;
     static {
         operations = new HashMap<String, String>();
-        for (Class<?> klass : procedures) {
-            for (Method method : klass.getMethods()) {
-                if (method.isAnnotationPresent(p)) {
-                    ChitterProcedure.Proc proc = method.getAnnotation(p);
-                    operations.put(proc.name(), proc.desc());
-                }
-            }
+        @SuppressWarnings("unchecked")
+        Map docs = (Map)remoteOp.invoke("__docs__".intern());
+        for (Object key : docs.keySet()) {
+            operations.put((String)key, (String)docs.get(key));
         }
     }
 

@@ -23,6 +23,7 @@ public class ChitterNode extends ClientServerNode {
 
     public static Map<String, String> consoleOperationsDescription = Operation.getOperations();
     private static Queue<String> pendingCommands;
+    private Operation op;
 
     /**
      * Create a new node and initialize everything
@@ -30,6 +31,7 @@ public class ChitterNode extends ClientServerNode {
     public ChitterNode() {
         super();
         pendingCommands = new LinkedList<String>();
+        op = new Operation(this);
     }
 
     /**
@@ -121,8 +123,10 @@ public class ChitterNode extends ClientServerNode {
                 sendRPC(req);
             } else if (Operation.supports(directiveName)) {
                 try {
-                    Operation.performOn(this, directive);
+                    op.perform(directive);
                 } catch (Exception e) {
+                    System.out.printf("directiveName = \"%s\"\n", directiveName);
+                    e.printStackTrace();
                 }
             }
             pumpSendQueue();
