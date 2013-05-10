@@ -1,4 +1,5 @@
 import edu.washington.cs.cse490h.lib.Node;
+import edu.washington.cs.cse490h.lib.Utility;
 import java.util.*;
 
 /**
@@ -17,9 +18,9 @@ public abstract class RIONode extends Node {
 	
 	public RIONode() {
 		RIOLayer = new ReliableInOrderMsgLayer(this);
-    peerSessions = new HashMap<Integer, Long>();
-    uuid = UUID.randomUUID().getMostSignificantBits();
-    //System.out.println("node initialized with uuid: " + uuid);
+        peerSessions = new HashMap<Integer, Long>();
+        uuid = Utility.getRNG().nextLong();
+        //System.out.println("node initialized with uuid: " + uuid);
 	}
 	
 	@Override
