@@ -241,11 +241,13 @@ public class Simulator extends Manager {
             // event loop; assume client is node 0
             // ConsoleType console = new Console(0, 1, consoleOperationsDescription, true);
             while (true) {
-                currentRoundEvents = new ArrayList<Event>();
 
                 for (int i = 0; i < 15; i++) {
+                    currentRoundEvents = new ArrayList<Event>();
                     doTimestep(currentRoundEvents);
                 }
+
+                currentRoundEvents = new ArrayList<Event>();
 
                 // just in case an exception is thrown or input is null
                 Event ev = null;
