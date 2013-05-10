@@ -120,7 +120,10 @@ public class Invocation implements Serializable {
         }
 
         for (int i = 0; i < this.paramTypes.length; i++) {
-            if (!this.paramTypes[i].isInstance(values[i])) {
+            // This is a slap-on bandage. Primitive types and their respective
+            // wrapper classes should be considered equal.
+            if (!this.paramTypes[i].isPrimitive() &&
+                !this.paramTypes[i].isInstance(values[i])) {
                 throw new IllegalArgumentException(String.format(
                     "Param value %d is not of type %s but of type %s",
                     i, this.paramTypes[i], values[i].getClass()
