@@ -76,19 +76,23 @@ public class ReliableInOrderMsgLayer {
                 n.addTimeout(new Callback(onTimeoutMethod, this,
                     new Object[]{ from, n.getUUID() }), ReliableInOrderMsgLayer.TIMEOUT);
             } catch (Exception e) {}
-        }
+        } else {
+            InChannel in = inConnections.get(from);
+            if(in == null) {
+                in = new InChannel();
+                inConnections.put(from, in);
+            }
 
-		InChannel in = inConnections.get(from);
-		if(in == null) {
-			in = new InChannel();
-			inConnections.put(from, in);
-        }
-    
-        if (riopkt.getSessionId() == n.getUUID()) {
-            LinkedList<RIOPacket> toBeDelivered = in.gotPacket(riopkt);
-            for(RIOPacket p: toBeDelivered) {
-                // deliver in-order the next sequence of packets
-                n.onRIOReceive(from, p.getProtocol(), p.getPayload());
+            // send off an ACK
+            byte[] ackNum = Utility.stringToByteArray("" + riopkt.getSeqNum());
+            n.send(from, Protocol.ACK, ackNum);
+        
+            if (riopkt.getSessionId() == n.getUUID()) {
+                LinkedList<RIOPacket> toBeDelivered = in.gotPacket(riopkt);
+                for(RIOPacket p: toBeDelivered) {
+                    // deliver in-order the next sequence of packets
+                    n.onRIOReceive(from, p.getProtocol(), p.getPayload());
+                }
             }
         }
 	}
