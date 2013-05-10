@@ -119,6 +119,15 @@ public class Invocation implements Serializable {
             throw new IllegalArgumentException("Incorrect param values arity");
         }
 
+        for (int i = 0; i < this.paramTypes.length; i++) {
+            if (!this.paramTypes[i].isInstance(values[i])) {
+                throw new IllegalArgumentException(String.format(
+                    "Param value %d is not of type %s but of type %s",
+                    i, this.paramTypes[i], values[i].getClass()
+                ));
+            }
+        }
+
         this.paramVals = Arrays.copyOf(values, values.length);
     }
 

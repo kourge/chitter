@@ -111,7 +111,8 @@ public abstract class ClientServerNode extends RIONode {
                     onCommandCompletion();
                 }
             } catch (InvocationException e) {
-                logError("Failed to invoke onComplete callback " + request.getOnComplete());
+                logError(e.toString() + " " + request);
+                e.printStackTrace();
             }
         } else {
             logError("Received unknown response: " + req);

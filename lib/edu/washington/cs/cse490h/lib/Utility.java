@@ -9,7 +9,7 @@ import java.util.Random;
  */
 public class Utility {
 
-    private static final String CHARSET = "US-ASCII";
+    private static final String CHARSET = "UTF-8";
     static Random randNumGen;
 
     public static Random getRNG() {
