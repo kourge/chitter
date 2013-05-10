@@ -22,7 +22,7 @@ import edu.washington.cs.cse490h.lib.Callback;
  *
  * This class is fully serializable.
  */
-public class Invocation implements Serializable {
+public class Invocation implements Serializable, Invokable {
     public static final long serialVersionUID = 0L;
 
     protected String procName;
@@ -184,7 +184,12 @@ public class Invocation implements Serializable {
         );
     }
 
-    public boolean equalsIgnoreValues(Invocation other) {
+    public boolean equalsIgnoreValues(Invokable obj) {
+        if (!(obj instanceof Invocation)) {
+            return false;
+        }
+        Invocation other = (Invocation)obj;
+
         return (
             this.procName.equals(other.procName) &&
             this.returnType.equals(other.returnType) &&
