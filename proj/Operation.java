@@ -44,20 +44,7 @@ public class Operation {
         );
 
         PyObject value = proc.next();
-        Object javaVal = value.__tojava__(Invocation.class);
-
-        if (javaVal instanceof Invocation) {
-            Request req = Request.to(
-                this.destination, (Invocation)javaVal,
-                Invocation.on(this, "onRequestComplete")
-            );
-
-            pendingOps.put(req, proc);
-            this.node.sendRPC(req);
-        } else {
-            // We have arrived at our final value
-            System.out.println("Got PyObject as result: " + value);
-        }
+        this.handleValue(value, proc);
     }
 
     public void onRequestComplete(Object result, Object request) throws Exception {
@@ -75,13 +62,12 @@ public class Operation {
         pendingOps.remove(req);
 
         PyObject value = proc.send(Py.java2py(result));
-        Object javaVal = value.__tojava__(Invocation.class);
+        this.handleValue(value, proc);
+    }
 
-        if (javaVal instanceof Invocation) {
-            req = Request.to(
-                this.destination, (Invocation)javaVal,
-                Invocation.on(this, "onRequestComplete")
-            );
+    public void handleValue(PyObject value, PyGenerator proc) {
+        if (value instanceof PyTuple) {
+            Request req = convertToRequest((PyTuple)value);
 
             pendingOps.put(req, proc);
             this.node.sendRPC(req);
@@ -89,6 +75,24 @@ public class Operation {
             // We have arrived at our final value
             System.out.println("Got PyObject as result: " + value);
         }
+    }
+
+    public Request convertToRequest(PyTuple t) {
+        String name = t.pyget(0).asString();
+        PyTuple args = (PyTuple)t.pyget(1);
+
+        Invocation iv = Invocation.of(FS.class, name);
+        Class<?>[] types = iv.getParameterTypes();
+        Object[] params = new Object[args.size()];
+
+        for (int i = 0; i < args.size(); i++) {
+            params[i] = args.pyget(i).__tojava__(types[i]);
+        }
+        iv.setParameterValues(params);
+
+        return Request.to(
+            this.destination, iv, Invocation.on(this, "onRequestComplete")
+        );
     }
 
     private static Map<String, String> operations;
