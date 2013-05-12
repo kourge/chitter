@@ -228,18 +228,22 @@ public class Simulator extends Manager {
             currentRoundEvents.add(parser.parseLine("start 1"));
             doTimestep(currentRoundEvents);
 
-            PySystemState sys = Py.getSystemState();
-            sys.path.append(new PyString("lib/edu/washington/cs/cse490h/lib/"));
-            PySystemObjectFactory factory = new PySystemObjectFactory(
-                ConsoleType.class,
-                "pyconsole",
-                "Console"
-            );
-
-            ConsoleType console = (ConsoleType) factory.createObject(0, 1, consoleOperationsDescription, true);
+            // ************************
+            // For jython-based console
+            // ************************
+            //
+            // PySystemState sys = Py.getSystemState();
+            // sys.path.append(new PyString("lib/edu/washington/cs/cse490h/lib/"));
+            // PySystemObjectFactory factory = new PySystemObjectFactory(
+            //     ConsoleType.class,
+            //     "pyconsole",
+            //     "Console"
+            // );
+            //
+            // ConsoleType console = (ConsoleType) factory.createObject(0, 1, consoleOperationsDescription, true);
 
             // event loop; assume client is node 0
-            // ConsoleType console = new Console(0, 1, consoleOperationsDescription, true);
+            ConsoleType console = new Console(0, 1, consoleOperationsDescription, true);
             while (true) {
 
                 for (int i = 0; i < 15; i++) {

@@ -1,7 +1,8 @@
 import java.io.*;
 
-import edu.washington.cs.cse490h.lib.PersistentStorageReader;
 import edu.washington.cs.cse490h.lib.PersistentStorageWriter;
+import edu.washington.cs.cse490h.lib.PersistentStorageInputStream;
+import edu.washington.cs.cse490h.lib.PersistentStorageOutputStream;
 import edu.washington.cs.cse490h.lib.Utility;
 
 public class LocalFS implements FS {
@@ -35,20 +36,27 @@ public class LocalFS implements FS {
     public Pair<byte[], Long> read(String filename) {
         byte[] out;
 
-        PersistentStorageReader reader;
+        PersistentStorageInputStream reader;
         try {
-            reader = node.getReader(filename);
+            reader = node.getInputStream(filename);
         } catch (FileNotFoundException e) {
             return EMPTY_RESULT;
         }
 
         try {
-            StringBuffer buf = new StringBuffer();
-            String tmp = null;
-            while ((tmp = reader.readLine()) != null) {
-                buf.append(tmp);
+            ByteArrayOutputStream readBytes = new ByteArrayOutputStream();
+            byte[] buf = new byte[1024]; // try to read 1024 bytes at a time
+            int offs = 0;
+            while (true) {
+                int amountRead = reader.read(buf, offs, 1024);
+                readBytes.write(buf, offs, amountRead);
+                offs += amountRead;
+                // stop when we can read nothing more
+                if (amountRead == 0) {
+                    break;
+                }
             }
-            out = Utility.stringToByteArray(buf.toString());
+            out = readBytes.toByteArray();
         } catch (IOException e) {
             return EMPTY_RESULT;
         }
@@ -77,8 +85,8 @@ public class LocalFS implements FS {
         }
 
         try {
-            BufferedWriter writer = node.getWriter(filename, true);
-            writer.append(Utility.byteArrayToString(data));
+            PersistentStorageOutputStream writer = node.getOutputStream(filename, true);
+            writer.write(data);
             return Utility.fileTimestamp(node, filename);
         } catch (IOException e) {
             return FS.FAILURE;
@@ -97,8 +105,8 @@ public class LocalFS implements FS {
         }
 
         try {
-            PersistentStorageWriter writer = node.getWriter(filename, false);
-            writer.write(new String(data));
+            PersistentStorageOutputStream writer = node.getOutputStream(filename, false);
+            writer.write(data);
             return Utility.fileTimestamp(node, filename);
         } catch (IOException e) {
             return FS.FAILURE;
@@ -118,7 +126,6 @@ public class LocalFS implements FS {
         } catch (IOException e) {
             return false;
         }
-
         return true;
     }
 }
