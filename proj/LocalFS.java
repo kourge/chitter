@@ -46,17 +46,19 @@ public class LocalFS implements FS {
         try {
             ByteArrayOutputStream readBytes = new ByteArrayOutputStream();
             byte[] buf = new byte[1024]; // try to read 1024 bytes at a time
-            int offs = 0;
             while (true) {
-                int amountRead = reader.read(buf, offs, 1024);
-                readBytes.write(buf, offs, amountRead);
-                offs += amountRead;
-                // stop when we can read nothing more
-                if (amountRead == 0) {
+                int amountRead = reader.read(buf, 0, 1024);
+                System.out.println("read: " + amountRead);
+                // stop on eof
+                if (amountRead == -1) {
                     break;
                 }
+                readBytes.write(buf, 0, amountRead);
+                System.out.println("wrote: " + amountRead);
             }
+            System.out.println("to byte array");
             out = readBytes.toByteArray();
+            System.out.println("bytes: " + out.length);
         } catch (IOException e) {
             return EMPTY_RESULT;
         }
