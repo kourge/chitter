@@ -21,7 +21,7 @@ public class LocalFS implements FS {
             node.getWriter(filename, false);
             return Utility.fileTimestamp(node, filename);
         } catch (IOException e) {
-            return -1;
+            return FS.FAILURE;
         }
     }
 
@@ -59,7 +59,7 @@ public class LocalFS implements FS {
     /** Gives the latest version number of a file */
     public long currentVersion(String filename) {
         if (!Utility.fileExists(node, filename)) {
-            return -1;
+            return FS.FAILURE;
         }
 
         return Utility.fileTimestamp(node, filename);
@@ -68,11 +68,12 @@ public class LocalFS implements FS {
     /** Append to a file if not changed since version we have */
     public long appendIfNotChanged(String filename, byte[] data, long version) {
         if (!Utility.fileExists(node, filename)) {
-            return -1;
+            return FS.FAILURE;
         }
 
-        if (version != -1 && version != Utility.fileTimestamp(node, filename)) {
-            return -1;
+        if (version != FS.FAILURE &&
+            version != Utility.fileTimestamp(node, filename)) {
+            return FS.FAILURE;
         }
 
         try {
@@ -80,18 +81,19 @@ public class LocalFS implements FS {
             writer.append(Utility.byteArrayToString(data));
             return Utility.fileTimestamp(node, filename);
         } catch (IOException e) {
-            return -1;
+            return FS.FAILURE;
         }
     }
 
     /** Write a file if not changed since the version we have */
     public long overwriteIfNotChanged(String filename, byte[] data, long version) {
         if (!Utility.fileExists(node, filename)) {
-            return -1;
+            return FS.FAILURE;
         }
 
-        if (version != -1 && version != Utility.fileTimestamp(node, filename)) {
-            return -1;
+        if (version != FS.FAILURE &&
+            version != Utility.fileTimestamp(node, filename)) {
+            return FS.FAILURE;
         }
 
         try {
@@ -99,7 +101,7 @@ public class LocalFS implements FS {
             writer.write(new String(data));
             return Utility.fileTimestamp(node, filename);
         } catch (IOException e) {
-            return -1;
+            return FS.FAILURE;
         }
     }
 
