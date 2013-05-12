@@ -378,17 +378,21 @@ public class Emulator extends Manager {
 				}
 			}
 		} else if (cmdInputType == InputType.CONSOLE) {
-            PySystemState sys = Py.getSystemState();
-            sys.path.append(new PyString("lib/edu/washington/cs/cse490h/lib/"));
-            PySystemObjectFactory factory = new PySystemObjectFactory(
-                ConsoleType.class,
-                "pyconsole",
-                "Console"
-            );
+            // ************************
+            // For jython-based console
+            // ************************
+            //
+            // PySystemState sys = Py.getSystemState();
+            // sys.path.append(new PyString("lib/edu/washington/cs/cse490h/lib/"));
+            // PySystemObjectFactory factory = new PySystemObjectFactory(
+            //     ConsoleType.class,
+            //     "pyconsole",
+            //     "Console"
+            // );
+            //
+            // ConsoleType console = (ConsoleType) factory.createObject(0, 1, consoleOperationsDescription);
 
-            ConsoleType console = (ConsoleType) factory.createObject(0, 1, consoleOperationsDescription);
-
-            // ConsoleType console = new Console(0, 1, consoleOperationsDescription);
+            ConsoleType console = new Console(0, 1, consoleOperationsDescription);
 			while (node != null || failed) {
 				if (IOFinished && node != null) {
 					System.err.println("Network I/O thread failed, killing the node...");
