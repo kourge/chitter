@@ -107,7 +107,7 @@ public abstract class ClientServerNode extends RIONode {
                     req.getInvocation().getReturnValue()
                 );
                 request.complete();
-                if (!hasOustandingRequests()) {
+                if (!hasOutstandingRequests()) {
                     onCommandCompletion();
                 }
             } catch (InvocationException e) {
@@ -153,7 +153,7 @@ public abstract class ClientServerNode extends RIONode {
         stream.format("Node %d %s: %s\n", addr, method, output);
     }
 
-    @Client public boolean hasOustandingRequests() {
+    @Client public boolean hasOutstandingRequests() {
         return !this.pendingRequests.isEmpty();
     }
 

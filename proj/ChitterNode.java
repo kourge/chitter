@@ -110,7 +110,7 @@ public class ChitterNode extends ClientServerNode {
     }
 
     public void queueDirective(String directive) {
-        if (hasOustandingRequests()) {
+        if (hasOutstandingRequests()) {
             pendingCommands.offer(directive);
         } else {
             Scanner scanner = new Scanner(directive);
