@@ -11,8 +11,8 @@ public class Operation {
     private static PyType mockFS;
     static {
         PythonInterpreter python = new PythonInterpreter();
-        python.exec("from operation import RemoteOp");
-        python.exec("from fs import MockFS");
+        python.exec("from pyoperation import RemoteOp");
+        python.exec("from pyfs import MockFS");
         remoteOp = (PyType)python.get("RemoteOp");
         mockFS = (PyType)python.get("MockFS");
     }

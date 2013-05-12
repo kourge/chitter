@@ -5,7 +5,7 @@ import Serialization
 import Op
 import FS
 import Chit
-from fs import MockFS
+from pyfs import MockFS
 
 
 FAILURE = -1
