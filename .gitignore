@@ -22,6 +22,9 @@ jars/lib.jar
 # ignore jython cachedir
 jars/cachedir/
 
+# ignore normal cachedir
+cachedir/
+
 # ignore pyc
 *.pyc
 
