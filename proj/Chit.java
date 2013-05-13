@@ -7,7 +7,7 @@ public class Chit implements Serializable {
     private long timestamp;
 
     public Chit(String text, long timestamp) {
-        this.text = text;
+        this.text = text.trim();
         this.timestamp = timestamp;
     }
 
