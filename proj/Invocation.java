@@ -138,7 +138,7 @@ public class Invocation implements Serializable, Invokable {
 
         if (should.isPrimitive()) {
             try {
-                return obj.getClass().getDeclaredField("TYPE").get(null) == should;
+                return obj.getClass().getDeclaredField("TYPE").get(null) != should;
             } catch (Exception e) {
                 return true;
             }
