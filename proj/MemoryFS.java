@@ -61,8 +61,8 @@ public class MemoryFS implements FS {
             return FS.FAILURE;
         }
 
-        int oldLength = data.length;
-        f.content = Arrays.copyOf(data, oldLength + data.length);
+        int oldLength = f.content.length;
+        f.content = Arrays.copyOf(f.content, oldLength + data.length);
         System.arraycopy(data, 0, f.content, oldLength, data.length);
 
         f.timestamp = System.currentTimeMillis();

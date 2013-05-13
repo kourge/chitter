@@ -1,8 +1,6 @@
 #!/usr/bin/perl
 
-# Simple script to start a Node Manager that uses a compiled lib.jar
-
-main("edu.washington.cs.cse490h.lib.MessageLayer");
+main("Repl");
 
 sub main {
     my $classname = shift;
