@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.Arrays;
 import java.io.Serializable;
 
-public class Transaction
+public abstract class Transaction
 implements Serializable, Invokable, Iterable<Invocation> {
     public static final long serialVersionUID = 0L;
 
@@ -27,7 +27,9 @@ implements Serializable, Invokable, Iterable<Invocation> {
     public Object invokeOn(Object obj) throws InvocationException {
         List<Object> result = new LinkedList<Object>();
         for (Invocation iv : this.calls) {
+            this.beforeInvocation(iv);
             result.add(iv.invokeOn(obj));
+            this.afterInvocation(iv);
         }
         return result;
     }
@@ -35,10 +37,16 @@ implements Serializable, Invokable, Iterable<Invocation> {
     public Object invoke() throws InvocationException {
         List<Object> result = new LinkedList<Object>();
         for (Invocation iv : this.calls) {
+            this.beforeInvocation(iv);
             result.add(iv.invoke());
+            this.afterInvocation(iv);
         }
         return result;
     }
+
+    protected abstract void beforeInvocation(Invocation iv) throws InvocationException;
+
+    protected abstract void afterInvocation(Invocation iv) throws InvocationException;
 
     public Invocation[] getInvocations() {
         return Arrays.copyOf(this.calls, this.calls.length);

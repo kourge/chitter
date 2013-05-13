@@ -11,6 +11,15 @@ public class FSTransaction extends Transaction {
         this.fs = fs;
     }
 
+    private Map<String, Object> failureValues = new HashMap<String, Object>() {{
+        put("create", FS.FAILURE);
+        put("read", FS.EMPTY_RESULT);
+        put("currentVersion", FS.FAILURE);
+        put("appendIfNotChanged", FS.FAILURE);
+        put("overwriteIfNotChanged", FS.FAILURE);
+        put("delete", false);
+    }};
+
     public Object invokeOn(Object obj) throws InvocationException {
         Map<String, String> snapshot = this.compileSnapshot(this.calls);
         Object result = null;
@@ -42,6 +51,7 @@ public class FSTransaction extends Transaction {
     }
 
     private Set<String> compileDelta(Invocation... ivs) {
+        // TODO account for create file case
         Set<String> result = new HashSet<String>();
         for (Invocation iv : ivs) {
            result.add((String)iv.getParameterValues()[0]);
@@ -50,6 +60,7 @@ public class FSTransaction extends Transaction {
     }
 
     private Map<String, String> createSnapshot(Set<String> files) {
+        // TODO merge compileDelta in here, and use empty string to denote create invocation
         Map<String, String> snapshot = new HashMap<String, String>();
         for (String file : files) {
             String snapshotName;
@@ -78,6 +89,16 @@ public class FSTransaction extends Transaction {
         for (String file : snapshot.keySet()) {
             String snapshotName = snapshot.get(file);
             this.fs.delete(snapshotName);
+        }
+    }
+
+    protected void beforeInvocation(Invocation iv) throws InvocationException {}
+
+    protected void afterInvocation(Invocation iv) throws InvocationException {
+        String name = iv.getMethodName();
+        if (failureValues.containsKey(name) 
+            && iv.getReturnValue().equals(failureValues.get(name))) {
+            throw new InvocationException(new Exception());
         }
     }
 }
