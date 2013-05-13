@@ -29,7 +29,7 @@ public abstract class ClientServerNode extends RIONode {
 
         try {
             req = (Request)Serialization.decode(msg);
-            req.getInvocation().invokeOn(fs);
+            req.getInvokable().invokeOn(fs);
             out = Serialization.encode(req);
             logOutput(req.toString());
         } catch (Serialization.DecodingException e) {
@@ -103,8 +103,8 @@ public abstract class ClientServerNode extends RIONode {
         this.pendingRequests.remove(req);
         if (request != null) {
             try {
-                request.getInvocation().setReturnValue(
-                    req.getInvocation().getReturnValue()
+                request.getInvokable().setReturnValue(
+                    req.getInvokable().getReturnValue()
                 );
                 request.complete();
                 if (!hasOutstandingRequests()) {

@@ -7,21 +7,21 @@ public class Request implements Serializable {
 
     private int dest;
     private long seq;
-    private Invocation iv;
+    private Invokable iv;
     private transient Invocation onComplete;
 
-    private Request(int dest, Invocation invocation, Invocation onComplete) {
+    private Request(int dest, Invokable invocation, Invocation onComplete) {
         this.iv = invocation;
         this.seq = Utility.getRNG().nextLong();
         this.dest = dest;
         this.onComplete = onComplete;
     }
 
-    public static Request to(int dest, Invocation invocation, Invocation onComplete) {
+    public static Request to(int dest, Invokable invocation, Invocation onComplete) {
         return new Request(dest, invocation, onComplete);
     }
 
-    public Invocation getInvocation() {
+    public Invokable getInvokable() {
         return this.iv;
     }
 

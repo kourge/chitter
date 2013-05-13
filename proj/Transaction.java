@@ -10,6 +10,7 @@ implements Serializable, Invokable, Iterable<Invocation> {
     public static final long serialVersionUID = 0L;
 
     protected Invocation[] calls;
+    protected Object result;
 
     public Transaction(Invocation... args) {
         this.calls = Arrays.copyOf(args, args.length);
@@ -31,6 +32,7 @@ implements Serializable, Invokable, Iterable<Invocation> {
             result.add(iv.invokeOn(obj));
             this.afterInvocation(iv);
         }
+        this.result = result;
         return result;
     }
 
@@ -41,6 +43,7 @@ implements Serializable, Invokable, Iterable<Invocation> {
             result.add(iv.invoke());
             this.afterInvocation(iv);
         }
+        this.result = result;
         return result;
     }
 
@@ -56,5 +59,13 @@ implements Serializable, Invokable, Iterable<Invocation> {
         return Collections.unmodifiableList(
             Arrays.asList(this.getInvocations())
         ).iterator();
+    }
+
+    public Object getReturnValue() {
+        return this.result;
+    }
+
+    public void setReturnValue(Object result) {
+        this.result = result;
     }
 }

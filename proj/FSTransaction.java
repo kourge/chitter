@@ -55,7 +55,7 @@ public class FSTransaction extends Transaction {
         for (Invocation iv : ivs) {
             String file = (String)iv.getParameterValues()[0];
             if (snapshot.containsKey(file)) {
-                (String)iv.getParameterValues()[0] = snapshot.get(file);
+                iv.getParameterValues()[0] = snapshot.get(file);
                 continue;
             }
 
@@ -75,7 +75,7 @@ public class FSTransaction extends Transaction {
                 snapshot.put(file, snapshotName);
             }
             // redirect operation to apply to snapshot instead of real version
-            (String)iv.getParameterValues()[0] = snapshot.get(file);
+            iv.getParameterValues()[0] = snapshot.get(file);
         }
         return snapshot;
     }
