@@ -82,6 +82,9 @@ public class Console implements ConsoleType {
     }
 
     private String handle(String line) {
+        if (line == null) {
+            return "exit";
+        }
 		String[] cmd = line.split("\\s+");
 		if (cmd.length < 1) {
 			System.err.println("Command is too short: " + line);
