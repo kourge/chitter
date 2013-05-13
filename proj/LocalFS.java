@@ -126,4 +126,34 @@ public class LocalFS implements FS {
         }
         return true;
     }
+
+    /** Create a copy of a file */
+    public long copy(String src, String dest) {
+
+        // this is purely an early-out, these would be caught below, but it's
+        // handy to do this up front (so we don't read src only to find dest
+        // is already in existence, etc)
+        if (!Utility.fileExists(node, src) || Utility.fileExists(node, dest)) {
+            // either the src doesn't exist, or the dest already does
+            return FS.FAILURE;
+        }
+
+        // read in src
+        Pair<byte[], Long> readResult = read(src);
+        if (readResult == EMPTY_RESULT) {
+            return FS.FAILURE;
+        }
+        
+        // make the new file
+        long result = create(dest);
+        if (result == FS.FAILURE) {
+            return FS.FAILURE;
+        }
+        
+        // write out to new file
+        result = overwriteIfNotChanged(dest, readResult.first(), readResult.second());
+
+        // return version number of dest (also could be FS.FAILURE if the write failed)
+        return result;
+    }
 }
