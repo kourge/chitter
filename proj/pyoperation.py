@@ -208,7 +208,6 @@ class RemoteOp(Op):
 
         for line in parse_lines(content):
             if len(line) != 0:
-                System.out.println(repr(line))
                 try:
                     chit = Serialization.decode(line)
                     result.append(chit)
