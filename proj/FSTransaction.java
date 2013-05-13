@@ -16,7 +16,7 @@ public class FSTransaction extends Transaction {
         Object result = null;
         try {
             result = super.invokeOn(obj);
-        } catch (Exception e) {
+        } catch (InvocationException e) {
             this.restoreSnapshot(snapshot);
             this.deleteSnapshot(snapshot);
             throw e;
@@ -29,7 +29,7 @@ public class FSTransaction extends Transaction {
         Object result = null;
         try {
             result = super.invoke();
-        } catch (Exception e) {
+        } catch (InvocationException e) {
             this.restoreSnapshot(snapshot);
             this.deleteSnapshot(snapshot);
             throw e;
