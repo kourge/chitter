@@ -26,10 +26,10 @@ public class FSTransaction extends Transaction {
         try {
             result = super.invokeOn(obj);
         } catch (InvocationException e) {
-            this.restoreSnapshot(snapshot);
             this.deleteSnapshot(snapshot);
             throw e;
         }
+        this.commitSnapshot(snapshot);
         return result;
     }
 
@@ -39,37 +39,40 @@ public class FSTransaction extends Transaction {
         try {
             result = super.invoke();
         } catch (InvocationException e) {
-            this.restoreSnapshot(snapshot);
             this.deleteSnapshot(snapshot);
             throw e;
         }
+        this.commitSnapshot(snapshot);
         return result;
     }
 
     private Map<String, String> compileSnapshot(Invocation... ivs) {
-        return this.createSnapshot(this.compileDelta(ivs));
+        return this.createSnapshot(ivs);
     }
 
-    private Set<String> compileDelta(Invocation... ivs) {
-        // TODO account for create file case
-        Set<String> result = new HashSet<String>();
-        for (Invocation iv : ivs) {
-           result.add((String)iv.getParameterValues()[0]);
-        }
-        return result;
-    }
-
-    private Map<String, String> createSnapshot(Set<String> files) {
-        // TODO merge compileDelta in here, and use empty string to denote create invocation
+    private Map<String, String> createSnapshot(Invocation... ivs) {
         Map<String, String> snapshot = new HashMap<String, String>();
-        for (String file : files) {
+        for (Invocation iv : ivs) {
+            String file = (String)iv.getParameterValues()[0];
+            if (snapshot.containsKey(file)) {
+                continue;
+            }
+
             String snapshotName;
             do {
                 snapshotName = snapshotNameForFile(file);
             } while (fs.exists(snapshotName));
 
-            this.fs.copy(file, snapshotName);
-            snapshot.put(file, snapshotName);
+            if (iv.getMethodName().equals("delete")) {
+                // if we're a delete, our "snapshot" is the lack of a file
+                snapshot.put(file, "");
+            } else {
+                // there's no file to copy in create case:
+                if (!iv.getMethodName().equals("create")) {
+                    this.fs.copy(file, snapshotName);
+                }
+                snapshot.put(file, snapshotName);
+            }
         }
         return snapshot;
     }
@@ -78,10 +81,16 @@ public class FSTransaction extends Transaction {
         return String.format("snap$%d$%s", System.currentTimeMillis(), file);
     }
 
-    private void restoreSnapshot(Map<String, String> snapshot) {
+    /** Copies snapshot-ed files over to the actual files they're replacing */
+    private void commitSnapshot(Map<String, String> snapshot) {
+        // TODO log this carefully so we can recover gracefully
         for (String file : snapshot.keySet()) {
             String snapshotName = snapshot.get(file);
-            this.fs.copy(snapshotName, file);
+            if (snapshotName.equals("")) {
+                this.fs.delete(file);
+            } else {
+                this.fs.copy(snapshotName, file);
+            }
         }
     }
 
