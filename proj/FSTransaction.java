@@ -104,9 +104,7 @@ public class FSTransaction extends Transaction {
         }
     }
 
-    protected void beforeInvocation(Invocation iv) throws InvocationException {}
-
-    protected void afterInvocation(Invocation iv) throws InvocationException {
+    @Override protected void afterInvocation(Invocation iv) throws InvocationException {
         String name = iv.getMethodName();
         if (failureValues.containsKey(name) 
             && iv.getReturnValue().equals(failureValues.get(name))) {
