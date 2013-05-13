@@ -2,13 +2,15 @@
 
 # Simple script to start a Router
 
-main();
+main("edu.washington.cs.cse490h.lib.Router");
 
 sub main {
+    my $classname = shift;
+    my $classpath = join ":", (
+        "jars/plume.jar",
+        "jars/lib.jar"
+    );
+    my $args = join " ", @ARGV;
 
-    $classpath = "jars/plume.jar:jars/lib.jar";
-
-    $args = join " ", @ARGV;
-
-    exec("java -cp $classpath edu.washington.cs.cse490h.lib.Router $args");
+    exec("java -cp $classpath $classname $args");
 }
