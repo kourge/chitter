@@ -22,7 +22,17 @@ implements Serializable, Invokable, Iterable<Invocation> {
         }
         Transaction other = (Transaction)obj;
 
-        return this.calls.equals(other.calls);
+        if (other.calls.length != this.calls.length) {
+            return false;
+        }
+
+        for (int i = 0; i < this.calls.length; ++i) {
+            if (!this.calls[i].equalsIgnoreValues(other.calls[i])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public Object invokeOn(Object obj) throws InvocationException {
