@@ -120,10 +120,7 @@ public class Invocation implements Serializable, Invokable {
         }
 
         for (int i = 0; i < this.paramTypes.length; i++) {
-            // This is a slap-on bandage. Primitive types and their respective
-            // wrapper classes should be considered equal.
-            if (!this.paramTypes[i].isPrimitive() &&
-                !this.paramTypes[i].isInstance(values[i])) {
+            if (typesMismatched(this.paramTypes[i], values[i])) {
                 throw new IllegalArgumentException(String.format(
                     "Param value %d is not of type %s but of type %s",
                     i, this.paramTypes[i], values[i].getClass()
@@ -132,6 +129,22 @@ public class Invocation implements Serializable, Invokable {
         }
 
         this.paramVals = Arrays.copyOf(values, values.length);
+    }
+
+    private boolean typesMismatched(Class<?> should, Object obj) {
+        if (should.isInstance(obj)) {
+            return false;
+        }
+
+        if (should.isPrimitive()) {
+            try {
+                return obj.getClass().getDeclaredField("TYPE").get(null) == should;
+            } catch (Exception e) {
+                return true;
+            }
+        }
+
+        return true;
     }
 
     public int getArity() {
