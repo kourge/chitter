@@ -16,15 +16,24 @@ def valid_username(username):
     return not any(char in INVALID_USERNAME_CHARACTERS for char in username)
 
 
-def parse_lines(array):
+def lines(iterable, separator="\n"):
+    """A generator that 'splits' an iterable by a character separator."""
+    if len(iterable) == 0:
+        raise StopIteration
+    if not isinstance(iterable, basestring):
+        separator = ord(separator)
+
     begin, end = 0, 0
-    for i in xrange(len(array)):
-        c = array[i]
-        if c == ord("\n"):
+    for i in xrange(len(iterable)):
+        if iterable[i] == separator:
             end = i
-            yield array[begin:end]
+            window = iterable[begin:end]
+            if len(window) != 0:
+                yield window
             begin = end + 1
-    yield array[begin:]
+    window = iterable[begin:]
+    if len(window) != 0:
+        yield window
 
 
 class RemoteOp(Op):
