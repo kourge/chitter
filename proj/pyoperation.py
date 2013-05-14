@@ -6,7 +6,7 @@ import Op
 import FS
 import Chit
 import Pair
-from pyfs import MockFS
+from pyfs import MockFS, Transaction
 
 
 FAILURE = -1
@@ -252,6 +252,7 @@ class RemoteOp(Op):
 
         proc = self.getFollowings(username)
         followings = proc.send((yield proc.next()))
+
         for user_followed, follow_timestamp in followings:
             proc = self.getChits(user_followed)
             chits = proc.send((yield proc.next()))
@@ -269,3 +270,87 @@ class RemoteOp(Op):
         result.sort()
         yield result
 
+
+class TransactionalRemoteOp(RemoteOp):
+    def __init__(self):
+        super(self.__class__, self).__init__()
+
+    @signature(str)
+    def createUser(self, username):
+        """createUser username"""
+
+        if not valid_username(username):
+            yield False
+
+        tweets_fn = "tweets:" + username
+        following_fn = "following:" + username
+        user_fn = "users:" + username
+
+        with Transaction() as t:
+            t.create(tweets_fn)
+            t.create(following_fn)
+            t.create(user_fn)
+            content = "%d" % (0,)
+            t.overwriteIfNotChanged(
+                user_fn, Utility.stringToByteArray(content), -1
+            )
+            yield t()
+            yield t.isFailure()
+
+    @signature(str, Ellipsis)
+    def chit(self, username, text):
+        """chit username text"""
+
+        chit = Chit(text)
+        content = None
+
+        try:
+            content = Serialization.encode(chit)
+        except Serialization.EncodingException as e:
+            yield False
+
+        content.append(ord("\n"))
+
+        tweets_fn = "tweets:" + username
+
+        with Transaction() as t:
+            t.appendIfNotChanged(tweets_fn, content, -1)
+            yield t()
+            yield t.isFailure()
+
+    @signature(str)
+    def getTimeline(self, username):
+        """getTimeline username"""
+
+        result = []
+
+        user_fn = "users:" + username
+        content, version = yield self.fs.read(user_fn)
+        if version == FAILURE:
+            yield None
+
+        content = Utility.byteArrayToString(content)
+        timestamp = long(content)
+
+        proc = self.getFollowings(username)
+        followings = proc.send((yield proc.next()))
+
+        with Transaction() as t:
+            for user_followed, follow_timestamp in followings:
+                t.read("tweets:" + user_followed)
+            results = yield t()
+
+            if t.isFailure():
+                yield None
+            for iv in results:
+                chits = self._content_to_chits(iv.getResultValue())
+                result.extend(chits)
+
+        timestamp = System.currentTimeMillis()
+        payload = Utility.stringToByteArray(str(timestamp))
+        version = yield self.fs.overwriteIfNotChanged(user_fn, payload, -1)
+        if version == -1:
+            pass
+
+        result.sort()
+        yield result
