@@ -11,6 +11,15 @@ from pyfs import MockFS
 
 FAILURE = -1
 INVALID_USERNAME_CHARACTERS = ["\n", "\t"]
+__ops = []
+
+
+def signature(*args):
+    def decorator(f):
+        __ops.append(f.__name__)
+        f.__sig = args
+        return f
+    return decorator
 
 
 def valid_username(username):
@@ -41,24 +50,11 @@ class RemoteOp(Op):
     def __init__(self, fs):
         self.fs = fs
 
-    __signatures = {
-        "createUser": [str],
-        "verify": [str],
-        "chit": [str, Ellipsis],
-        "addFollower": [str, str],
-        "removeFollower": [str, str],
-        "getChits": [str],
-        "getFollowings": [str],
-        "getTimeline": [str]
-    }
-
-    __docs = None
-
     def _parse_args(self, cmd_name, cmd_str):
         args = []
         scanner = Scanner(cmd_str)
 
-        for kind in self.__signatures[cmd_name]:
+        for kind in getattr(self, cmd_name).__sig:
             if kind is str:
                 args.append(scanner.next())
             elif kind is Ellipsis:
@@ -70,14 +66,16 @@ class RemoteOp(Op):
         args = self._parse_args(cmd_name, cmd_str)
         return getattr(self, cmd_name)(*args)
 
+    __docs = None
     @classmethod
     def __docs__(cls):
         if cls.__docs is not None:
             return cls.__docs
 
-        cls.__docs = {x: getattr(cls, x).__doc__ for x in cls.__signatures}
+        cls.__docs = {f: getattr(cls, f).__doc__ for f in __ops}
         return cls.__docs
 
+    @signature(str)
     def createUser(self, username):
         """createUser username"""
 
@@ -111,6 +109,7 @@ class RemoteOp(Op):
 
         yield True
 
+    @signature(str)
     def verify(self, username):
         """verify username"""
 
@@ -119,6 +118,7 @@ class RemoteOp(Op):
 
         yield True
 
+    @signature(str, Ellipsis)
     def chit(self, username, text):
         """chit username text"""
 
@@ -143,6 +143,7 @@ class RemoteOp(Op):
 
         yield True
 
+    @signature(str, str)
     def addFollower(self, username, follower):
         """addFollower username follower"""
 
@@ -168,8 +169,10 @@ class RemoteOp(Op):
 
         yield Op.FollowerChangeResult.SUCCESS
 
+    @signature(str, str)
     def removeFollower(self, username, follower):
         """removeFollower username follower"""
+
         following_fn = String("following:" + follower)
 
         content, version = yield self.fs.read(following_fn)
@@ -198,6 +201,7 @@ class RemoteOp(Op):
 
         yield Op.FollowerChangeResult.SUCCESS
 
+    @signature(str)
     def getChits(self, username):
         """getChits username"""
 
@@ -218,6 +222,7 @@ class RemoteOp(Op):
 
         yield result
 
+    @signature(str)
     def getFollowings(self, username):
         """getFollowings username"""
 
@@ -234,6 +239,7 @@ class RemoteOp(Op):
 
         yield result
 
+    @signature(str)
     def getTimeline(self, username):
         """getTimeline username"""
 
