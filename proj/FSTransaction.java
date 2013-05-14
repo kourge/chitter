@@ -2,9 +2,12 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
+import java.io.Serializable;
 
-public class FSTransaction extends Transaction {
-    private LocalFS fs;
+public class FSTransaction extends Transaction implements Serializable {
+    public static final long serialVersionUID = 0L;
+
+    private transient LocalFS fs;
 
     public FSTransaction(Transaction transaction, LocalFS fs) {
         super(transaction.getInvocations());
