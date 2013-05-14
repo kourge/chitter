@@ -227,7 +227,7 @@ public class LocalOp implements Op {
             ;
         }
 
-        Collections.sort(list, new Chit.Comparator());
+        Collections.sort(list);
         return list;
     }
 }

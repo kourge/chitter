@@ -90,7 +90,7 @@ public class GetTimelineProcedure extends ChitterProcedure {
             ;
         }
 
-        Collections.sort(list, new Chit.Comparator());
+        Collections.sort(list);
 
         returnValue(list);
         return;

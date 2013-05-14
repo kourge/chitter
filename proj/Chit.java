@@ -1,6 +1,6 @@
 import java.io.*;
 
-public class Chit implements Serializable {
+public class Chit implements Serializable, Comparable<Chit> {
     public static final long serialVersionUID = 0L;
 
     private String text;
@@ -20,6 +20,10 @@ public class Chit implements Serializable {
 
     public String toString() {
         return String.format("<Chit time=%d text=\"%s\">", this.timestamp, this.text);
+    }
+
+    public int compareTo(Chit other) {
+        return (int)(other.getTimestamp() - this.getTimestamp());
     }
 
     private String escape(String string) {
@@ -48,10 +52,4 @@ public class Chit implements Serializable {
     }
 
     private void readObjectNoData() throws ObjectStreamException {}
-
-    public static class Comparator implements java.util.Comparator<Chit> {
-        public int compare(Chit c1, Chit c2) {
-            return (int)(c2.getTimestamp() - c1.getTimestamp());
-        }
-    }
 }
