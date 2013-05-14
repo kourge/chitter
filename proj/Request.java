@@ -53,8 +53,7 @@ public class Request implements Serializable {
     @Override
     public String toString() {
         return String.format(
-            "<Req dest=%d seq=%s %s>",
-            this.dest, Long.toString(this.seq).substring(0, 7), this.iv
+            "<Req %x dest=%d %s>", this.seq, this.dest, this.iv
         );
     }
 
