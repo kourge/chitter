@@ -7,6 +7,24 @@ import java.util.Scanner;
 import org.python.core.*;
 import org.python.util.PythonInterpreter;
 
+/**
+ * Takes a Chitter operation String command and performs it by passing it to an
+ * instantiated Python class where all high-level logic takes place.
+ *
+ * All the Chitter operations are implemented in Python as generators, which are
+ * functions that can be paused from within and resumed from the outside.
+ * Generators are usually used to dynamically generate values, but for our
+ * purposes we use them to represent continuations.
+ *
+ * In Python, a generator `p` must first be called like a function to initialize
+ * it.  To start it, call `p.next()`, which will run the generator until the it
+ * hits a `yield x` expression. `x` becomes the return value of the expression
+ * `p.next()`. To resume it, call `p.send(y)`, which will resume the generator
+ * while setting the value of the `yield x` expression to `y`.
+ *
+ * This effectively lets a function cooperatively pause itself and wait for
+ * a network call to complete without the use of threads.
+ */
 public class Operation {
     private static PyType remoteOp;
     private static PyType rpc;
