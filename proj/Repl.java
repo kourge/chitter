@@ -1,6 +1,9 @@
 import org.python.core.*;
 import org.python.util.*;
 
+/**
+ * Works with console.pl to provide a Python REPL with the right import path.
+ */
 public class Repl {
     private static final String PYTHON_HOME = "python.home";
 
