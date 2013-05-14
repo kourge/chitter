@@ -3,14 +3,44 @@ import java.util.*;
 /** A simple in-memory cache of remote filesystem objects */
 public class FSCache {
 
-    private Map<String, Pair<byte[], Long>> cache;
+    private static final long TIMEOUT = 10000; // 10 seconds for now
+
+    private class CacheEntry {
+        private Pair<byte[], Long> file;
+        private long timestamp;
+
+        public CacheEntry(Pair<byte[], Long> file) {
+            this.file = file;
+            this.timestamp = System.currentTimeMillis();
+        }
+
+        public Pair<byte[], Long> getFile() {
+            return file;
+        }
+
+        public long getTimestamp() {
+            return timestamp;
+        }
+    }
+
+    private Map<String, CacheEntry> cache;
 
     public FSCache() {
-        this.cache = new HashMap<String, Pair<byte[], Long>>();
+        this.cache = new HashMap<String, CacheEntry>();
     }
 
     public Pair<byte[], Long> get(String name) {
-        return this.cache.get(name);
+        CacheEntry e = this.cache.get(name);
+        if (e == null) {
+            return null;
+        } else {
+            if (System.currentTimeMillis() - e.getTimestamp() > TIMEOUT) {
+                cache.remove(name);
+                return null;
+            } else {
+                return e.getFile();
+            }
+        }
     }
 
     public void remove(String name) {
@@ -22,7 +52,7 @@ public class FSCache {
     }
 
     public void put(String name, Pair<byte[], Long> file) {
-        this.cache.put(name, file);
+        this.cache.put(name, new CacheEntry(file));
     }
 
     public void invalidateAll() {
