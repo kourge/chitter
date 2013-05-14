@@ -1,6 +1,7 @@
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -22,6 +23,7 @@ public class Operation {
     static {
         pendingOps = new HashMap<Request, PyGenerator>();
     }
+    private PyObject prevValue;
 
     private ClientServerNode node;
     private int destination;
@@ -61,22 +63,61 @@ public class Operation {
 
         pendingOps.remove(req);
 
-        PyObject value = proc.send(Py.java2py(result));
-        this.handleValue(value, proc);
+        if (InvokableUtils.isReadOnly(req.getInvokable())) {
+            // assume it was a single invocation for now, and not a whole transaction
+            // TODO: batch reads into transactions below and account for that here?
+            Invocation i = (Invocation)req.getInvokable();
+            Pair<byte[], Long> out = (Pair<byte[], Long>)i.getReturnValue();
+            this.node.getCache().put((String)i.getParameterValues()[0], out);
+            this.handleValue(this.prevValue, proc);
+        } else {
+            // we weren't a cache read, pass along to the generator
+            PyObject value = proc.send(Py.java2py(result));
+            this.handleValue(value, proc);
+        }
     }
 
     public void handleValue(PyObject value, PyGenerator proc) {
+        this.prevValue = value;
         if (Py.isInstance(value, rpc)) {
             Invokable iv = convertToInvokable(value.__call__());
             if (iv == null) {
                 System.out.println("Could not convert PyObject to Invokable");
             }
 
-            Request req = Request.to(
-                this.destination, iv, Invocation.on(this, "onRequestComplete")
-            );
-            pendingOps.put(req, proc);
-            this.node.sendRPC(req);
+            if (InvokableUtils.isReadOnly(iv)) {
+                if (iv instanceof Invocation) {
+                    Invocation i = (Invocation)iv;
+                    Object result = this.readCached(i, proc);
+                    if (result == null) {
+                        return;
+                    } else {
+                        PyObject v = proc.send(Py.java2py(value));
+                        this.handleValue(v, proc);
+                    }
+                } else if (iv instanceof Transaction) {
+                    Transaction t = (Transaction)iv;
+                    List<Object> results = new LinkedList<Object>();
+                    for (Invocation i : t.getInvocations()) {
+                        Object result = this.readCached(i, proc);
+                        if (result == null) {
+                            return;
+                        } else {
+                            results.add(result);
+                        }
+                    }
+                    // if we made it this far we had everything in cache, and can continue
+                    PyObject v = proc.send(Py.java2py(results));
+                    this.handleValue(v, proc);
+                } else { /* ??? */}
+            } else {
+                // if it has writes, just always send to the server
+                Request req = Request.to(
+                    this.destination, iv, Invocation.on(this, "onRequestComplete")
+                );
+                pendingOps.put(req, proc);
+                this.node.sendRPC(req);
+            }
         } else {
             // We have arrived at our final value
             System.out.println("Got PyObject as result: " + value);
@@ -135,5 +176,32 @@ public class Operation {
 
     public static boolean supports(String operationName) {
         return operations.containsKey(operationName);
+    }
+
+    private Object readCached(Invocation i, PyGenerator proc) {
+        Pair<byte[], Long> result;
+        String name = (String)i.getParameterValues()[0];
+        if ((result = this.node.getCache().get(name)) != null) {
+            String op = i.getMethodName();
+            if (op.equals("read")) {
+                return result;
+            } else if (op.equals("exists")) {
+                return result != null;
+            } else if (op.equals("currentVersion")) {
+                return result.second();
+            } else if (op.equals("hasChanged")) {
+                return result.second().equals(i.getParameterValues()[1]);
+            }
+            return null;
+        } else {
+            // fire off a read and we'll have it next time
+            Invocation inv = Invocation.of(FS.class, "read", name);
+            Request req = Request.to(
+                this.destination, inv, Invocation.on(this, "onRequestComplete")
+            );
+            pendingOps.put(req, proc);
+            this.node.sendRPC(req);
+            return null;
+        }
     }
 }
