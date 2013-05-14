@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Collections;
 import java.util.Arrays;
 import java.io.Serializable;
+import edu.washington.cs.cse490h.lib.Utility;
 
 /**
  * Encapsulates multiple Invocations into one Invokable. When invoked, all the
@@ -20,11 +21,13 @@ implements Serializable, Invokable, Iterable<Invocation> {
     public static final long serialVersionUID = 0L;
 
     protected Invocation[] calls;
+    protected long seq;
     protected Object result;
     protected boolean failed;
 
     public Transaction(Invocation... args) {
         this.calls = Arrays.copyOf(args, args.length);
+        this.seq = Utility.getRNG().nextLong();
     }
 
     public boolean equalsIgnoreValues(Invokable obj) {
