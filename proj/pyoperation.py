@@ -392,15 +392,23 @@ class TransactionalRemoteOp(RemoteOp):
         result = []
 
         user_fn = "users:" + username
-        content, user_version = yield self.fs.read(user_fn)
-        if user_version == FAILURE:
+        content, user_v = yield self.fs.read(user_fn)
+        if user_v == FAILURE:
             yield None
 
         content = Utility.byteArrayToString(content)
         timestamp = long(content)
 
-        proc = self.getFollowings(username)
-        followings = proc.send((yield proc.next()))
+        following_fn = "following:" + username
+        followings = []
+
+        content, following_v = yield self.fs.read(following_fn)
+        if following_v == FAILURE:
+            yield None
+
+        for line in lines(Utility.byteArrayToString(content)):
+            followed, follow_timestamp = line.split("\t")
+            followings.append(Pair(followed, Long(follow_timestamp)))
 
         versions = {}
         with Transaction() as t:
@@ -424,7 +432,8 @@ class TransactionalRemoteOp(RemoteOp):
         payload = Utility.stringToByteArray(str(timestamp))
 
         with Transaction() as t:
-            t.isSameVersion(user_fn, user_version)
+            t.isSameVersion(user_fn, user_v)
+            t.isSameVersion(following_fn, following_v)
 
             for fn, version in versions.items():
                 t.isSameVersion(fn, version)
