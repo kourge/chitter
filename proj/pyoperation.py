@@ -201,26 +201,23 @@ class RemoteOp(Op):
 
         yield Op.FollowerChangeResult.SUCCESS
 
+    def _content_to_chits(self, content):
+        try:
+            return [Serialization.decode(line) for line in lines(content)]
+        except Serialization.DecodingException as e:
+            e.printStackTrace()
+            return None
+
     @signature(str)
     def getChits(self, username):
         """getChits username"""
-
-        result = []
 
         tweets_fn = "tweets:" + username
         content, version = yield self.fs.read(tweets_fn)
         if version == FAILURE:
             yield None
 
-        for line in lines(content):
-            try:
-                chit = Serialization.decode(line)
-                result.append(chit)
-            except Serialization.DecodingException as e:
-                e.printStackTrace()
-                yield None
-
-        yield result
+        yield self._content_to_chits(content)
 
     @signature(str)
     def getFollowings(self, username):
