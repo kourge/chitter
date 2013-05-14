@@ -3,6 +3,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.Serializable;
+import edu.washington.cs.cse490h.lib.Utility;
 
 public class FSTransaction extends Transaction implements Serializable {
     public static final long serialVersionUID = 0L;
@@ -13,6 +14,9 @@ public class FSTransaction extends Transaction implements Serializable {
         super(transaction.getInvocations());
         this.fs = fs;
     }
+
+    // name of the log file we'll use for committing snapshots
+    public static final String COMMIT_LOGFILE = ".$snapshot$log";
 
     private Map<String, Object> failureValues = new HashMap<String, Object>() {{
         put("create", FS.FAILURE);
@@ -108,7 +112,25 @@ public class FSTransaction extends Transaction implements Serializable {
 
     /** Copies snapshot-ed files over to the actual files they're replacing */
     private void commitSnapshot(Map<String, String> snapshot) {
-        // TODO log this carefully so we can recover gracefully
+        if (snapshot.isEmpty()) {
+            return; // must've been read-only
+        }
+
+        // log file we'll track these with (if we failed prior to getting here,
+        // then no biggie, we've just got some now-orphaned snapshots in our fs)
+        this.fs.delete(COMMIT_LOGFILE);
+        this.fs.create(COMMIT_LOGFILE);
+
+        // each pair of lines is a snapshot -> final file pair
+        for (String file : snapshot.keySet()) {
+            String snapshotName = snapshot.get(file);
+            this.fs.appendIfNotChanged(COMMIT_LOGFILE, Utility.stringToByteArray(snapshotName + "\n"), -1);
+            this.fs.appendIfNotChanged(COMMIT_LOGFILE, Utility.stringToByteArray(file + "\n"), -1);
+        }
+
+        // denotes end of snapshot listing
+        this.fs.appendIfNotChanged(COMMIT_LOGFILE, Utility.stringToByteArray("/SNAPSHOTS\n"), -1);
+
         for (String file : snapshot.keySet()) {
             String snapshotName = snapshot.get(file);
             if (snapshotName.equals("")) {
@@ -116,6 +138,9 @@ public class FSTransaction extends Transaction implements Serializable {
             } else {
                 this.fs.copy(snapshotName, file);
             }
+
+            // we finished one commit
+            this.fs.appendIfNotChanged(COMMIT_LOGFILE, Utility.stringToByteArray("COMPLETE\n"), -1);
         }
     }
 
@@ -124,6 +149,9 @@ public class FSTransaction extends Transaction implements Serializable {
             String snapshotName = snapshot.get(file);
             this.fs.delete(snapshotName);
         }
+        // if we made it this far, we either failed, or have committed,
+        // so we can also kill off the log file
+        this.fs.delete(COMMIT_LOGFILE);
     }
 
     @Override protected void afterInvocation(Invocation iv) throws InvocationException {
