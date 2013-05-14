@@ -8,13 +8,10 @@ import org.python.util.PythonInterpreter;
 
 public class Operation {
     private static PyType remoteOp;
-    private static PyType mockFS;
     static {
         PythonInterpreter python = new PythonInterpreter();
-        python.exec("from pyoperation import RemoteOp");
-        python.exec("from pyfs import MockFS");
-        remoteOp = (PyType)python.get("RemoteOp");
-        mockFS = (PyType)python.get("MockFS");
+        python.exec("from pyoperation import TransactionalRemoteOp");
+        remoteOp = (PyType)python.get("TransactionalRemoteOp");
     }
 
     private static Map<Request, PyGenerator> pendingOps;
@@ -37,8 +34,7 @@ public class Operation {
         String commandName = scanner.next();
         String commandString = scanner.nextLine();
 
-        PyObject fs = mockFS.__call__();
-        PyObject instance = remoteOp.__call__(fs);
+        PyObject instance = remoteOp.__call__();
         PyGenerator proc = (PyGenerator)instance.__call__(
             new PyString(commandName), new PyString(commandString)
         );

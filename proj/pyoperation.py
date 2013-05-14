@@ -47,8 +47,8 @@ def lines(iterable, separator="\n"):
 
 
 class RemoteOp(Op):
-    def __init__(self, fs):
-        self.fs = fs
+    def __init__(self):
+        self.fs = MockFS()
 
     def _parse_args(self, cmd_name, cmd_str):
         args = []
