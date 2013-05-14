@@ -2,7 +2,11 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-/** A generic pair class */
+/**
+ * A generic, serializable Pair class, usually used when two return values are
+ * needed. By implementing Iterable, the values of this class can be unpacked by
+ * Python code running under Jython.
+ */
 public class Pair<T, U> implements Serializable, Iterable<Object> {
     public static final long serialVersionUID = 0L;
 

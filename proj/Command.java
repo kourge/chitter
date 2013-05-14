@@ -5,6 +5,15 @@ import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.annotation.*;
 
+/**
+ * A utility class for converting a simple String file system command to a
+ * Request object suitable to be passed to ClientServerNode::sendRPC. High-level
+ * Twitter operations do not belong here; refer to the Operation class for
+ * those. This still exists for mostly debugging purposes.
+ * 
+ * Performs a bunch of grunt work such as parsing and scanning through the magic
+ * of reflection and annotations.
+ */
 public class Command {
     private Command() {}
 

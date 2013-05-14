@@ -1,5 +1,14 @@
 import java.io.*;
 
+/**
+ * A serializable representation of a tweet, which comprises text and
+ * a timestamp.
+ *
+ * Chits are Comparable: later chits (with larger timestamps) go before older
+ * chits. Special care is also taken so that a serialized chit can never have
+ * a new line character. This allows us to append serialized binary chits one
+ * after another.
+ */
 public class Chit implements Serializable, Comparable<Chit> {
     public static final long serialVersionUID = 0L;
 

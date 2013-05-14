@@ -5,6 +5,11 @@ import java.util.LinkedList;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * A reference implementation of Op that is never actually used. The code here
+ * serves as a canonical reference for what is considered acceptable or good
+ * behavior.
+ */
 public class LocalOp implements Op {
     private FS fs;
     private static final long FAILURE = FS.FAILURE;

@@ -2,6 +2,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 
+/**
+ * An implementation of the FS interface that entirely exists in memory.
+ */
 public class MemoryFS implements FS {
     protected class File {
         public long timestamp;

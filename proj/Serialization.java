@@ -1,5 +1,10 @@
 import java.io.*;
 
+/**
+ * Utility class for serializing and deserializing an object to and from a byte
+ * array. Wraps any exception in custom exceptions to facilitate easier
+ * catching.
+ */
 public class Serialization {
     private Serialization() {}
 
