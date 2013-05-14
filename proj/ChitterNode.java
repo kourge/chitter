@@ -40,9 +40,9 @@ public class ChitterNode extends ClientServerNode {
     @Override
     public void start() {
         try {
-            if (!Utility.fileExists(this, "log")) {
+            if (!Utility.fileExists(this, getLogName())) {
                 // First start of node
-                log = getWriter("log", false);
+                log = getWriter(getLogName(), false);
                 logOutput("Started fresh.");
             } else {
                 // We are a recovering node
@@ -62,32 +62,12 @@ public class ChitterNode extends ClientServerNode {
      * @throws IOException
      */
     private void recoverWithLog() throws IOException {
-        try {
-            PersistentStorageReader logReader = getReader("log");
-            Queue<String> cmds = new LinkedList<String>();
-
-            String tmp;
-            while ((tmp = logReader.readLine()) != null) {
-                if (tmp.equals("COMPLETE")) {
-                    cmds.poll();
-                } else {
-                    cmds.add(tmp);
-                }
-            }
-
-            // Restart all unfinished commands
-            while (!cmds.isEmpty()) {
-                String command = cmds.poll();
-                queueDirective(command);
-            }
-
-            log = getWriter("log", true);
-        } catch (Exception e) {
-            logOutput("Failed during recovery");
-            fail();
+        if (isServer()) {
+            recoverServer();
+        } else {
+            recoverClient();
         }
     }
-
 
     @Override
     public void fail() {
@@ -167,6 +147,15 @@ public class ChitterNode extends ClientServerNode {
         return s;
     }
 
+    private boolean isServer() {
+        // TODO make this less arbitrary...
+        return addr == 1;
+    }
+
+    private String getLogName() {
+        return isServer() ? "server_log" : "client_log";
+    }
+
     @Override
     @Client public void onCommandCompletion() {
         try {
@@ -174,6 +163,122 @@ public class ChitterNode extends ClientServerNode {
         } catch (IOException e) {}
         if (!pendingCommands.isEmpty()) {
             queueDirective(pendingCommands.poll());
+        }
+    }
+
+    @Client private void recoverClient() {
+        try {
+            PersistentStorageReader logReader = getReader(getLogName());
+            Queue<String> cmds = new LinkedList<String>();
+
+            String tmp;
+            while ((tmp = logReader.readLine()) != null) {
+                if (tmp.equals("COMPLETE")) {
+                    cmds.poll();
+                } else {
+                    cmds.add(tmp);
+                }
+            }
+
+            // Restart all unfinished commands
+            while (!cmds.isEmpty()) {
+                String command = cmds.poll();
+                queueDirective(command);
+            }
+
+            log = getWriter(getLogName(), true);
+        } catch (Exception e) {
+            logOutput("Failed during recovery");
+            fail();
+        }
+    }
+
+    @Server private void recoverServer() {
+        try {
+            //PersistentStorageReader logReader = getReader(getLogName());
+            log = getWriter(getLogName(), true);
+        } catch (Exception e) {
+            logOutput("Failed during recovery");
+            fail();
+        }
+        recoverTransaction();
+    }
+
+    @Server private void recoverTransaction() {
+
+        PersistentStorageReader reader = null;
+
+        // complete any transaction commit that was in progress (this duplicates
+        // some logic in FSTransaction, but whatevs, this can be refactored later)
+        try {
+            reader = getReader(FSTransaction.COMMIT_LOGFILE);
+        } catch (Exception e) {
+            // no commit log, so we didn't fail during a commit
+        }
+        if (reader != null) {
+            try {
+                Queue<Pair<String, String>> commits = new LinkedList<Pair<String, String>>();
+                List<String> snaps = new LinkedList<String>();
+                boolean validCommit = true;
+                while(true) {
+                    // snapshot name
+                    String snap = reader.readLine();
+                    if (snap.equals("/SNAPSHOTS")) {
+                        break; // that's all
+                    } else if (snap == null) {
+                        // incomplete log:
+                        validCommit = false;
+                        break;
+                    }
+                    // final name
+                    String name = reader.readLine();
+                    if (name == null) {
+                        // incomplete log:
+                        validCommit = false;
+                        break;
+                    }
+                    snaps.add(snap);
+                    commits.offer(Pair.of(snap, name));
+                }
+                
+                if (!validCommit) {
+                    // kill log file and call it a day, the client will
+                    // eventually resend the request
+                    this.fs.delete(FSTransaction.COMMIT_LOGFILE);
+                } else {
+                    String tmp = reader.readLine();
+                    while (tmp != null) {
+                        if (tmp.equals("COMPLETE")) {
+                            commits.poll();
+                        } else {
+                            throw new Exception("Unexpected token in commit logfile: " + tmp);
+                        }
+                        tmp = reader.readLine();
+                    }
+
+                    PersistentStorageWriter outLog = getWriter(FSTransaction.COMMIT_LOGFILE, true);
+
+                    // now finish up the operations
+                    while(!commits.isEmpty()) {
+                        Pair<String, String> commit = commits.poll();
+                        if (commit.first().equals("")) {
+                            this.fs.delete(commit.second());
+                        } else {
+                            ((LocalFS)this.fs).copy(commit.first(), commit.second());
+                        }
+                        outLog.write("COMPLETE\n");
+                    }
+                    // kill snapshot files
+                    for (String snap : snaps) {
+                        this.fs.delete(snap);
+                    }
+                    // delete commit logfile
+                    this.fs.delete(FSTransaction.COMMIT_LOGFILE);
+                }
+            } catch (Exception e) {
+                logOutput("Failed during recovery of commit");
+                fail();
+            }
         }
     }
 }
