@@ -152,18 +152,14 @@ class RemoteOp(Op):
         if version == FAILURE:
             yield Op.FollowerChangeResult.FAILURE
 
-        lines = Utility.byteArrayToString(content)
+        content = Utility.byteArrayToString(content)
 
-        scanner = Scanner(lines)
-        while scanner.hasNextLine():
-            line = scanner.nextLine()
-            delimiter = line.indexOf("\t")
-            followed_user = line.substring(0, delimiter)
-
-            if followed_user.equals(username):
+        for line in lines(content):
+            followed_user, timestamp = line.split("\t")
+            if followed_user == username:
                 yield Op.FollowerChangeResult.ALREADY_EXISTS
 
-        line = String("%s\t%d\n" % (username, System.currentTimeMillis()))
+        line = "%s\t%d\n" % (username, System.currentTimeMillis())
         following_v = yield self.fs.appendIfNotChanged(
             following_fn, Utility.stringToByteArray(line), version
         )
@@ -180,17 +176,13 @@ class RemoteOp(Op):
         if version == FAILURE:
             yield Op.FollowerChangeResult.FAILURE
 
-        lines = Utility.byteArrayToString(content)
+        content = Utility.byteArrayToString(content)
         out = StringBuffer()
         absent = True
 
-        scanner = Scanner(lines)
-        while scanner.hasNextLine():
-            line = scanner.nextLine()
-            delimiter = line.indexOf("\t")
-            followed_user = line.substring(0, delimiter)
-
-            if followed_user.equals(username):
+        for line in lines(content):
+            followed_user, timestamp = line.split("\t")
+            if followed_user == username:
                 absent = False
             else:
                 out.append(line + "\n")
@@ -216,18 +208,16 @@ class RemoteOp(Op):
         if version == FAILURE:
             yield None
 
-        for line in parse_lines(content):
-            if len(line) != 0:
-                try:
-                    chit = Serialization.decode(line)
-                    result.append(chit)
-                except Serialization.DecodingException as e:
-                    e.printStackTrace()
-                    yield None
+        for line in lines(content):
+            try:
+                chit = Serialization.decode(line)
+                result.append(chit)
+            except Serialization.DecodingException as e:
+                e.printStackTrace()
+                yield None
 
         yield result
 
-    # yields List<Pair<String, Long>>
     def getFollowings(self, username):
         """getFollowings username"""
 
@@ -238,15 +228,12 @@ class RemoteOp(Op):
         if version == FAILURE:
             yield None
 
-        scanner = Scanner(Utility.byteArrayToString(content))
-        while scanner.hasNextLine():
-            followed = scanner.next()
-            timestamp = scanner.nextLong()
-            result.append(Pair(followed, timestamp))
+        for line in lines(str(Utility.byteArrayToString(content))):
+            followed, timestamp = line.split("\t")
+            result.append(Pair(followed, Long(timestamp)))
 
         yield result
 
-    # TODO: getChits() call needs special treatment
     def getTimeline(self, username):
         """getTimeline username"""
 
