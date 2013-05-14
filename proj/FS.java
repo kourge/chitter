@@ -1,3 +1,7 @@
+/**
+ * The set of file system operations we define in design doc 1 that hinges
+ * around file versions so that clients don't stomp all over each other.
+ */
 public interface FS {
     public long FAILURE = -1L;
 

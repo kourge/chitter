@@ -5,6 +5,10 @@ import edu.washington.cs.cse490h.lib.PersistentStorageInputStream;
 import edu.washington.cs.cse490h.lib.PersistentStorageOutputStream;
 import edu.washington.cs.cse490h.lib.Utility;
 
+/**
+ * The actual concrete implementation of FS on the storage server side of
+ * things.
+ */
 public class LocalFS implements FS {
     private ClientServerNode node;
 
