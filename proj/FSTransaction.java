@@ -23,6 +23,17 @@ public class FSTransaction extends Transaction implements Serializable {
         put("delete", false);
     }};
 
+    private Map<String, Boolean> mutates = new HashMap<String, Boolean>() {{
+        put("create", true);
+        put("read", false);
+        put("currentVersion", false);
+        put("appendIfNotChanged", true);
+        put("overwriteIfNotChanged", true);
+        put("delete", true);
+        put("hasChanged", false);
+        put("exists", false);
+    }};
+
     public Object invokeOn(Object obj) throws InvocationException {
         Map<String, String> snapshot = this.compileSnapshot(this.calls);
         Object result = null;
@@ -33,6 +44,7 @@ public class FSTransaction extends Transaction implements Serializable {
             throw e;
         }
         this.commitSnapshot(snapshot);
+        this.deleteSnapshot(snapshot);
         return result;
     }
 
@@ -46,35 +58,46 @@ public class FSTransaction extends Transaction implements Serializable {
             throw e;
         }
         this.commitSnapshot(snapshot);
+        this.deleteSnapshot(snapshot);
         return result;
     }
 
     private Map<String, String> compileSnapshot(Invocation... ivs) {
         Map<String, String> snapshot = new HashMap<String, String>();
+
+        // loop through and decide who needs a snapshot (any file that will be mutated)
         for (Invocation iv : ivs) {
             String file = (String)iv.getParameterValues()[0];
+
             if (snapshot.containsKey(file)) {
-                iv.getParameterValues()[0] = snapshot.get(file);
                 continue;
             }
 
-            String snapshotName;
-            do {
-                snapshotName = snapshotNameForFile(file);
-            } while (fs.exists(snapshotName));
+            if (mutates.get(iv.getMethodName())) {
+                String snapshotName;
+                do {
+                    snapshotName = snapshotNameForFile(file);
+                } while (fs.exists(snapshotName));
 
-            if (iv.getMethodName().equals("delete")) {
-                // if we're a delete, our "snapshot" is the lack of a file
-                snapshot.put(file, "");
-            } else {
-                // there's no file to copy in create case:
-                if (!iv.getMethodName().equals("create")) {
-                    this.fs.copy(file, snapshotName);
+                if (iv.getMethodName().equals("delete")) {
+                    // if we're a delete, our "snapshot" is the lack of a file
+                    snapshot.put(file, "");
+                } else {
+                    // there's no file to copy in create case:
+                    if (!iv.getMethodName().equals("create")) {
+                        this.fs.copy(file, snapshotName);
+                    }
+                    snapshot.put(file, snapshotName);
                 }
-                snapshot.put(file, snapshotName);
             }
-            // redirect operation to apply to snapshot instead of real version
-            iv.getParameterValues()[0] = snapshot.get(file);
+        }
+
+        // Now run through and re-target operations that will be acting on a snapshot
+        for (Invocation iv : ivs) {
+            String file = (String)iv.getParameterValues()[0];
+            if (snapshot.containsKey(file)) {
+                iv.setParameterValues(0, snapshot.get(file));
+            }
         }
         return snapshot;
     }

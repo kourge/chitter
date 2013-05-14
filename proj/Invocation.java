@@ -131,6 +131,10 @@ public class Invocation implements Serializable, Invokable {
         this.paramVals = Arrays.copyOf(values, values.length);
     }
 
+    public void setParameterValue(int idx, Object value) {
+        this.paramVals[idx] = value;
+    }
+
     private boolean typesMismatched(Class<?> should, Object obj) {
         if (should.isInstance(obj)) {
             return false;
