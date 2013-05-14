@@ -91,6 +91,6 @@ implements Serializable, Invokable, Iterable<Invocation> {
     }
 
     public boolean isFailure() {
-        return this.failed;
+        return this.failed || getReturnValue() == null;
     }
 }
