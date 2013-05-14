@@ -16,7 +16,7 @@ import edu.washington.cs.cse490h.lib.Utility;
  * Rolling back is implemented through snapshots. A snapshot is created from
  * a delta, which is a list of all filenames touched by mutative invocations in
  * a transaction. Each file that will be mutated is then copied under a mangled
- * snapshot filename, and this correspondance is stored in a map.
+ * snapshot filename, and this correspondence is stored in a map.
  *
  * Before the transaction begins, a snapshot is taken. All transactions in the
  * transaction are then rewritten to target the snapshot version of the files
