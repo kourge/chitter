@@ -81,7 +81,7 @@ public class Operation {
 
         pendingOps.remove(req);
 
-        if (InvokableUtils.isReadOnly(req.getInvokable())) {
+        if (InvokableUtils.isReadOnly(req.getInvokable()) && prevValue != null) {
             // assume it was a single invocation for now, and not a whole transaction
             // TODO: batch reads into transactions below and account for that here?
             Invocation i = (Invocation)req.getInvokable();
@@ -108,9 +108,11 @@ public class Operation {
                     Invocation i = (Invocation)iv;
                     Object result = this.readCached(i, proc);
                     if (result == null) {
+                        System.out.println("Cache miss: " + (String)i.getParameterValues()[0]);
                         return;
                     } else {
-                        PyObject v = proc.send(Py.java2py(value));
+                        this.prevValue = null;
+                        PyObject v = proc.send(Py.java2py(result));
                         this.handleValue(v, proc);
                     }
                 } else if (iv instanceof Transaction) {
@@ -119,11 +121,13 @@ public class Operation {
                     for (Invocation i : t.getInvocations()) {
                         Object result = this.readCached(i, proc);
                         if (result == null) {
+                            System.out.println("Cache miss: " + (String)i.getParameterValues()[0]);
                             return;
                         } else {
                             results.add(result);
                         }
                     }
+                    this.prevValue = null;
                     // if we made it this far we had everything in cache, and can continue
                     PyObject v = proc.send(Py.java2py(results));
                     this.handleValue(v, proc);

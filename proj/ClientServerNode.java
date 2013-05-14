@@ -48,8 +48,15 @@ public abstract class ClientServerNode extends RIONode {
             logOutput("Failed to decode RPC request.");
             return;
         } catch (InvocationException e) {
-            logOutput(e.toString() + " " + req);
-            return;
+            try {
+                req.getInvokable().setReturnValue(null);
+                out = Serialization.encode(req);
+                RIOSend(from, Protocol.CHITTER_RPC_REPLY, out);
+                return;
+            } catch(Exception ee) {
+                logOutput(e.toString() + " " + req);
+                return;
+            }
         } catch (Serialization.EncodingException e) {
             logOutput("Failed to encode RPC response.");
             return;
@@ -112,12 +119,16 @@ public abstract class ClientServerNode extends RIONode {
         this.pendingRequests.remove(req);
         if (request != null) {
             try {
-                request.getInvokable().setReturnValue(
-                    req.getInvokable().getReturnValue()
-                );
-                request.complete();
-                if (!hasOutstandingRequests()) {
+                if (req.getInvokable().getReturnValue() == null) {
                     onCommandCompletion(request);
+                } else {
+                    request.getInvokable().setReturnValue(
+                        req.getInvokable().getReturnValue()
+                    );
+                    request.complete();
+                    if (!hasOutstandingRequests()) {
+                        onCommandCompletion(request);
+                    }
                 }
             } catch (InvocationException e) {
                 logError(e.toString() + " " + request);

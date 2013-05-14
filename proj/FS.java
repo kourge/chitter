@@ -30,4 +30,7 @@ public interface FS {
 
     /** Delete a file by name */
     public boolean delete(String filename);
+
+    /** Same as hasChanged, but having changed is considered a failure */
+    public boolean isSameVersion(String filename, long version);
 }

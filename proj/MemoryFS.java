@@ -104,4 +104,13 @@ public class MemoryFS implements FS {
         this.map.remove(filename);
         return true;
     }
+
+    public boolean isSameVersion(String filename, long version) {
+        if (!this.exists(filename)) {
+            return false;
+        }
+
+        File f = this.map.get(filename);
+        return version != f.timestamp;
+    }
 }

@@ -62,7 +62,6 @@ public class LocalFS implements FS {
         } catch (IOException e) {
             return EMPTY_RESULT;
         }
-
         return Pair.of(out, Utility.fileTimestamp(node, filename));
     }
 
@@ -150,5 +149,10 @@ public class LocalFS implements FS {
 
         // return version number of dest (may be FS.FAILURE if the write failed)
         return result;
+    }
+
+    /** Same as hasChanged, but we consider it a failure to have changed */
+    public boolean isSameVersion(String filename, long version) {
+        return version == Utility.fileTimestamp(node, filename);
     }
 }

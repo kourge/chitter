@@ -8,6 +8,7 @@ public class InvokableUtils {
         add("exists");
         add("currentVersion");
         add("hasChanged");
+        add("isSameVersion");
     }};
 
     /** Is a given FS operation a mutation? */

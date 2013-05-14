@@ -24,6 +24,7 @@ public class ChitterNode extends ClientServerNode {
     public static Map<String, String> consoleOperationsDescription = Operation.getOperations();
     private static Queue<String> pendingCommands;
     private Operation op;
+    private String pendingCommand;
 
     /**
      * Create a new node and initialize everything
@@ -97,6 +98,8 @@ public class ChitterNode extends ClientServerNode {
             int destination = scanner.nextInt();
             String directiveName = scanner.next();
 
+            pendingCommand = directive;
+
             if (Command.supports(directiveName)) {
                 Request req = Command.asRequest(directive);
                 logOutput("request = " + req);
@@ -158,6 +161,14 @@ public class ChitterNode extends ClientServerNode {
 
     @Override
     @Client public void onCommandCompletion(Request r) {
+        if (r.getInvokable().getReturnValue() == null) {
+
+            // invalidate cache (the ENTIRE cache for the moment...)
+            fsCache.invalidateAll();
+
+            // and re-send request
+            queueDirective(pendingCommand);
+        }
         try {
             log.append("COMPLETE\n");
         } catch (IOException e) {}

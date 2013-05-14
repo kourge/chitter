@@ -49,6 +49,7 @@ public class FSTransaction extends Transaction implements Serializable {
         put("appendIfNotChanged", FS.FAILURE);
         put("overwriteIfNotChanged", FS.FAILURE);
         put("delete", false);
+        put("isSameVersion", false);
     }};
 
     public Object invokeOn(Object obj) throws InvocationException {
@@ -112,7 +113,7 @@ public class FSTransaction extends Transaction implements Serializable {
         // Now run through and re-target operations that will be acting on a snapshot
         for (Invocation iv : ivs) {
             String file = (String)iv.getParameterValues()[0];
-            if (snapshot.containsKey(file)) {
+            if (snapshot.containsKey(file) && !iv.getMethodName().equals("isSameVersion")) {
                 iv.setParameterValue(0, snapshot.get(file));
             }
         }

@@ -24,4 +24,8 @@ public class FSCache {
     public void put(String name, Pair<byte[], Long> file) {
         this.cache.put(name, file);
     }
+
+    public void invalidateAll() {
+        this.cache.clear();
+    }
 }
