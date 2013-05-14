@@ -28,7 +28,7 @@ public class InvokableUtils {
             return true;
         } else if (iv instanceof Invocation) {
             Invocation i = (Invocation)iv;
-            return mutates(i.getMethodName());
+            return !mutates(i.getMethodName());
         } else {
             //throw new Exception("Unkown Invokable");
             return false;
