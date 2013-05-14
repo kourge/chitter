@@ -14,9 +14,11 @@ public abstract class ClientServerNode extends RIONode {
     @Client protected Queue<Request> recvQueue;
     @Client protected Map<Request, Request> pendingRequests;
     @Client protected byte[] rpcPayload;
+    @Client protected FSCache fsCache;
 
     public ClientServerNode() {
         fs = new LocalFS(this);
+        fsCache = new FSCache();
 
         sendQueue = new LinkedList<Request>();
         recvQueue = new LinkedList<Request>();
@@ -115,7 +117,7 @@ public abstract class ClientServerNode extends RIONode {
                 );
                 request.complete();
                 if (!hasOutstandingRequests()) {
-                    onCommandCompletion();
+                    onCommandCompletion(request);
                 }
             } catch (InvocationException e) {
                 logError(e.toString() + " " + request);
@@ -175,5 +177,9 @@ public abstract class ClientServerNode extends RIONode {
         }
     }
 
-    @Client public abstract void onCommandCompletion();
+    @Client public abstract void onCommandCompletion(Request r);
+
+    @Client public FSCache getCache() {
+        return this.fsCache;
+    }
 }

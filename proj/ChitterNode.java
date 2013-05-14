@@ -157,7 +157,7 @@ public class ChitterNode extends ClientServerNode {
     }
 
     @Override
-    @Client public void onCommandCompletion() {
+    @Client public void onCommandCompletion(Request r) {
         try {
             log.append("COMPLETE\n");
         } catch (IOException e) {}
@@ -272,6 +272,10 @@ public class ChitterNode extends ClientServerNode {
                     for (String snap : snaps) {
                         this.fs.delete(snap);
                     }
+
+                    // log that we completed the pending transaction
+                    log.append("COMPLETE\n");
+
                     // delete commit logfile
                     this.fs.delete(FSTransaction.COMMIT_LOGFILE);
                 }
