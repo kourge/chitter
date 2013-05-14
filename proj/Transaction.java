@@ -21,6 +21,7 @@ implements Serializable, Invokable, Iterable<Invocation> {
 
     protected Invocation[] calls;
     protected Object result;
+    protected boolean failed;
 
     public Transaction(Invocation... args) {
         this.calls = Arrays.copyOf(args, args.length);
@@ -87,5 +88,9 @@ implements Serializable, Invokable, Iterable<Invocation> {
 
     public void setReturnValue(Object result) {
         this.result = result;
+    }
+
+    public boolean isFailure() {
+        return this.failed;
     }
 }

@@ -172,7 +172,8 @@ public class FSTransaction extends Transaction implements Serializable {
         String name = iv.getMethodName();
         if (failureValues.containsKey(name)
             && iv.getReturnValue().equals(failureValues.get(name))) {
-            throw new InvocationException(new Exception("FS operation failed: " + name));
+            this.failed = true;
+            throw new InvocationException("FS operation failed: " + name);
         }
     }
 }

@@ -49,7 +49,7 @@ public abstract class ClientServerNode extends RIONode {
             return;
         } catch (InvocationException e) {
             try {
-                req.getInvokable().setReturnValue(null);
+                //req.getInvokable().setReturnValue(null);
                 out = Serialization.encode(req);
                 RIOSend(from, Protocol.CHITTER_RPC_REPLY, out);
                 return;
