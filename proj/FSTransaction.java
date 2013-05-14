@@ -27,17 +27,6 @@ public class FSTransaction extends Transaction implements Serializable {
         put("delete", false);
     }};
 
-    private Map<String, Boolean> mutates = new HashMap<String, Boolean>() {{
-        put("create", true);
-        put("read", false);
-        put("currentVersion", false);
-        put("appendIfNotChanged", true);
-        put("overwriteIfNotChanged", true);
-        put("delete", true);
-        put("hasChanged", false);
-        put("exists", false);
-    }};
-
     public Object invokeOn(Object obj) throws InvocationException {
         Map<String, String> snapshot = this.compileSnapshot(this.calls);
         Object result = null;
@@ -77,7 +66,7 @@ public class FSTransaction extends Transaction implements Serializable {
                 continue;
             }
 
-            if (mutates.get(iv.getMethodName())) {
+            if (InvokableUtils.mutates(iv.getMethodName())) {
                 String snapshotName;
                 do {
                     snapshotName = snapshotNameForFile(file);
