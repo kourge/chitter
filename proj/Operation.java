@@ -85,6 +85,8 @@ public class Operation {
             // assume it was a single invocation for now, and not a whole transaction
             // TODO: batch reads into transactions below and account for that here?
             Invocation i = (Invocation)req.getInvokable();
+
+            @SuppressWarnings("unchecked")
             Pair<byte[], Long> out = (Pair<byte[], Long>)i.getReturnValue();
             this.node.getCache().put((String)i.getParameterValues()[0], out);
             this.handleValue(this.prevValue, proc);
