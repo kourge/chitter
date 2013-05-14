@@ -1,10 +1,11 @@
-from java.lang import System, String, StringBuffer
+from java.lang import System, String, Long, StringBuffer
 from java.util import Scanner
 from edu.washington.cs.cse490h.lib import Utility
 import Serialization
 import Op
 import FS
 import Chit
+import Pair
 from pyfs import MockFS
 
 
