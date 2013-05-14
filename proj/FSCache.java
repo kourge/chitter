@@ -3,7 +3,7 @@ import java.util.*;
 /** A simple in-memory cache of remote filesystem objects */
 public class FSCache {
 
-    private static final long TIMEOUT = 10000; // 10 seconds for now
+    private static final long TIMEOUT = 2000; // 2 seconds for now
 
     private class CacheEntry {
         private Pair<byte[], Long> file;
