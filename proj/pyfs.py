@@ -1,7 +1,4 @@
-from java.lang import Object
-from array import array
-import Invocation
-import FS
+from java.lang import String
 
 class MockFS(object):
     def __init__(self):
@@ -9,7 +6,12 @@ class MockFS(object):
 
     def __getattr__(self, name):
         def wrapper(*args):
-            return (name, args)
+            params = []
+            for arg in args:
+                if isinstance(arg, basestring):
+                    arg = String(arg)
+                params.append(arg)
+            return (name, tuple(params))
 
         wrapper.__name__ = name
         return wrapper

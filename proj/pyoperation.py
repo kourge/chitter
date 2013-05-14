@@ -17,7 +17,7 @@ __ops = []
 def signature(*args):
     def decorator(f):
         __ops.append(f.__name__)
-        f.__sig = args
+        f._sig = args
         return f
     return decorator
 
@@ -54,7 +54,7 @@ class RemoteOp(Op):
         args = []
         scanner = Scanner(cmd_str)
 
-        for kind in getattr(self, cmd_name).__sig:
+        for kind in getattr(self, cmd_name)._sig:
             if kind is str:
                 args.append(scanner.next())
             elif kind is Ellipsis:
@@ -82,9 +82,9 @@ class RemoteOp(Op):
         if not valid_username(username):
             yield False
 
-        tweets_fn = String("tweets:" + username)
-        following_fn = String("following:" + username)
-        user_fn = String("users:" + username)
+        tweets_fn = "tweets:" + username
+        following_fn = "following:" + username
+        user_fn = "users:" + username
 
         tweets_v = yield self.fs.create(tweets_fn)
         if tweets_v == FAILURE:
@@ -98,7 +98,7 @@ class RemoteOp(Op):
         if user_v == FAILURE:
             yield False
 
-        content = String("%d" % (0,))
+        content = "%d" % (0,)
 
         version = yield self.fs.currentVersion(user_fn)
         user_v = yield self.fs.overwriteIfNotChanged(
@@ -132,7 +132,7 @@ class RemoteOp(Op):
 
         content.append(ord("\n"))
 
-        tweets_fn = String("tweets:" + username)
+        tweets_fn = "tweets:" + username
         version = yield self.fs.currentVersion(tweets_fn)
 
         tweets_v = yield self.fs.appendIfNotChanged(
@@ -147,7 +147,7 @@ class RemoteOp(Op):
     def addFollower(self, username, follower):
         """addFollower username follower"""
 
-        following_fn = String("following:" + follower)
+        following_fn = "following:" + follower
 
         content, version = yield self.fs.read(following_fn)
         if version == FAILURE:
@@ -173,7 +173,7 @@ class RemoteOp(Op):
     def removeFollower(self, username, follower):
         """removeFollower username follower"""
 
-        following_fn = String("following:" + follower)
+        following_fn = "following:" + follower
 
         content, version = yield self.fs.read(following_fn)
         if version == FAILURE:
@@ -207,7 +207,7 @@ class RemoteOp(Op):
 
         result = []
 
-        tweets_fn = String("tweets:" + username)
+        tweets_fn = "tweets:" + username
         content, version = yield self.fs.read(tweets_fn)
         if version == FAILURE:
             yield None
@@ -226,14 +226,14 @@ class RemoteOp(Op):
     def getFollowings(self, username):
         """getFollowings username"""
 
-        following_fn = String("following:" + username)
+        following_fn = "following:" + username
         result = []
 
         content, version = yield self.fs.read(following_fn)
         if version == FAILURE:
             yield None
 
-        for line in lines(str(Utility.byteArrayToString(content))):
+        for line in lines(Utility.byteArrayToString(content)):
             followed, timestamp = line.split("\t")
             result.append(Pair(followed, Long(timestamp)))
 
@@ -245,7 +245,7 @@ class RemoteOp(Op):
 
         result = []
 
-        user_fn = String("users:" + username)
+        user_fn = "users:" + username
         content, version = yield self.fs.read(user_fn)
         if version == FAILURE:
             yield None
