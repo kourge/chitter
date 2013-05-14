@@ -96,4 +96,10 @@ implements Serializable, Invokable, Iterable<Invocation> {
     public boolean isFailure() {
         return this.failed;
     }
+
+    public String toString() {
+        return String.format(
+            "<Transaction %x %s>", this.seq, Arrays.toString(this.calls)
+        );
+    }
 }
