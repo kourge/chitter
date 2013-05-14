@@ -392,8 +392,8 @@ class TransactionalRemoteOp(RemoteOp):
         result = []
 
         user_fn = "users:" + username
-        content, version = yield self.fs.read(user_fn)
-        if version == FAILURE:
+        content, user_version = yield self.fs.read(user_fn)
+        if user_version == FAILURE:
             yield None
 
         content = Utility.byteArrayToString(content)
@@ -402,14 +402,19 @@ class TransactionalRemoteOp(RemoteOp):
         proc = self.getFollowings(username)
         followings = proc.send((yield proc.next()))
 
+        versions = {}
         with Transaction() as t:
             for user_followed, follow_timestamp in followings:
                 t.read("tweets:" + user_followed)
             results = yield t()
 
-            if t.isFailure():
+            if results.isFailure():
                 yield None
-            for content, version in results:
+            for iv in results:
+                content, version = iv.returnValue
+                fn = iv.parameterValues[0]
+                versions[fn] = version
+
                 chits = self._content_to_chits(content)
                 if chits is not None:
                     cutoff = max(follow_timestamp, timestamp)
@@ -417,9 +422,18 @@ class TransactionalRemoteOp(RemoteOp):
 
         timestamp = System.currentTimeMillis()
         payload = Utility.stringToByteArray(str(timestamp))
-        version = yield self.fs.overwriteIfNotChanged(user_fn, payload, -1)
-        if version == -1:
-            pass
+
+        with Transaction() as t:
+            t.isSameVersion(user_fn, user_version)
+
+            for fn, version in versions.items():
+                t.isSameVersion(fn, version)
+
+            t.overwriteIfNotChanged(user_fn, payload, -1)
+            results = yield t()
+
+            if results.isFailure():
+                yield None
 
         result.sort()
         yield result
