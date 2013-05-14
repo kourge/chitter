@@ -409,8 +409,8 @@ class TransactionalRemoteOp(RemoteOp):
 
             if t.isFailure():
                 yield None
-            for iv in results:
-                chits = self._content_to_chits(iv.getResultValue())
+            for cont, ver in results:
+                chits = self._content_to_chits(cont)
                 result.extend(chits)
 
         timestamp = System.currentTimeMillis()
