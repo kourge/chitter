@@ -1,5 +1,6 @@
 import java.util.Map;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -8,10 +9,13 @@ import org.python.util.PythonInterpreter;
 
 public class Operation {
     private static PyType remoteOp;
+    private static PyType rpc;
     static {
         PythonInterpreter python = new PythonInterpreter();
         python.exec("from pyoperation import TransactionalRemoteOp");
+        python.exec("from pyfs import RPC");
         remoteOp = (PyType)python.get("TransactionalRemoteOp");
+        rpc = (PyType)python.get("RPC");
     }
 
     private static Map<Request, PyGenerator> pendingOps;
@@ -62,9 +66,15 @@ public class Operation {
     }
 
     public void handleValue(PyObject value, PyGenerator proc) {
-        if (value instanceof PyTuple) {
-            Request req = convertToRequest((PyTuple)value);
+        if (Py.isInstance(value, rpc)) {
+            Invokable iv = convertToInvokable(value.__call__());
+            if (iv == null) {
+                System.out.println("Could not convert PyObject to Invokable");
+            }
 
+            Request req = Request.to(
+                this.destination, iv, Invocation.on(this, "onRequestComplete")
+            );
             pendingOps.put(req, proc);
             this.node.sendRPC(req);
         } else {
@@ -73,10 +83,30 @@ public class Operation {
         }
     }
 
-    public Request convertToRequest(PyTuple t) {
-        String name = t.pyget(0).asString();
-        PyTuple args = (PyTuple)t.pyget(1);
+    public Invokable convertToInvokable(PyObject value) {
+        if (false) {
+        } else if (value instanceof PyTuple) {
+            PyTuple t = (PyTuple)value;
+            String name = t.pyget(0).asString();
+            PyTuple args = (PyTuple)t.pyget(1);
+            return this.argsToInvocation(name, args);
+        } else if (value instanceof PyList) {
+            // value is a list for a transaction
+            PyList operations = (PyList)value;
+            Invocation[] ivs = new Invocation[operations.size()];
+            for (int i = 0; i < operations.size(); i++) {
+                PyTuple t = (PyTuple)operations.pyget(i);
+                String name = t.pyget(0).asString();
+                PyTuple args = (PyTuple)t.pyget(1);
+                ivs[i] = this.argsToInvocation(name, args);
+            }
+            return new Transaction(ivs);
+        }
 
+        return null;
+    }
+
+    public Invocation argsToInvocation(String name, PyTuple args) {
         Invocation iv = Invocation.of(FS.class, name);
         Class<?>[] types = iv.getParameterTypes();
         Object[] params = new Object[args.size()];
@@ -86,9 +116,7 @@ public class Operation {
         }
         iv.setParameterValues(params);
 
-        return Request.to(
-            this.destination, iv, Invocation.on(this, "onRequestComplete")
-        );
+        return iv;
     }
 
     private static Map<String, String> operations;
