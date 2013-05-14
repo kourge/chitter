@@ -161,7 +161,8 @@ public class ChitterNode extends ClientServerNode {
 
     @Override
     @Client public void onCommandCompletion(Request r) {
-        if (r.getInvokable() instanceof Transaction && ((Transaction)r.getInvokable()).isFailure()) {
+        if (r.getInvokable() instanceof Transaction && 
+            ((Transaction)r.getInvokable()).isFailure()) {
 
             // invalidate cache (the ENTIRE cache for the moment...)
             fsCache.invalidateAll();
