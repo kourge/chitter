@@ -96,7 +96,7 @@ public class FSTransaction extends Transaction implements Serializable {
         for (Invocation iv : ivs) {
             String file = (String)iv.getParameterValues()[0];
             if (snapshot.containsKey(file)) {
-                iv.setParameterValues(0, snapshot.get(file));
+                iv.setParameterValue(0, snapshot.get(file));
             }
         }
         return snapshot;

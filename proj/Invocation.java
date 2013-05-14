@@ -120,19 +120,25 @@ public class Invocation implements Serializable, Invokable {
         }
 
         for (int i = 0; i < this.paramTypes.length; i++) {
-            if (typesMismatched(this.paramTypes[i], values[i])) {
-                throw new IllegalArgumentException(String.format(
-                    "Param value %d is not of type %s but of type %s",
-                    i, this.paramTypes[i], values[i].getClass()
-                ));
-            }
+            checkParameter(i, values[i]);
         }
 
         this.paramVals = Arrays.copyOf(values, values.length);
     }
 
-    public void setParameterValue(int idx, Object value) {
-        this.paramVals[idx] = value;
+    public void setParameterValue(int i, Object value) {
+        checkParameter(i, value);
+        this.paramVals[i] = value;
+    }
+
+    private void checkParameter(int i, Object value)
+        throws IllegalArgumentException {
+        if (typesMismatched(this.paramTypes[i], value)) {
+            throw new IllegalArgumentException(String.format(
+                "Param value %d is not of type %s but of type %s",
+                i, this.paramTypes[i], value.getClass()
+            ));
+        }
     }
 
     private boolean typesMismatched(Class<?> should, Object obj) {
