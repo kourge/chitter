@@ -5,6 +5,30 @@ import java.util.HashMap;
 import java.io.Serializable;
 import edu.washington.cs.cse490h.lib.Utility;
 
+/**
+ * FSTransaction facilitates meaningful file system related behavior for
+ * transactions. It performs error detection and rolls back if necessary.
+ *
+ * Error detection is done by examining the return value after each invocation.
+ * If the return value is considered a failure value for a given invocation, the
+ * transaction aborts and begins to roll back any changes made.
+ *
+ * Rolling back is implemented through snapshots. A snapshot is created from
+ * a delta, which is a list of all filenames touched by mutative invocations in
+ * a transaction. Each file that will be mutated is then copied under a mangled
+ * snapshot filename, and this correspondance is stored in a map.
+ *
+ * Before the transaction begins, a snapshot is taken. All transactions in the
+ * transaction are then rewritten to target the snapshot version of the files
+ * instead of the real files. If an error is detected throughout the
+ * transaction, then the snapshot is deleted and never committed. If the
+ * transaction is successful, then the snapshot will be committed.
+ *
+ * Committing a snapshot involves overwriting the real files with their snapshot
+ * equivalents. This process is logged, so if a failure occurs in the middle of
+ * committing a snapshot, when the node restarts, the commit continues as part
+ * of the recovery process.
+ */
 public class FSTransaction extends Transaction implements Serializable {
     public static final long serialVersionUID = 0L;
 

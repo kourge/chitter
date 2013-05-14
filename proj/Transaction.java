@@ -5,6 +5,16 @@ import java.util.Collections;
 import java.util.Arrays;
 import java.io.Serializable;
 
+/**
+ * Encapsulates multiple Invocations into one Invokable. When invoked, all the
+ * invocations wrapped in the transaction are invoked in order. This by itself
+ * does not provide an atomic property; the subclass FSTransaction is
+ * responsible for all the dirty work.
+ *
+ * The empty methods beforeInvocation and afterInvocation are defined. They are
+ * meant to be overridden by a subclass to add sophisticated behavior such as
+ * caching and failure detection.
+ */
 public class Transaction
 implements Serializable, Invokable, Iterable<Invocation> {
     public static final long serialVersionUID = 0L;
