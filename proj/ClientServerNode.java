@@ -93,9 +93,6 @@ public abstract class ClientServerNode extends RIONode {
         if (rpcPayload.length != 0) {
             RIOSend(req.getDestination(), Protocol.CHITTER_RPC_REQUEST, rpcPayload);
             this.pendingRequests.put(req, req);
-            try {
-                addTimeout(Invocation.call(this, "onRPCTimeout", req), 5);
-            } catch (Exception e) {}
         }
     }
 
@@ -167,16 +164,14 @@ public abstract class ClientServerNode extends RIONode {
         return !this.pendingRequests.isEmpty();
     }
 
-    /**
-     * Resend an RPC that we didn't get a reply from in time
-     *  */
-    @Client public void onRPCTimeout(Request req) {
-        if (pendingRequests.containsKey(req)) {
-            int addr = req.getDestination();
-            RIOSend(addr, Protocol.CHITTER_RPC_REQUEST, rpcPayload);
-            try {
-                addTimeout(Invocation.call(this, "onRPCTimeout", req), 5);
-            } catch (Exception e) {}
+    @Client public void onRIODrop(byte[] payload) {
+        try {
+            Request req = (Request)Serialization.decode(payload);
+            // simply re-send it for now
+            this.sendQueue.offer(req);
+            pumpSendQueue();
+        } catch(Serialization.DecodingException e) {
+            logOutput("Failed to decode dropped RPC request.");
         }
     }
 

@@ -62,7 +62,7 @@ public abstract class RIONode extends Node {
 	 */
 	public abstract void onRIOReceive(Integer from, int protocol, byte[] msg);
 
-    public void onRIODrop(int seqNum) {}
+    public void onRIODrop(byte[] payload) {}
 	
 	@Override
 	public String toString() {

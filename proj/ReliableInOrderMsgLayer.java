@@ -397,6 +397,7 @@ class OutChannel {
             // If we fail to get acked for too long, give up
             if (riopkt.numResends > ReliableInOrderMsgLayer.NUM_RESENDS) {
                 unACKedPackets.remove(seqNum);
+                n.onRIODrop(riopkt.getPayload());
                 //System.out.println("PACKET DROPPED");
                 return;
             }
