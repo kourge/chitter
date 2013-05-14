@@ -244,22 +244,25 @@ class RemoteOp(Op):
         if version == FAILURE:
             yield None
 
-        scanner = Scanner(Utility.byteArrayToString(content))
-        timestamp = scanner.nextLong()
+        content = Utility.byteArrayToString(content)
+        timestamp = long(content)
 
-        followings = self.getFollowings(username)
-        for following in followings:
-            chits = self.getChits(following.first())
+        proc = self.getFollowings(username)
+        followings = proc.send((yield proc.next()))
+        for user_followed, follow_timestamp in followings:
+            proc = self.getChits(user_followed)
+            chits = proc.send((yield proc.next()))
+
             if chits is not None:
-                cutoff = max(following.second(), timestamp)
+                cutoff = max(follow_timestamp, timestamp)
                 result.extend(chit for chit in chits if chit.timestamp > cutoff)
 
         timestamp = System.currentTimeMillis()
-        payload = Utility.stringToByteArray(Long.toString(timestamp))
+        payload = Utility.stringToByteArray(str(timestamp))
         version = yield self.fs.overwriteIfNotChanged(user_fn, payload, -1)
         if version == -1:
             pass
 
-        Collections.sort(result, Chit.Comparator())
+        result.sort()
         yield result
 
