@@ -346,15 +346,44 @@ class TransactionalRemoteOp(RemoteOp):
                 yield Op.FollowerChangeResult.ALREADY_EXISTS
 
         line = "%s\t%d\n" % (username, System.currentTimeMillis())
-        #following_v = yield self.fs.appendIfNotChanged(
-        #    following_fn, Utility.stringToByteArray(line), version
-        #)
 
         with Transaction() as t:
             t.isSameVersion(following_fn, version)
             t.appendIfNotChanged(following_fn, Utility.stringToByteArray(line), -1)
             yield t()
             yield t.isFailure()
+
+    @signature(str, str)
+    def removeFollower(self, username, follower):
+        """removeFollower username follower"""
+    
+        following_fn = "following:" + follower
+    
+        content, version = yield self.fs.read(following_fn)
+        if version == FAILURE:
+            yield Op.FollowerChangeResult.FAILURE
+    
+        content = Utility.byteArrayToString(content)
+        out = StringBuffer()
+        absent = True
+    
+        for line in lines(content):
+            followed_user, timestamp = line.split("\t")
+            if followed_user == username:
+                absent = False
+            else:
+                out.append(line + "\n")
+    
+        with Transaction() as t:
+            t.isSameVersion(following_fn, version)
+            t.overwriteIfNotChanged(following_fn, Utility.stringToByteArray(out.toString()), -1)
+            yield t()
+            if t.isFailure():
+                yield Op.FollowerChangeResult.FAILURE
+            elif absent:
+                yield Op.FollowerChangeResult.DOES_NOT_EXIST
+            else:
+                yield Op.FollowerChangeResult.SUCCESS
 
     @signature(str)
     def getTimeline(self, username):
