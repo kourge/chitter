@@ -47,10 +47,6 @@ public class FSTransaction extends Transaction {
     }
 
     private Map<String, String> compileSnapshot(Invocation... ivs) {
-        return this.createSnapshot(ivs);
-    }
-
-    private Map<String, String> createSnapshot(Invocation... ivs) {
         Map<String, String> snapshot = new HashMap<String, String>();
         for (Invocation iv : ivs) {
             String file = (String)iv.getParameterValues()[0];
@@ -106,7 +102,7 @@ public class FSTransaction extends Transaction {
 
     @Override protected void afterInvocation(Invocation iv) throws InvocationException {
         String name = iv.getMethodName();
-        if (failureValues.containsKey(name) 
+        if (failureValues.containsKey(name)
             && iv.getReturnValue().equals(failureValues.get(name))) {
             throw new InvocationException(new Exception());
         }
