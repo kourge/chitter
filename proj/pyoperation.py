@@ -15,7 +15,6 @@ __ops = []
 
 
 def signature(*args):
-    """Annotates a function with a type signature of sorts."""
     def decorator(f):
         __ops.append(f.__name__)
         f._sig = args
@@ -52,9 +51,6 @@ class RemoteOp(Op):
         self.fs = MockFS()
 
     def _parse_args(self, cmd_name, cmd_str):
-        """Parses a cmd_str for the generator for cmd_name by reading its
-        parsing signature decorated with @signature."""
-
         args = []
         scanner = Scanner(cmd_str)
 
@@ -67,18 +63,12 @@ class RemoteOp(Op):
         return args
 
     def __call__(self, cmd_name, cmd_str):
-        """Parses the arguments in cmd_str and initializes the generator
-        corresponding to cmd_name."""
-
         args = self._parse_args(cmd_name, cmd_str)
         return getattr(self, cmd_name)(*args)
 
     __docs = None
     @classmethod
     def __docs__(cls):
-        """Lazily collects the docstrings of generators decorated with
-        @signature into a dictionary and caches the result."""
-
         if cls.__docs is not None:
             return cls.__docs
 
@@ -325,6 +315,34 @@ class TransactionalRemoteOp(RemoteOp):
 
         with Transaction() as t:
             t.appendIfNotChanged(tweets_fn, content, -1)
+            yield t()
+            yield t.isFailure()
+
+    @signature(str, str)
+    def addFollower(self, username, follower):
+        """addFollower username follower"""
+
+        following_fn = "following:" + follower
+
+        content, version = yield self.fs.read(following_fn)
+        if version == FAILURE:
+            yield Op.FollowerChangeResult.FAILURE
+
+        content = Utility.byteArrayToString(content)
+
+        for line in lines(content):
+            followed_user, timestamp = line.split("\t")
+            if followed_user == username:
+                yield Op.FollowerChangeResult.ALREADY_EXISTS
+
+        line = "%s\t%d\n" % (username, System.currentTimeMillis())
+        #following_v = yield self.fs.appendIfNotChanged(
+        #    following_fn, Utility.stringToByteArray(line), version
+        #)
+
+        with Transaction() as t:
+            t.isSameVersion(following_fn, version)
+            t.appendIfNotChanged(following_fn, Utility.stringToByteArray(line), -1)
             yield t()
             yield t.isFailure()
 
