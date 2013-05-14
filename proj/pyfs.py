@@ -31,7 +31,7 @@ class Transaction(MockFS):
     def __getattr__(self, name):
         wrapper = super(self.__class__, self).__getattr__(name)
         def new_wrapper(*args):
-            self.operations.append(wrapper(*args))
+            self.operations.append(wrapper(*args)())
 
         new_wrapper.__name__ = wrapper.__name__
         return new_wrapper
