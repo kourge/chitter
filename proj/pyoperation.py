@@ -409,9 +409,11 @@ class TransactionalRemoteOp(RemoteOp):
 
             if t.isFailure():
                 yield None
-            for cont, ver in results:
-                chits = self._content_to_chits(cont)
-                result.extend(chits)
+            for content, version in results:
+                chits = self._content_to_chits(content)
+                if chits is not None:
+                    cutoff = max(follow_timestamp, timestamp)
+                    result.extend(chit for chit in chits if chit.timestamp > cutoff)
 
         timestamp = System.currentTimeMillis()
         payload = Utility.stringToByteArray(str(timestamp))
