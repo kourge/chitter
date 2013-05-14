@@ -90,7 +90,17 @@ public class Operation {
             this.handleValue(this.prevValue, proc);
         } else {
             // we weren't a cache read, pass along to the generator
-            PyObject value = proc.send(Py.java2py(result));
+            PyObject value;
+
+            Invokable iv = (Invokable)req.getInvokable();
+            
+            if (iv instanceof Transaction) {
+                Transaction t = (Transaction)iv;
+                value = proc.send(Py.java2py(t));
+            } else {
+                value = proc.send(Py.java2py(result));
+            }
+
             this.handleValue(value, proc);
         }
     }
@@ -117,19 +127,18 @@ public class Operation {
                     }
                 } else if (iv instanceof Transaction) {
                     Transaction t = (Transaction)iv;
-                    List<Object> results = new LinkedList<Object>();
                     for (Invocation i : t.getInvocations()) {
                         Object result = this.readCached(i, proc);
                         if (result == null) {
                             System.out.println("Cache miss: " + (String)i.getParameterValues()[0]);
                             return;
                         } else {
-                            results.add(result);
+                            i.setReturnValue(result);
                         }
                     }
                     this.prevValue = null;
                     // if we made it this far we had everything in cache, and can continue
-                    PyObject v = proc.send(Py.java2py(results));
+                    PyObject v = proc.send(Py.java2py(t));
                     this.handleValue(v, proc);
                 } else { /* ??? */}
             } else {
