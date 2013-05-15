@@ -8,6 +8,5 @@ public interface TransactionalFS {
     public byte[] read(String filename);
     public boolean append(String filename, byte[] data);
     public boolean overwrite(String filename, byte[] data);
-    public boolean hasChanged(String filename);
     public boolean delete(String filename);
 }
