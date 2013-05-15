@@ -1,6 +1,7 @@
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
+import java.util.Collections;
 import edu.washington.cs.cse490h.lib.Utility;
 
 public class Snapshot implements TransactionalFS {
@@ -8,7 +9,7 @@ public class Snapshot implements TransactionalFS {
     private long id;
     private Map<String, Delta> deltas;
 
-    private static class Delta {
+    public static class Delta {
         public enum Type { APPEND, OVERWRITE, DELETE }
 
         public Type type;
@@ -22,6 +23,21 @@ public class Snapshot implements TransactionalFS {
             this(type);
             this.data = data;
         }
+
+        public String toString() {
+            String symbol = "?";
+            switch (this.type) {
+            case APPEND: symbol = "+"; break;
+            case OVERWRITE: symbol = "="; break;
+            case DELETE: symbol = "-"; break;
+            }
+
+            if (this.data == null) {
+                return String.format("<%s>", symbol);
+            } else {
+                return String.format("<%s %d>", symbol, this.data.length);
+            }
+        }
     }
 
     public Snapshot(FS fs) {
@@ -30,7 +46,7 @@ public class Snapshot implements TransactionalFS {
     }
 
     public String toString() {
-        return String.format("<Snapshot %x>", this.id);
+        return String.format("<Snapshot %x %s>", this.id, this.deltas);
     }
 
     public boolean create(String filename) {
