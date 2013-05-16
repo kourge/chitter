@@ -10,7 +10,12 @@ public class Snapshot implements TransactionalFS {
     private Map<String, Delta> deltas;
 
     public static class Delta {
-        public enum Type { APPEND, OVERWRITE, DELETE }
+        public enum Type {
+            APPEND("+"), OVERWRITE("="), DELETE("-");
+            private final String symbol;
+            Type(String symbol) { this.symbol = symbol; }
+            public String symbol() { return this.symbol; }
+        }
 
         public Type type;
         public byte[] data;
@@ -25,17 +30,12 @@ public class Snapshot implements TransactionalFS {
         }
 
         public String toString() {
-            String symbol = "?";
-            switch (this.type) {
-            case APPEND: symbol = "+"; break;
-            case OVERWRITE: symbol = "="; break;
-            case DELETE: symbol = "-"; break;
-            }
-
             if (this.data == null) {
-                return String.format("(%s)", symbol);
+                return String.format("(%s)", this.type.symbol());
             } else {
-                return String.format("(%s %d)", symbol, this.data.length);
+                return String.format(
+                    "(%s %d)", this.type.symbol(), this.data.length
+                );
             }
         }
     }
