@@ -7,7 +7,7 @@ import org.python.util.*;
 public class Repl {
     private static final String PYTHON_HOME = "python.home";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         if (System.getProperty(PYTHON_HOME) == null) {
             System.setProperty(PYTHON_HOME, "");
         }
@@ -20,6 +20,10 @@ public class Repl {
             System.getProperties(), null, new String[0]
         );
         InteractiveConsole c = new InteractiveConsole();
+        c.runsource("from edu.washington.cs.cse490h.lib import Utility");
+        c.runsource("from java.lang import *");
+        c.runsource("from java.util import *");
+        c.runsource("Utility.setRNG(Random())");
         c.interact();
     }
 }

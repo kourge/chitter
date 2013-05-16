@@ -16,9 +16,13 @@ public class Utility {
         return randNumGen;
     }
 
+    public static void setRNG(Random r) {
+        randNumGen = r;
+    }
+
     /**
      * Convert a string to a byte[]
-     * 
+     *
      * @param msg
      *            The string to convert
      * @return The byte[] that the string was converted to
@@ -36,7 +40,7 @@ public class Utility {
 
     /**
      * Convert a byte[] to a string
-     * 
+     *
      * @param msg
      *            The byte[] to convert
      * @return The converted String
@@ -55,7 +59,7 @@ public class Utility {
     /**
      * Escapes a string to be suitable for inclusion on a synoptic log event
      * line.
-     * 
+     *
      * @param s
      *            the string to escape
      * @return the escaped string
