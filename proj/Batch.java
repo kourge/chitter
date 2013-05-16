@@ -9,14 +9,14 @@ import edu.washington.cs.cse490h.lib.Utility;
 /**
  * Encapsulates multiple Invocations into one Invokable. When invoked, all the
  * invocations wrapped in the transaction are invoked in order. This by itself
- * does not provide an atomic property; the subclass FSTransaction is
- * responsible for all the dirty work.
+ * does not provide an atomic property; the subclass FSBatch is responsible for
+ * all the dirty work.
  *
  * The empty methods beforeInvocation and afterInvocation are defined. They are
  * meant to be overridden by a subclass to add sophisticated behavior such as
  * caching and failure detection.
  */
-public class Transaction
+public class Batch
 implements Serializable, Invokable, Iterable<Invocation> {
     public static final long serialVersionUID = 0L;
 
@@ -25,16 +25,16 @@ implements Serializable, Invokable, Iterable<Invocation> {
     protected Object result;
     protected boolean failed;
 
-    public Transaction(Invocation... args) {
+    public Batch(Invocation... args) {
         this.calls = Arrays.copyOf(args, args.length);
         this.seq = Utility.getRNG().nextLong();
     }
 
     public boolean equalsIgnoreValues(Invokable obj) {
-        if (!(obj instanceof Transaction)) {
+        if (!(obj instanceof Batch)) {
             return false;
         }
-        Transaction other = (Transaction)obj;
+        Batch other = (Batch)obj;
 
         if (other.calls.length != this.calls.length) {
             return false;
@@ -99,7 +99,7 @@ implements Serializable, Invokable, Iterable<Invocation> {
 
     public String toString() {
         return String.format(
-            "<Transaction %x %s>", this.seq, Arrays.toString(this.calls)
+            "<Batch %x %s>", this.seq, Arrays.toString(this.calls)
         );
     }
 }

@@ -18,8 +18,8 @@ public class InvokableUtils {
     
     /** Is an Invokable read-only? */
     public static boolean isReadOnly(Invokable iv) {
-        if (iv instanceof Transaction) {
-            Transaction t = (Transaction)iv;
+        if (iv instanceof Batch) {
+            Batch t = (Batch)iv;
             Invocation[] ivs = t.getInvocations();
             for (Invocation i : ivs) {
                 if (mutates(i.getMethodName())) {

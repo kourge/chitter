@@ -96,8 +96,8 @@ public class Operation {
 
             Invokable iv = (Invokable)req.getInvokable();
             
-            if (iv instanceof Transaction) {
-                Transaction t = (Transaction)iv;
+            if (iv instanceof Batch) {
+                Batch t = (Batch)iv;
                 value = proc.send(Py.java2py(t));
             } else {
                 value = proc.send(Py.java2py(result));
@@ -127,8 +127,8 @@ public class Operation {
                         PyObject v = proc.send(Py.java2py(result));
                         this.handleValue(v, proc);
                     }
-                } else if (iv instanceof Transaction) {
-                    Transaction t = (Transaction)iv;
+                } else if (iv instanceof Batch) {
+                    Batch t = (Batch)iv;
                     for (Invocation i : t.getInvocations()) {
                         Object result = this.readCached(i, proc);
                         if (result == null) {
@@ -174,7 +174,7 @@ public class Operation {
                 PyTuple args = (PyTuple)t.pyget(1);
                 ivs[i] = this.argsToInvocation(name, args);
             }
-            return new Transaction(ivs);
+            return new Batch(ivs);
         }
 
         return null;

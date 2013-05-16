@@ -161,7 +161,7 @@ public class ChitterNode extends ClientServerNode {
 
     @Override
     @Client public void onCommandCompletion(Request r) {
-        if (r.getInvokable() instanceof Transaction && ((Transaction)r.getInvokable()).isFailure()) {
+        if (r.getInvokable() instanceof Batch && ((Batch)r.getInvokable()).isFailure()) {
 
             // invalidate cache (the ENTIRE cache for the moment...)
             fsCache.invalidateAll();
@@ -220,9 +220,9 @@ public class ChitterNode extends ClientServerNode {
         PersistentStorageReader reader = null;
 
         // complete any transaction commit that was in progress (this duplicates
-        // some logic in FSTransaction, but whatevs, this can be refactored later)
+        // some logic in FSBatch, but whatevs, this can be refactored later)
         try {
-            reader = getReader(FSTransaction.COMMIT_LOGFILE);
+            reader = getReader(FSBatch.COMMIT_LOGFILE);
         } catch (Exception e) {
             // no commit log, so we didn't fail during a commit
         }
@@ -255,7 +255,7 @@ public class ChitterNode extends ClientServerNode {
                 if (!validCommit) {
                     // kill log file and call it a day, the client will
                     // eventually resend the request
-                    this.fs.delete(FSTransaction.COMMIT_LOGFILE);
+                    this.fs.delete(FSBatch.COMMIT_LOGFILE);
                 } else {
                     String tmp = reader.readLine();
                     while (tmp != null) {
@@ -267,7 +267,7 @@ public class ChitterNode extends ClientServerNode {
                         tmp = reader.readLine();
                     }
 
-                    PersistentStorageWriter outLog = getWriter(FSTransaction.COMMIT_LOGFILE, true);
+                    PersistentStorageWriter outLog = getWriter(FSBatch.COMMIT_LOGFILE, true);
 
                     // now finish up the operations
                     while(!commits.isEmpty()) {
@@ -288,7 +288,7 @@ public class ChitterNode extends ClientServerNode {
                     log.append("COMPLETE\n");
 
                     // delete commit logfile
-                    this.fs.delete(FSTransaction.COMMIT_LOGFILE);
+                    this.fs.delete(FSBatch.COMMIT_LOGFILE);
                 }
             } catch (Exception e) {
                 logOutput("Failed during recovery of commit");

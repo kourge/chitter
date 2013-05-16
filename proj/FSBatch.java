@@ -6,8 +6,8 @@ import java.io.Serializable;
 import edu.washington.cs.cse490h.lib.Utility;
 
 /**
- * FSTransaction facilitates meaningful file system related behavior for
- * transactions. It performs error detection and rolls back if necessary.
+ * FSBatch facilitates meaningful file system related behavior for transactions.
+ * It performs error detection and rolls back if necessary.
  *
  * Error detection is done by examining the return value after each invocation.
  * If the return value is considered a failure value for a given invocation, the
@@ -29,12 +29,12 @@ import edu.washington.cs.cse490h.lib.Utility;
  * committing a snapshot, when the node restarts, the commit continues as part
  * of the recovery process.
  */
-public class FSTransaction extends Transaction implements Serializable {
+public class FSBatch extends Batch implements Serializable {
     public static final long serialVersionUID = 0L;
 
     private transient LocalFS fs;
 
-    public FSTransaction(Transaction transaction, LocalFS fs) {
+    public FSBatch(Batch transaction, LocalFS fs) {
         super(transaction.getInvocations());
         this.fs = fs;
     }

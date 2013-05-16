@@ -31,12 +31,12 @@ public abstract class ClientServerNode extends RIONode {
 
         try {
             req = (Request)Serialization.decode(msg);
-            if (req.getInvokable() instanceof Transaction) {
-                Transaction t = (Transaction)req.getInvokable();
-                FSTransaction fst = new FSTransaction(t, (LocalFS)fs);
+            if (req.getInvokable() instanceof Batch) {
+                Batch t = (Batch)req.getInvokable();
+                FSBatch fst = new FSBatch(t, (LocalFS)fs);
                 fst.invokeOn(fs);
                 // sorta ugly: reach in and deposit return value in the transaction
-                // we'll send back, altenatively we could send back the FSTransaction
+                // we'll send back, altenatively we could send back the FSBatch
                 // itself, but that also seems ugly... meh.
                 t.setReturnValue(fst.getReturnValue());
             } else {
