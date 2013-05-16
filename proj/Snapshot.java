@@ -51,9 +51,9 @@ public class Snapshot implements TransactionalFS {
     }
 
     public boolean create(String filename) {
-        if (deltas.containsKey(filename)) {
+        if (this.deltas.containsKey(filename)) {
             // The delta layer already has an overlay for this file.
-            Delta d = deltas.get(filename);
+            Delta d = this.deltas.get(filename);
 
             // The file has been virtually overwritten or appended. It cannot be
             // virtually created until it has been virtually deleted.
@@ -77,16 +77,16 @@ public class Snapshot implements TransactionalFS {
 
             // The file does not physically exist. Virtually create the file.
             Delta d = new Delta(Delta.Type.OVERWRITE, new byte[0]);
-            deltas.put(filename, d);
+            this.deltas.put(filename, d);
         }
         return true;
     }
 
     public boolean exists(String filename) {
-        if (deltas.containsKey(filename)) {
+        if (this.deltas.containsKey(filename)) {
             // The delta layer already has an overlay for this file. The file is
             // considered to exist unless the file has been virtually deleted.
-            return deltas.get(filename).type != Delta.Type.DELETE;
+            return this.deltas.get(filename).type != Delta.Type.DELETE;
         }
 
         // This file has not been virtually modified. Delegate the query of its
@@ -99,9 +99,9 @@ public class Snapshot implements TransactionalFS {
             return null;
         }
 
-        if (deltas.containsKey(filename)) {
+        if (this.deltas.containsKey(filename)) {
             // The file has been virtually modified.
-            Delta d = deltas.get(filename);
+            Delta d = this.deltas.get(filename);
 
             switch (d.type) {
             case OVERWRITE:
@@ -136,8 +136,8 @@ public class Snapshot implements TransactionalFS {
             return false;
         }
 
-        if (deltas.containsKey(filename)) {
-            Delta d = deltas.get(filename);
+        if (this.deltas.containsKey(filename)) {
+            Delta d = this.deltas.get(filename);
 
             // The delta type is either an overwrite or an append. If it were an
             // overwrite, we merge the overwrite with this append, resulting in
@@ -151,7 +151,7 @@ public class Snapshot implements TransactionalFS {
                 Delta.Type.APPEND,
                 Arrays.copyOf(data, data.length)
             );
-            deltas.put(filename, d);
+            this.deltas.put(filename, d);
         }
 
         return true;
@@ -162,8 +162,8 @@ public class Snapshot implements TransactionalFS {
             return false;
         }
 
-        if (deltas.containsKey(filename)) {
-            Delta d = deltas.get(filename);
+        if (this.deltas.containsKey(filename)) {
+            Delta d = this.deltas.get(filename);
             d.type = Delta.Type.OVERWRITE;
             d.data = Arrays.copyOf(data, data.length);
         } else {
@@ -171,7 +171,7 @@ public class Snapshot implements TransactionalFS {
                 Delta.Type.OVERWRITE,
                 Arrays.copyOf(data, data.length)
             );
-            deltas.put(filename, d);
+            this.deltas.put(filename, d);
         }
         return true;
     }
@@ -181,13 +181,13 @@ public class Snapshot implements TransactionalFS {
             return false;
         }
 
-        if (deltas.containsKey(filename)) {
-            Delta d = deltas.get(filename);
+        if (this.deltas.containsKey(filename)) {
+            Delta d = this.deltas.get(filename);
             d.type = Delta.Type.DELETE;
             d.data = null;
         } else {
             Delta d = new Delta(Delta.Type.DELETE);
-            deltas.put(filename, d);
+            this.deltas.put(filename, d);
         }
         return true;
     }
