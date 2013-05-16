@@ -33,9 +33,9 @@ public class Snapshot implements TransactionalFS {
             }
 
             if (this.data == null) {
-                return String.format("<%s>", symbol);
+                return String.format("(%s)", symbol);
             } else {
-                return String.format("<%s %d>", symbol, this.data.length);
+                return String.format("(%s %d)", symbol, this.data.length);
             }
         }
     }
