@@ -191,4 +191,21 @@ public class Snapshot implements TransactionalFS {
         }
         return true;
     }
+
+    public void commit() {
+        for (String filename : this.deltas.keySet()) {
+            Delta d = this.deltas.get(filename);
+            switch (d.type) {
+            case DELETE:
+                this.fs.delete(filename);
+                break;
+            case OVERWRITE:
+                this.fs.overwriteIfNotChanged(filename, d.data, -1);
+                break;
+            case APPEND:
+                this.fs.appendIfNotChanged(filename, d.data, -1);
+                break;
+            }
+        }
+    }
 }
