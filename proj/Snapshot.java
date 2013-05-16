@@ -43,6 +43,7 @@ public class Snapshot implements TransactionalFS {
     public Snapshot(FS fs) {
         this.fs = fs;
         this.id = Utility.getRNG().nextLong();
+        this.deltas = new HashMap<String, Delta>();
     }
 
     public String toString() {
