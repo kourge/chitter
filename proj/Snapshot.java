@@ -112,7 +112,9 @@ public class Snapshot implements TransactionalFS {
             case APPEND:
                 byte[] existingData = this.fs.read(filename).first();
                 byte[] overlayData = d.data;
-                byte[] data = Arrays.copyOf(existingData, existingData.length);
+                byte[] data = Arrays.copyOf(
+                    existingData, existingData.length + overlayData.length
+                );
                 System.arraycopy(
                     overlayData, 0,
                     data, existingData.length, overlayData.length
