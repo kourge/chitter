@@ -200,6 +200,9 @@ public class Snapshot implements TransactionalFS {
                 this.fs.delete(filename);
                 break;
             case OVERWRITE:
+                if (!this.fs.exists(filename)) {
+                    this.fs.create(filename);
+                }
                 this.fs.overwriteIfNotChanged(filename, d.data, -1);
                 break;
             case APPEND:
