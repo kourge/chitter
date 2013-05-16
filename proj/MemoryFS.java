@@ -14,12 +14,22 @@ public class MemoryFS implements FS {
             this.timestamp = System.currentTimeMillis();
             this.content = new byte[0];
         }
+
+        public String toString() {
+            return String.format(
+                "<%x %s>", this.timestamp, Arrays.toString(this.content)
+            );
+        }
     }
 
     protected Map<String, File> map;
 
     public MemoryFS() {
         this.map = new HashMap<String, File>();
+    }
+
+    public String toString() {
+        return String.format("<MemoryFS %s>", this.map.toString());
     }
 
     public long create(String filename) {
