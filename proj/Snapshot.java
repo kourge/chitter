@@ -2,13 +2,13 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Collections;
-import java.io.Serializable;
+import java.io.*;
 import edu.washington.cs.cse490h.lib.Utility;
 
 public class Snapshot implements TransactionalFS, Serializable {
     public static final long serialVersionUID = 0L;
 
-    private transient FS fs;
+    public FS fs;
     private long id;
     private Map<String, Delta> deltas;
 
@@ -18,9 +18,47 @@ public class Snapshot implements TransactionalFS, Serializable {
         this.deltas = new HashMap<String, Delta>();
     }
 
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Snapshot)) {
+            return false;
+        }
+        Snapshot other = (Snapshot)obj;
+        return this.id == other.id && this.deltas.equals(other.deltas);
+    }
+
     public String toString() {
         return String.format("<Snapshot %x %s>", this.id, this.deltas);
     }
+
+    public Map<String, Delta> getDeltas() {
+        return Collections.unmodifiableMap(this.deltas);
+    }
+
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.writeLong(id);
+        for (String filename : this.deltas.keySet()) {
+            Delta d = this.deltas.get(filename);
+            oos.writeUTF(filename);
+            d.writeObject(oos);
+        }
+    }
+
+    private void readObject(ObjectInputStream ois)
+    throws IOException, ClassNotFoundException {
+        this.deltas = new HashMap<String, Delta>();
+        this.id = ois.readLong();
+
+        try {
+            while (true) {
+                String filename = ois.readUTF();
+                Delta d = new Delta();
+                d.readObject(ois);
+                this.deltas.put(filename, d);
+            }
+        } catch (IOException e) {}
+    }
+
+    private void readObjectNoData() throws ObjectStreamException {}
 
     public boolean create(String filename) {
         if (this.deltas.containsKey(filename)) {
@@ -156,7 +194,7 @@ public class Snapshot implements TransactionalFS, Serializable {
         if (this.deltas.containsKey(filename)) {
             Delta d = this.deltas.get(filename);
             d.type = Delta.Type.DELETE;
-            d.data = null;
+            d.data = new byte[0];
         } else {
             Delta d = new Delta(Delta.Type.DELETE);
             this.deltas.put(filename, d);

@@ -1,8 +1,8 @@
+import javax.xml.bind.DatatypeConverter;
 import java.io.*;
+import java.util.Arrays;
 
-public class Delta implements Serializable {
-    public static final long serialVersionUID = 0L;
-
+public class Delta {
     public enum Type {
         APPEND("+"), OVERWRITE("="), DELETE("-");
         private final String symbol;
@@ -13,8 +13,11 @@ public class Delta implements Serializable {
     public Type type;
     public byte[] data;
 
+    public Delta() {}
+
     public Delta(Type type) {
         this.type = type;
+        this.data = new byte[0];
     }
 
     public Delta(Type type, byte[] data) {
@@ -39,5 +42,26 @@ public class Delta implements Serializable {
             );
         }
     }
+
+    private static String toBase64(byte[] array) {
+        return DatatypeConverter.printHexBinary(array);
+    }
+
+    private static byte[] fromBase64(String value) {
+        return DatatypeConverter.parseHexBinary(value);
+    }
+
+    public void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.writeUTF(this.type.name());
+        oos.writeUTF(toBase64(data));
+    }
+
+    public void readObject(ObjectInputStream ois)
+    throws IOException, ClassNotFoundException {
+        this.type = Enum.valueOf(Type.class, ois.readUTF());
+        this.data = fromBase64(ois.readUTF());
+    }
+
+    public void readObjectNoData() throws ObjectStreamException {}
 }
 
