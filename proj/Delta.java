@@ -22,8 +22,16 @@ public class Delta implements Serializable {
         this.data = data;
     }
 
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Delta)) {
+            return false;
+        }
+        Delta other = (Delta)obj;
+        return this.type == other.type && Arrays.equals(this.data, other.data);
+    }
+
     public String toString() {
-        if (this.data == null) {
+        if (this.type == Type.DELETE) {
             return String.format("(%s)", this.type.symbol());
         } else {
             return String.format(
