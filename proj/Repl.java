@@ -23,6 +23,8 @@ public class Repl {
         c.runsource("from edu.washington.cs.cse490h.lib import Utility");
         c.runsource("from java.lang import *");
         c.runsource("from java.util import *");
+        c.runsource("from Serialization import encode as dumps");
+        c.runsource("from Serialization import decode as loads");
         c.runsource("Utility.setRNG(Random())");
         c.interact();
     }
