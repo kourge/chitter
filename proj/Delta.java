@@ -16,12 +16,11 @@ public class Delta {
     public Delta() {}
 
     public Delta(Type type) {
-        this.type = type;
-        this.data = new byte[0];
+        this(type, new byte[0]);
     }
 
     public Delta(Type type, byte[] data) {
-        this(type);
+        this.type = type;
         this.data = data;
     }
 
