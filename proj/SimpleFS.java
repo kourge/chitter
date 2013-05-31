@@ -2,7 +2,7 @@
  * A version of the FS interface that does not have conditional write operations
  * that are based on version numbers.
  */
-public interface TransactionalFS {
+public interface SimpleFS {
     public boolean create(String filename);
     public boolean exists(String filename);
     public byte[] read(String filename);

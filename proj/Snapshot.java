@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.io.*;
 import edu.washington.cs.cse490h.lib.Utility;
 
-public class Snapshot implements TransactionalFS, Serializable {
+public class Snapshot implements SimpleFS, Serializable {
     public static final long serialVersionUID = 0L;
 
     public FS fs;
