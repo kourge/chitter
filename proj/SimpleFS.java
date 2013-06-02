@@ -5,7 +5,10 @@
 public interface SimpleFS {
     public boolean create(String filename);
     public boolean exists(String filename);
+
+    /** A failed read returns null. */
     public byte[] read(String filename);
+
     public boolean append(String filename, byte[] data);
     public boolean overwrite(String filename, byte[] data);
     public boolean delete(String filename);
