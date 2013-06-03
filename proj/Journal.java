@@ -7,6 +7,7 @@ import edu.washington.cs.cse490h.lib.PersistentStorageOutputStream;
 import edu.washington.cs.cse490h.lib.Utility;
 import edu.washington.cs.cse490h.lib.Callback;
 import edu.washington.cs.cse490h.lib.Node;
+import javax.xml.bind.DatatypeConverter;
 
 /** A general interface for logging and ensuring that operations get completed
  *      in the presence of failures */
@@ -28,7 +29,7 @@ abstract public class Journal {
     
     /** Serialize and base64-encode an object into our file
      *  @return Whether we succeeded */
-    boolean push(Serializable obj) {
+    boolean push(Serializable obj) throws JournalException {
         String b64 = base64Encode(obj);
         this.pendingOps.offer(obj);
         try {
@@ -80,6 +81,11 @@ abstract public class Journal {
         // garbage collect
         if (pendingOps.isEmpty()) {
             // we want to empty the file, but keep it around
+            try {
+                this.log = this.node.getWriter(this.filename, false);
+            } catch (IOException e) {
+                throw new JournalException("Failed to garbage collect log file.");
+            }
         }
     }
     
@@ -118,22 +124,42 @@ abstract public class Journal {
         }
     }
 
-    void startFresh() {
-        // just create the file
-        // TODO
+    void startFresh() throws JournalException {
+        // create a fresh log
+        try {
+            this.log = this.node.getWriter(this.filename, false);
+        } catch (IOException e) {
+            throw new JournalException("Failed to create initial log file.");
+        }
     }
 
     /** Execute a pending operation */
     public abstract void execute(Serializable obj);
 
-    private String base64Encode(Serializable obj) {
-        // TODO
-        return "";
+    /** TODO these should probably be moved to Utility: */
+
+    /** Get a base64 representation of the serialized version of
+     *  the passed-in object */
+    private String base64Encode(Serializable obj) throws JournalException {
+        byte[] bytes = null;
+        try {
+            bytes = Serialization.encode(obj);
+        } catch(Serialization.EncodingException e) {
+            throw new JournalException("Failed base64 encoding.");
+        }
+        return DatatypeConverter.printBase64Binary(bytes);
     }
 
-    private Serializable base64Decode(String b64) {
-        // TODO
-        return null;
+    /** Decode a base64 serialized object back into a proper object */
+    private Serializable base64Decode(String b64) throws JournalException {
+        byte[] bytes = DatatypeConverter.parseBase64Binary(b64);
+        Serializable out = null;
+        try {
+            out = (Serializable)Serialization.decode(bytes);
+        } catch(Serialization.DecodingException e) {
+            throw new JournalException("Failed base64 decoding.");
+        }
+        return out;
     }
 
 }
