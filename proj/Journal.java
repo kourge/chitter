@@ -14,9 +14,9 @@ import javax.xml.bind.DatatypeConverter;
 abstract public class Journal {
 
     private String filename;
-    private Node node;
     private static final String COMPLETE_TOKEN = "COMPLETE";
     private PersistentStorageWriter log;
+    protected Node node;
 
     private Queue<Serializable> pendingOps;
 
