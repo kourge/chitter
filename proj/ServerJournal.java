@@ -8,12 +8,12 @@ import edu.washington.cs.cse490h.lib.*;
  *  can just tell them we're already done). This is a bit of a stretch as far as
  *  extending 'Journal' since it's behavior is fairly distinct from other subclasses,
  *  but it is still convenient to reuse some code here. */
-public class ServerJournal {
-    public ServerJournal(String filename, Node n) {
+public class ServerJournal extends Journal {
+    public ServerJournal(String filename, Node n) throws JournalException {
         super(filename, n);
     }
 
-    public void execute() {
+    public void execute(Serializable obj) {
         // TODO
     }
 }
