@@ -28,12 +28,14 @@ public class Protocol {
 
     public static final int CHITTER_RPC_REQUEST = 25;
     public static final int CHITTER_RPC_REPLY = 26;
-	
+
+    public static final int PAXOS = 33;
+
 	public static final int MAX_PROTOCOL = 127;
 
 	/**
 	 * Tests if this is a valid protocol for a Packet
-	 * 
+	 *
 	 * @param protocol
 	 *            The protocol in question
 	 * @return true if the protocol is valid, false otherwise
@@ -47,8 +49,8 @@ public class Protocol {
 	/**
 	 * Tests if the given protocol is valid for a RIOPacket. Note that the
 	 * current implementation of RIOPacket actually uses this to test validity
-	 * of packets. 
-	 * 
+	 * of packets.
+	 *
 	 * @param protocol
 	 *            The protocol to be checked
 	 * @return True if protocol is valid, else false
@@ -56,16 +58,17 @@ public class Protocol {
 	public static boolean isRIOProtocolValid(int protocol) {
 		return (protocol == VOTEREQ_PKT || protocol == VOTE_PKT
 				|| protocol == DECISION_PKT || protocol == DECISIONREQ_PKT
-                || protocol == RIOTEST_PKT 
+                || protocol == RIOTEST_PKT
                 || protocol == INITIATE_SESSION
                 || protocol == CHITTER_RPC_REQUEST
-                || protocol == CHITTER_RPC_REPLY);
+                || protocol == CHITTER_RPC_REPLY
+                || protocol == PAXOS);
 	}
 
 	/**
 	 * Returns a string representation of the given protocol. Can be used for
 	 * debugging
-	 * 
+	 *
 	 * @param protocol
 	 *            The protocol whose string representation is desired
 	 * @return The string representation of the given protocol.
@@ -87,6 +90,8 @@ public class Protocol {
 			return "Decision Request Packet";
 		case RIOTEST_PKT:
 			return "RIO Testing Packet";
+        case PAXOS:
+            return "Paxos Communication Packet";
 		default:
 			return "Unknown Protocol";
 		}
