@@ -10,10 +10,8 @@ import plume.OptionGroup;
 
 import edu.washington.cs.cse490h.lib.Manager.FailureLvl;
 
-import org.python.core.Py;
-import org.python.core.PyString;
-import org.python.core.PySystemState;
-import org.plyjy.factory.PySystemObjectFactory;
+import org.python.core.*;
+import org.python.util.PythonInterpreter;
 
 /**
  * <pre>
@@ -257,11 +255,15 @@ public class MessageLayer {
         sys.path.append(new PyString("lib/edu/washington/cs/cse490h/lib/"));
 
         String filename = nodeClass.substring(0, nodeClass.lastIndexOf(".py"));
-        PySystemObjectFactory factory = new PySystemObjectFactory(
-            Node.class, filename, Utility.camelize(filename)
-        );
-        Node instance = (Node)factory.createObject();
-        nodeImpl = instance.getClass();
+        String className = Utility.camelize(filename);
+
+        PythonInterpreter python = new PythonInterpreter();
+        python.exec(String.format("from %s import %s", filename, className));
+        PyType klass = (PyType)python.get(className);
+
+        @SuppressWarnings("unchecked")
+        Class<? extends Node> tempNodeImpl = (Class<? extends Node>)klass.__tojava__(Class.class);
+        nodeImpl = tempNodeImpl;
       } else {
         nodeImpl = ClassLoader.getSystemClassLoader().loadClass(nodeClass).asSubclass(Node.class);
       }
