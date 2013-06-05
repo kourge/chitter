@@ -96,13 +96,7 @@ public class Operation {
 
             Invokable iv = (Invokable)req.getInvokable();
             
-            if (iv instanceof Batch) {
-                Batch t = (Batch)iv;
-                value = proc.send(Py.java2py(t));
-            } else {
-                value = proc.send(Py.java2py(result));
-            }
-
+            value = proc.send(Py.java2py(result));
             this.handleValue(value, proc);
         }
     }
@@ -116,33 +110,16 @@ public class Operation {
             }
 
             if (InvokableUtils.isReadOnly(iv)) {
-                if (iv instanceof Invocation) {
-                    Invocation i = (Invocation)iv;
-                    Object result = this.readCached(i, proc);
-                    if (result == null) {
-                        System.out.println("Cache miss: " + (String)i.getParameterValues()[0]);
-                        return;
-                    } else {
-                        this.prevValue = null;
-                        PyObject v = proc.send(Py.java2py(result));
-                        this.handleValue(v, proc);
-                    }
-                } else if (iv instanceof Batch) {
-                    Batch t = (Batch)iv;
-                    for (Invocation i : t.getInvocations()) {
-                        Object result = this.readCached(i, proc);
-                        if (result == null) {
-                            System.out.println("Cache miss: " + (String)i.getParameterValues()[0]);
-                            return;
-                        } else {
-                            i.setReturnValue(result);
-                        }
-                    }
+                Invocation i = (Invocation)iv;
+                Object result = this.readCached(i, proc);
+                if (result == null) {
+                    System.out.println("Cache miss: " + (String)i.getParameterValues()[0]);
+                    return;
+                } else {
                     this.prevValue = null;
-                    // if we made it this far we had everything in cache, and can continue
-                    PyObject v = proc.send(Py.java2py(t));
+                    PyObject v = proc.send(Py.java2py(result));
                     this.handleValue(v, proc);
-                } else { /* ??? */}
+                }
             } else {
                 // if it has writes, just always send to the server
                 Request req = Request.to(
@@ -158,26 +135,10 @@ public class Operation {
     }
 
     public Invokable convertToInvokable(PyObject value) {
-        if (false) {
-        } else if (value instanceof PyTuple) {
-            PyTuple t = (PyTuple)value;
-            String name = t.pyget(0).asString();
-            PyTuple args = (PyTuple)t.pyget(1);
-            return this.argsToInvocation(name, args);
-        } else if (value instanceof PyList) {
-            // value is a list for a transaction
-            PyList operations = (PyList)value;
-            Invocation[] ivs = new Invocation[operations.size()];
-            for (int i = 0; i < operations.size(); i++) {
-                PyTuple t = (PyTuple)operations.pyget(i);
-                String name = t.pyget(0).asString();
-                PyTuple args = (PyTuple)t.pyget(1);
-                ivs[i] = this.argsToInvocation(name, args);
-            }
-            return new Batch(ivs);
-        }
-
-        return null;
+        PyTuple t = (PyTuple)value;
+        String name = t.pyget(0).asString();
+        PyTuple args = (PyTuple)t.pyget(1);
+        return this.argsToInvocation(name, args);
     }
 
     public Invocation argsToInvocation(String name, PyTuple args) {
