@@ -2,6 +2,8 @@ import Protocol
 import PaxosConfigNode
 import Serialization
 
+from paxos_roles import *
+
 
 def enum(**enums):
     return type('Enum', (), enums)
@@ -27,11 +29,9 @@ class PaxosMessage:
         return " ".join([str(x) for x in contents])
 
 
-# TODO(sumanvy): create separate Acceptor, Learner, and Proposer classes that
-# can be mixed in
-class PaxosNode(PaxosConfigNode):
+class PaxosNode(PaxosConfigNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(PaxosNode, self).__init__()
         self.states = enum(ACCEPTOR="acceptor", LEARNER="learner", PROPOSER="proposer")
 
     def start(self):
@@ -88,23 +88,8 @@ class PaxosNode(PaxosConfigNode):
         for dest_addr in self.nodes:
             self.send_msg(dest_addr, byte_msg)
 
-    ## paxos related methods
-
-    def accept(self, src_addr, msg):
-        pass
-
-    def accepted(self, src_addr, msg):
-        pass
+    ## general paxos related methods
 
     def announce(self, src_addr, msg):
         if src_addr not in self.nodes:
             self.nodes.append(src_addr)
-
-    def nack(self, src_addr, msg):
-        pass
-
-    def prepare(self, src_addr, msg):
-        pass
-
-    def promise(self, src_addr, msg):
-        pass
