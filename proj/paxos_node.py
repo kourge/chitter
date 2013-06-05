@@ -66,7 +66,13 @@ class PaxosNode(PaxosConfigNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
             print "Invalid paxos message kind"
             return
 
-    def send_msg(self, dest_addr, byte_msg):
+    def send_msg(self, dest_addr, msg, error_str="Message sending failed"):
+        try:
+            byte_msg = Serialization.encode(msg)
+        except Serialization.EncodingException as e:
+            print error_str
+            return
+
         self.RIOSend(dest_addr, Protocol.PAXOS, byte_msg)
 
     def propose(self, value):
@@ -79,14 +85,8 @@ class PaxosNode(PaxosConfigNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
         else:
             msg.seq = self.addr
 
-        try:
-            byte_msg = Serialization.encode(msg)
-        except Serialization.EncodingException as e:
-            print "Proposal failed"
-            return
-
         for dest_addr in self.nodes:
-            self.send_msg(dest_addr, byte_msg)
+            self.send_msg(dest_addr, msg, "Proposal failed")
 
     ## general paxos related methods
 
