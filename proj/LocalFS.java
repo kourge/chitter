@@ -1,5 +1,6 @@
 import java.io.*;
 
+import edu.washington.cs.cse490h.lib.Node;
 import edu.washington.cs.cse490h.lib.PersistentStorageWriter;
 import edu.washington.cs.cse490h.lib.PersistentStorageInputStream;
 import edu.washington.cs.cse490h.lib.PersistentStorageOutputStream;
@@ -10,9 +11,9 @@ import edu.washington.cs.cse490h.lib.Utility;
  * things.
  */
 public class LocalFS implements FS {
-    private ClientServerNode node;
+    private Node node;
 
-    public LocalFS(ClientServerNode n) {
+    public LocalFS(Node n) {
         node = n;
     }
 
