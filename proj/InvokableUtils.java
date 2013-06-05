@@ -18,21 +18,7 @@ public class InvokableUtils {
     
     /** Is an Invokable read-only? */
     public static boolean isReadOnly(Invokable iv) {
-        if (iv instanceof Batch) {
-            Batch t = (Batch)iv;
-            Invocation[] ivs = t.getInvocations();
-            for (Invocation i : ivs) {
-                if (mutates(i.getMethodName())) {
-                    return false;
-                }
-            }
-            return true;
-        } else if (iv instanceof Invocation) {
-            Invocation i = (Invocation)iv;
-            return !mutates(i.getMethodName());
-        } else {
-            //throw new Exception("Unkown Invokable");
-            return false;
-        }
+        Invocation i = (Invocation)iv;
+        return !mutates(i.getMethodName());
     }
 }
