@@ -1,5 +1,5 @@
+import AbstractNode
 import Protocol
-import PaxosConfigNode
 import Serialization
 
 
@@ -29,7 +29,7 @@ class PaxosMessage:
 
 # TODO(sumanvy): create separate Acceptor, Learner, and Proposer classes that
 # can be mixed in
-class PaxosNode(PaxosConfigNode):
+class PaxosNode(AbstractNode):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.states = enum(ACCEPTOR="acceptor", LEARNER="learner", PROPOSER="proposer")

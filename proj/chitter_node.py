@@ -1,4 +1,4 @@
-import PaxosConfigNode
+import AbstractNode
 
 import Protocol
 import LocalFS
@@ -118,7 +118,7 @@ class ClientNode(object):
         raise Exception()
 
 
-class ChitterNode(ServerNode, ClientNode, PaxosConfigNode):
+class ChitterNode(ServerNode, ClientNode, AbstractNode):
     def __init__(self):
         ClientNode.__init__(self)
         self.pending_cmds = {}

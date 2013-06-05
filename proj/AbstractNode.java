@@ -3,10 +3,10 @@ import java.util.HashMap;
 import org.python.core.*;
 import org.python.util.PythonInterpreter;
 
-public abstract class PaxosConfigNode extends RIONode {
+public abstract class AbstractNode extends RIONode {
     public FS fs;
 
-    public PaxosConfigNode() {
+    public AbstractNode() {
         this.fs = new LocalFS(this);
     }
 
