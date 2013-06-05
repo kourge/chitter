@@ -49,7 +49,7 @@ class PaxosNode(PaxosConfigNode):
         elif cmd == "paxos_propose":
             self.propose(tokens[1])
 
-    def onRIOReceive(self, from_address, protocol, byte_msg):
+    def onRIOReceive(self, src_addr, protocol, byte_msg):
         if protocol != Protocol.PAXOS:
             return
 
@@ -61,7 +61,7 @@ class PaxosNode(PaxosConfigNode):
             return
 
         try:
-            getattr(self, msg.kind)(from_address, msg)
+            getattr(self, msg.kind)(src_addr, msg)
         except AttributeError:
             print "Invalid paxos message kind"
             return
@@ -90,21 +90,21 @@ class PaxosNode(PaxosConfigNode):
 
     ## paxos related methods
 
-    def accept(self, from_address, msg):
+    def accept(self, src_addr, msg):
         pass
 
-    def accepted(self, from_address, msg):
+    def accepted(self, src_addr, msg):
         pass
 
-    def announce(self, from_address, msg):
-        if from_address not in self.nodes:
-            self.nodes.append(from_address)
+    def announce(self, src_addr, msg):
+        if src_addr not in self.nodes:
+            self.nodes.append(src_addr)
 
-    def nack(self, from_address, msg):
+    def nack(self, src_addr, msg):
         pass
 
-    def prepare(self, from_address, msg):
+    def prepare(self, src_addr, msg):
         pass
 
-    def promise(self, from_address, msg):
+    def promise(self, src_addr, msg):
         pass
