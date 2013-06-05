@@ -35,7 +35,7 @@ class PaxosNode(PaxosConfigNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
         self.states = enum(ACCEPTOR="acceptor", LEARNER="learner", PROPOSER="proposer")
 
     def start(self):
-        self.nodes = [self.addr]
+        self.nodes = {self.addr}
         self.leader = self.addr
         self.last_seq = None
         self.last_value = None
@@ -91,5 +91,4 @@ class PaxosNode(PaxosConfigNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
     ## general paxos related methods
 
     def announce(self, src_addr, msg):
-        if src_addr not in self.nodes:
-            self.nodes.append(src_addr)
+        self.nodes.add(src_addr)
