@@ -34,7 +34,13 @@ public class Console implements ConsoleType {
     public Console(int clientAddr, int serverAddr, Map<String, String> consoleOperationsDescription, boolean isSimulator) {
         this.clientAddr = clientAddr;
         this.serverAddr = serverAddr;
-        descMap = new HashMap<String, String>(consoleOperationsDescription);
+
+        if (consoleOperationsDescription != null) {
+            descMap = new HashMap<String, String>(consoleOperationsDescription);
+        } else {
+            descMap = new HashMap<String, String>();
+        }
+
         descMap.put("help", "help <optional command>");
         descMap.put("login", "login username");
         descMap.put("logout", "logout");
