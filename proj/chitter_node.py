@@ -41,7 +41,7 @@ class ServerNode(object):
             print 'failed to encode RPC request'
 
     def on_request(self, src_addr, req):
-        raise Exception()
+        raise NotImplementedError()
 
 
 
@@ -115,7 +115,7 @@ class ClientNode(object):
             print "Failed to decode dropped RPC request"
 
     def on_complete(self, req):
-        raise Exception()
+        raise NotImplementedError()
 
 
 class ChitterNode(ServerNode, ClientNode, AbstractNode):
