@@ -1,0 +1,12 @@
+start 0
+start 1
+start 2
+time
+0 paxos_setup 1 2
+1 paxos_setup 0 2
+2 paxos_setup 0 1
+time
+0 paxos_propose foo
+time
+time
+time
