@@ -22,7 +22,7 @@ class PaxosMessage:
         self.seq = seq
         self.data = value
 
-    def __str__(self):
+    def __repr__(self):
         contents = ["kind:", self.kind, "seq:", self.seq, "data:", self.data]
         return " ".join([str(x) for x in contents])
 
