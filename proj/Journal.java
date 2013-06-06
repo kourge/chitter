@@ -11,7 +11,7 @@ import javax.xml.bind.DatatypeConverter;
 
 /** A general interface for logging and ensuring that operations get completed
  *      in the presence of failures */
-abstract public class Journal {
+public abstract class Journal {
 
     private String filename;
     private static final String COMPLETE_TOKEN = "COMPLETE";
@@ -29,7 +29,7 @@ abstract public class Journal {
     
     /** Serialize and base64-encode an object into our file
      *  @return Whether we succeeded */
-    boolean push(Serializable obj) throws JournalException {
+    public boolean push(Serializable obj) throws JournalException {
         String b64 = base64Encode(obj);
         this.pendingOps.offer(obj);
         try {
@@ -41,16 +41,18 @@ abstract public class Journal {
     }
 
     /** Do the next pending operation */
-    void pop() throws JournalException {
+    public void pop() throws JournalException {
         if (!this.pendingOps.isEmpty()) {
             Serializable op = this.pendingOps.poll();
             execute(op);
             complete();
+        } else {
+            throw new JournalException("Journal underflow.");
         }
     }
 
     /** Run through and finish all pending operations */
-    void completePendingOps() throws JournalException {
+    public void completePendingOps() throws JournalException {
         while (!this.pendingOps.isEmpty()) {
             Serializable op = this.pendingOps.poll();
             execute(op);
@@ -59,14 +61,7 @@ abstract public class Journal {
     }
 
     /** Mark an operation complete */
-    void complete() throws JournalException {
-        
-        if (pendingOps.isEmpty()) {
-            throw new JournalException("Journal underflow.");
-        }
-
-        Serializable completed = pendingOps.poll();
-
+    public void complete() throws JournalException {
         try {
         // NOTE: The extending class should be able to handle the case of
         // a failure before we can write this complete marker, logging a
@@ -90,7 +85,7 @@ abstract public class Journal {
     }
     
     /** Recover from a failure */
-    void recover() throws JournalException {
+    private void recover() throws JournalException {
         if (!Utility.fileExists(this.node, this.filename)) {
             // no log file to recover, just start fresh
             startFresh();
@@ -121,10 +116,15 @@ abstract public class Journal {
                 throw new JournalException("Failed to open log file: "
                     + this.filename + " for recovery.");
             }
+            try {
+                this.log = this.node.getWriter(this.filename, true);
+            } catch (IOException e) {
+                throw new JournalException("Failed to open log file.");
+            }
         }
     }
 
-    void startFresh() throws JournalException {
+    private void startFresh() throws JournalException {
         // create a fresh log
         try {
             this.log = this.node.getWriter(this.filename, false);
@@ -145,7 +145,7 @@ abstract public class Journal {
         try {
             bytes = Serialization.encode(obj);
         } catch(Serialization.EncodingException e) {
-            throw new JournalException("Failed base64 encoding.");
+            throw new JournalException("Failed base64 encoding: " + e);
         }
         return DatatypeConverter.printBase64Binary(bytes);
     }

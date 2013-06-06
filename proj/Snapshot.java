@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.io.*;
 import edu.washington.cs.cse490h.lib.Utility;
+import edu.washington.cs.cse490h.lib.Node;
 
 public class Snapshot implements SimpleFS, Serializable {
     public static final long serialVersionUID = 0L;
@@ -202,23 +203,15 @@ public class Snapshot implements SimpleFS, Serializable {
         return true;
     }
 
-    public void commit() {
-        for (String filename : this.deltas.keySet()) {
-            Delta d = this.deltas.get(filename);
-            switch (d.type) {
-            case DELETE:
-                this.fs.delete(filename);
-                break;
-            case OVERWRITE:
-                if (!this.fs.exists(filename)) {
-                    this.fs.create(filename);
-                }
-                this.fs.overwriteIfNotChanged(filename, d.data, -1);
-                break;
-            case APPEND:
-                this.fs.appendIfNotChanged(filename, d.data, -1);
-                break;
+    public void commit(Node node) {
+        try {
+            SnapshotCommitJournal journal = new SnapshotCommitJournal(".commit_snap", node, fs);
+            for (String filename : this.deltas.keySet()) {
+                journal.addDelta(filename, this.deltas.get(filename));
             }
+            journal.completePendingOps();
+        } catch (JournalException e) {
+            System.err.println("Failed to commit snapshot: " + e);
         }
     }
 }

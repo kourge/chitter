@@ -4,6 +4,7 @@ import Protocol
 import LocalFS
 import Snapshot
 import Serialization
+import SnapshotCommitJournal
 from pyoperation import RemoteOp
 from pyfs import RPC, Transaction
 
@@ -138,7 +139,9 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
     @override
     def start(self):
         print 'Node %d started' % (self.addr,)
-        pass
+        # wrap up a commit that we failed during, if necessary:
+        commit_snap = SnapshotCommitJournal(".commit_snap", self, self.fs)
+        commit_snap.completePendingOps()
 
     @override
     def fail(self):
@@ -289,7 +292,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
                     return req
             else:
                 snapshot = self.snapshots[sid]
-                snapshot.commit()
+                snapshot.commit(self)
 
                 self.last_sid = sid
                 req['result'] = True

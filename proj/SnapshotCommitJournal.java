@@ -11,18 +11,6 @@ import edu.washington.cs.cse490h.lib.Node;
 /** Journal for snapshot commits */
 public class SnapshotCommitJournal extends Journal {
 
-    public class DeltaEntry implements Serializable {
-        public static final long serialVersionUID = 0L;
-        public String filename;
-        public Delta delta;
-        public long version;
-        public DeltaEntry(String filename, Delta delta, long version) {
-            this.filename = filename;
-            this.delta = delta;
-            this.version = version;
-        }
-    };
-
     FS fs;
     
     public SnapshotCommitJournal(String filename, Node n, FS fs) throws JournalException {
@@ -34,7 +22,7 @@ public class SnapshotCommitJournal extends Journal {
         push(new DeltaEntry(filename, d, Utility.fileTimestamp(this.node, filename)));
     }
 
-    public void execute(Serializable s) {
+    @Override public void execute(Serializable s) {
         DeltaEntry d = (DeltaEntry)s;
         switch (d.delta.type) {
         case DELETE:
@@ -57,3 +45,15 @@ public class SnapshotCommitJournal extends Journal {
         }
     }
 }
+
+class DeltaEntry implements Serializable {
+    public static final long serialVersionUID = 0L;
+    public String filename;
+    public Delta delta;
+    public long version;
+    public DeltaEntry(String filename, Delta delta, long version) {
+        this.filename = filename;
+        this.delta = delta;
+        this.version = version;
+    }
+};
