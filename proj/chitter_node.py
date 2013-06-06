@@ -125,6 +125,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
         self.sid = 0
         self.last_sid = 0
         self.snapshots = {}
+        self.cache = {}
         self.op = RemoteOp()
 
     def create_sid(self):
@@ -179,11 +180,20 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
             print 'error: %s' % (req['error'],)
             return
 
+        # Place read results in cache
+        if req['action'] == 'do' and req['name'] == 'read':
+            filename, content = req['args'][0], req['result']
+            self.cache[filename] = content
+
+        # Resume the corresponding generator
         proc = self.pending_cmds[command]
         value = proc.send(req.get('result', None))
+
         node_addr = req['dest']
         self.act(node_addr, command, value, req['sid'])
+        self.pump_recv_queue()
 
+    @client
     def act(self, node_addr, command, value, sid=None):
         """Given an original command and a value yielded from a generator, act."""
 
@@ -197,7 +207,11 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
             # Perform an action
             name, args = value()
             message.update(action='do', name=name, args=args, sid=sid)
-            self.send_rpc(message)
+
+            # Try hitting the cache
+            should_intercept_send = self.before_send_rpc(message)
+            if not should_intercept_send:
+                self.send_rpc(message)
         elif value is Transaction.Commit:
             # Commit the transaction
             message.update(action='commit', sid=sid)
@@ -205,6 +219,37 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
         else:
             # The operation completed with a return value
             print '[done] %s = %r' % (command, value)
+
+    @client
+    def before_send_rpc(self, message):
+        """Called before self.send_rpc is called. Returning True will prevent
+        send_rpc from being called."""
+
+        if not message['action'] == 'do':
+            return False
+
+        # A write is about to happen. Evict from cache if possible.
+        if message['name'] in ('overwrite', 'append'):
+            filename = message['args'][0]
+
+            try:
+                del self.cache[filename]
+            except KeyError:
+                pass
+
+            return False
+
+        # A read is about to happen. Try to load from cache and avoid network
+        if message['name'] == 'read':
+            filename = message['args'][0]
+
+            if filename not in self.cache:
+                return False
+
+            message['result'] = self.cache[filename]
+            self.recv_queue.put(message)
+
+            return True
 
     @server
     def on_request(self, req):
