@@ -128,7 +128,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
         self.cache = {}
         self.op = RemoteOp()
 
-    def create_sid(self):
+    def next_sid(self):
         """Issues a new session ID"""
 
         sid = self.sid
@@ -258,7 +258,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
         action = req['action']
 
         if action == 'begin':
-            sid = self.create_sid()
+            sid = self.next_sid()
             self.snapshots[sid] = Snapshot(self.fs)
             req['sid'] = sid
             return req
