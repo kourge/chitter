@@ -3,49 +3,26 @@ import PaxosConfigNode
 import Serialization
 
 from paxos_roles import *
-
-
-def enum(**enums):
-    return type('Enum', (), enums)
-
-
-class PaxosMessage:
-    Kind = enum(
-        ACCEPT="accept",
-        ACCEPTED="accepted",
-        ANNOUNCE="announce",
-        NACK="nack",
-        PREPARE="prepare",
-        PROMISE="promise"
-    )
-
-    def __init__(self, kind=None, seq=None, value=None):
-        self.kind = kind
-        self.seq = seq
-        self.data = value
-
-    def __repr__(self):
-        contents = ["kind:", self.kind, "seq:", self.seq, "data:", self.data]
-        return " ".join([str(x) for x in contents])
+from paxos_message import *
 
 
 class PaxosNode(PaxosConfigNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
     def __init__(self):
-        super(PaxosNode, self).__init__()
-        self.states = enum(ACCEPTOR="acceptor", LEARNER="learner", PROPOSER="proposer")
+        PaxosAcceptor.__init__(self)
+        PaxosLearner.__init__(self)
+        PaxosProposer.__init__(self)
 
     def start(self):
         self.nodes = {self.addr}
-        self.leader = self.addr
-        self.last_seq = None
-        self.last_value = None
+        # TODO(sumanvyj): recover from log and/or catch-up to other nodes if
+        # necessary
 
     def onCommand(self, cmd_str):
         tokens = cmd_str.split()
         cmd = tokens[0]
 
         if cmd == "paxos_setup":
-            self.nodes.extend([int(x) for x in tokens[1:]])
+            self.nodes.update([int(x) for x in tokens[1:]])
         elif cmd == "paxos_propose":
             self.propose(tokens[1])
 
@@ -63,7 +40,7 @@ class PaxosNode(PaxosConfigNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
         try:
             getattr(self, msg.kind)(src_addr, msg)
         except AttributeError:
-            print "Invalid paxos message kind"
+            print "Invalid paxos message kind:", msg.kind
             return
 
     def send_msg(self, dest_addr, msg, error_str="Message sending failed"):
@@ -75,18 +52,9 @@ class PaxosNode(PaxosConfigNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
 
         self.RIOSend(dest_addr, Protocol.PAXOS, byte_msg)
 
-    def propose(self, value):
-        msg = PaxosMessage()
-        msg.kind = PaxosMessage.Kind.PREPARE
-
-        if self.last_seq:
-            msg.seq = self.last_seq + len(self.nodes)
-            msg.data = value
-        else:
-            msg.seq = self.addr
-
+    def broadcast(self, msg, error_str="Message broadcasting failed"):
         for dest_addr in self.nodes:
-            self.send_msg(dest_addr, msg, "Proposal failed")
+            self.send_msg(dest_addr, msg, error_str)
 
     ## general paxos related methods
 
