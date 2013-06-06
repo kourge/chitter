@@ -1,12 +1,12 @@
+import AbstractNode
 import Protocol
-import PaxosConfigNode
 import Serialization
 
 from paxos_roles import *
 from paxos_message import *
 
 
-class PaxosNode(PaxosConfigNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
+class PaxosNode(AbstractNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
     def __init__(self):
         PaxosAcceptor.__init__(self)
         PaxosLearner.__init__(self)
