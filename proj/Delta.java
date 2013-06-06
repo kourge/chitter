@@ -2,7 +2,9 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.util.Arrays;
 
-public class Delta {
+public class Delta implements Serializable {
+    public static final long serialVersionUID = 0L;
+
     public enum Type {
         APPEND("+"), OVERWRITE("="), DELETE("-");
         private final String symbol;
