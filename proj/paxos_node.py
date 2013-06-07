@@ -15,7 +15,7 @@ class PaxosNode(AbstractNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
 
     def start(self):
         self.nodes = {self.addr}
-        self.journal = PaxosJournal(self)
+        self.paxos_journal = PaxosJournal(self)
         self.broadcast(CATCH_UP(self.learned_seq))
 
     def onCommand(self, cmd_str):

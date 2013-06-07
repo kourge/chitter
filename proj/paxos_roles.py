@@ -21,7 +21,7 @@ class PaxosRole(object):
     def __setattr__(self, name, value):
         try:
             if name in PaxosRole.logged_names:
-                self.journal.push((name, value))
+                self.paxos_journal.push((name, value))
         except AttributeError:
             pass
         super(PaxosRole, self).__setattr__(name, value)
