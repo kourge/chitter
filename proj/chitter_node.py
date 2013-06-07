@@ -274,14 +274,14 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
         action = req['action']
 
         if action == 'begin':
-            return self.respond_begin(seq, src_addr)
+            return self.respond_begin(req, src_addr)
         elif action == 'do':
-            return self.respond_do(seq, src_addr)
+            return self.respond_do(req, src_addr)
         elif action == 'commit':
-            return self.respond_commit(seq, src_addr)
+            return self.respond_commit(req, src_addr)
 
     @server
-    def respond_begin(self, seq, src_addr):
+    def respond_begin(self, req, src_addr):
         cookie = (src_addr, req['tid'])
         if cookie in self.completed_transactions:
             req['error'] = 'transaction already completed'
@@ -293,7 +293,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
         return req
 
     @server
-    def respond_do(self, seq, src_addr):
+    def respond_do(self, req, src_addr):
         sid = req['sid']
         if sid not in self.snapshots:
             req['error'] = 'invalid session ID'
@@ -305,7 +305,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
         return req
 
     @server
-    def respond_commit(self, seq, src_addr):
+    def respond_commit(self, req, src_addr):
         sid = req['sid']
         if sid not in self.snapshots:
             req['error'] = 'invalid session ID'
