@@ -2,7 +2,8 @@ import AbstractNode
 
 import Protocol
 import LocalFS
-import Snapshot
+import Snapshot as BaseSnapshot
+import Delta
 import Serialization
 import SnapshotCommitJournal
 from pyoperation import RemoteOp
@@ -60,6 +61,21 @@ class TTLDict(dict):
             return True
         except KeyError as e:
             return False
+
+
+class Snapshot(BaseSnapshot):
+    @property
+    def proposal(self):
+        deltas = self.deltas
+        proposal = {}
+
+        for filename in deltas:
+            if deltas[filename].type == Delta.Type.DELETE:
+                proposal[filename] = None
+            else:
+                proposal[filename] = self.read(filename)
+
+        return proposal
 
 
 class ServerNode(object):
