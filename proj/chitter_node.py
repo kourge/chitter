@@ -31,7 +31,7 @@ class ServerNode(object):
         try:
             req = Serialization.decode(msg)
             print 'handle_request: %r' % (req,)
-            req = self.on_request(req)
+            req = self.on_request(req, src_addr)
             out = Serialization.encode(req)
             if len(out) != 0:
                 print 'replying to %d: %r' % (src_addr, req)
@@ -41,7 +41,7 @@ class ServerNode(object):
         except Serialization.EncodingException as e:
             print 'failed to encode RPC request'
 
-    def on_request(self, src_addr, req):
+    def on_request(self, req, src_addr):
         raise NotImplementedError()
 
 
@@ -123,18 +123,31 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
     def __init__(self):
         ClientNode.__init__(self)
         self.pending_cmds = {}
+
         self.sid = 0
         self.last_sid = 0
+        self.tid = 0
+        self.completed_transactions = set()
+
         self.snapshots = {}
         self.cache = {}
         self.op = RemoteOp()
 
+    @server
     def next_sid(self):
         """Issues a new session ID"""
 
         sid = self.sid
         self.sid += 1
         return sid
+
+    @client
+    def next_tid(self):
+        """Generates a new transaction ID"""
+
+        tid = self.tid
+        self.tid += 1
+        return tid
 
     @override
     def start(self):
@@ -193,23 +206,23 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
         value = proc.send(req.get('result', None))
 
         node_addr = req['dest']
-        self.act(node_addr, command, value, req['sid'])
+        self.act(node_addr, command, value, req['sid'], req['tid'])
         self.pump_recv_queue()
 
     @client
-    def act(self, node_addr, command, value, sid=None):
+    def act(self, node_addr, command, value, sid=None, tid=None):
         """Given an original command and a value yielded from a generator, act."""
 
         message = {'command': command, 'dest': node_addr}
 
         if isinstance(value, Transaction):
-            # Start the transaction
-            message.update(action='begin')
+            # Start a transaction with a new tid
+            message.update(action='begin', tid=self.next_tid())
             self.send_rpc(message)
         elif isinstance(value, RPC):
             # Perform an action
             name, args = value()
-            message.update(action='do', name=name, args=args, sid=sid)
+            message.update(action='do', name=name, args=args, sid=sid, tid=tid)
 
             # Try hitting the cache
             should_intercept_send = self.before_send_rpc(message)
@@ -217,7 +230,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
                 self.send_rpc(message)
         elif value is Transaction.Commit:
             # Commit the transaction
-            message.update(action='commit', sid=sid)
+            message.update(action='commit', sid=sid, tid=tid)
             self.send_rpc(message)
         else:
             # The operation completed with a return value
@@ -255,45 +268,65 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
             return True
 
     @server
-    def on_request(self, req):
+    def on_request(self, req, src_addr=None):
         """Called when a server receives a request"""
 
         action = req['action']
 
         if action == 'begin':
-            sid = self.next_sid()
-            self.snapshots[sid] = Snapshot(self.fs)
-            req['sid'] = sid
-            return req
+            return self.respond_begin(seq, src_addr)
         elif action == 'do':
-            sid = req['sid']
-            if sid not in self.snapshots:
-                req['error'] = 'invalid session ID'
-                return req
-
-            snapshot = self.snapshots[sid]
-            result = getattr(snapshot, req['name'])(*req['args'])
-            req['result'] = result
-            return req
+            return self.respond_do(seq, src_addr)
         elif action == 'commit':
-            sid = req['sid']
-            if sid not in self.snapshots:
-                req['error'] = 'invalid session ID'
-                return req
+            return self.respond_commit(seq, src_addr)
 
-            if self.last_sid > sid:
-                if False:
-                    # TODO: optimize for transactions that don't touch other files
-                    pass
-                else:
-                    req['error'] = 'transaction failed: sid: %d, last sid: %d' % (
-                        sid, self.last_sid
-                    )
-                    return req
+    @server
+    def respond_begin(self, seq, src_addr):
+        cookie = (src_addr, req['tid'])
+        if cookie in self.completed_transactions:
+            req['error'] = 'transaction already completed'
+            return req
+
+        sid = self.next_sid()
+        self.snapshots[sid] = Snapshot(self.fs)
+        req['sid'] = sid
+        return req
+
+    @server
+    def respond_do(self, seq, src_addr):
+        sid = req['sid']
+        if sid not in self.snapshots:
+            req['error'] = 'invalid session ID'
+            return req
+
+        snapshot = self.snapshots[sid]
+        result = getattr(snapshot, req['name'])(*req['args'])
+        req['result'] = result
+        return req
+
+    @server
+    def respond_commit(self, seq, src_addr):
+        sid = req['sid']
+        if sid not in self.snapshots:
+            req['error'] = 'invalid session ID'
+            return req
+
+        if self.last_sid > sid:
+            if False:
+                # TODO: optimize for transactions that don't touch other files
+                pass
             else:
-                snapshot = self.snapshots[sid]
-                snapshot.commit(self)
-
-                self.last_sid = sid
-                req['result'] = True
+                req['error'] = 'transaction failed: sid: %d, last sid: %d' % (
+                    sid, self.last_sid
+                )
                 return req
+        else:
+            snapshot = self.snapshots[sid]
+            snapshot.commit(self)
+
+            cookie = (src_addr, req['tid'])
+            self.completed_transactions.add(cookie)
+
+            self.last_sid = sid
+            req['result'] = True
+            return req

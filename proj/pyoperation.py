@@ -229,6 +229,7 @@ class RemoteOp(Op):
             if content is None:
                 yield None
 
+            yield fs.commit()
             yield self._content_to_chits(content)
 
     @signature(str)
