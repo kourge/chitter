@@ -8,6 +8,12 @@ from paxos_roles import *
 
 
 class PaxosNode(AbstractNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
+    """A PaxosNode inherits from an AbstractNode, which itself is a Java class
+    that subclasses RIONode. PaxosNode also subclasses three PaxosRoles:
+    PaxosAcceptor, PaxosLearner, and PaxosProposer, all of which act as mixins.
+    This ensures a virtual separation between different Paxos roles, but still
+    allows all these behaviors on a single node.
+    """
     def __init__(self):
         PaxosAcceptor.__init__(self)
         PaxosLearner.__init__(self)

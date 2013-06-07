@@ -16,6 +16,8 @@ from collections import deque
 import time
 
 
+# These functions act as decorators that look pretty and do nothing but serve
+# to annotate the role of each method, reminiscent of Java annotations.
 K = lambda x: x
 override = K
 server = K
@@ -23,6 +25,9 @@ client = K
 
 
 class Queue(deque):
+    """This Queue class partially mimics the interface of Python's standard
+    library Queue class, but does not support blocking and timeouts."""
+
     def put(self, item):
         return self.append(item)
 
@@ -67,8 +72,15 @@ class TTLDict(dict):
 
 
 class Snapshot(BaseSnapshot):
+    """A subclass of the Java Snapshot class that adds additional methods."""
+
     @property
     def proposal(self):
+        """Produce a less compact format for deltas of a snapshot. An append is
+        coerced into an overwrite through a merge. A delete is represented as
+        an overwrite with None. This allows Paxos nodes to learn complete file
+        contents even without prior knowledge of the file."""
+
         deltas = self.deltas
         proposal = {}
 

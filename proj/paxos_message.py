@@ -1,3 +1,11 @@
+__doc__ = """
+The paxos_message module exports sugared constructor functions for PaxosMessages
+of different types.
+
+from paxos_message import *
+LEARN(seq, value) == PaxosMessage(Kind.LEARN, (seq, value))
+"""
+
 def enum(**enums):
     return type('Enum', (), enums)
 

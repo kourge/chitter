@@ -3,6 +3,10 @@ import java.util.HashMap;
 import org.python.core.*;
 import org.python.util.PythonInterpreter;
 
+/**
+ * A superclass that PaxosNode subclasses. This is needed because Jython
+ * classes cannnot override static methods, among other things.
+ */
 public abstract class AbstractNode extends RIONode {
     public FS fs;
 
