@@ -1,5 +1,10 @@
 from paxos_message import *
 
+def log(*args):
+    print "\n\n"
+    print args
+    print "\n\n"
+
 class PaxosRole(object):
     logged_names = [
         "nodes",
@@ -79,6 +84,7 @@ class PaxosLearner(PaxosRole):
             self.learned_seq, self.learned_value = seq, value
             self.learned[seq] = value
 
+            log(self.addr, "learned", "proposal", seq, "with value", value)
 
             # re-propose any extant proposals since the round has ended
             if self.proposal_queue:
@@ -126,6 +132,7 @@ class PaxosProposer(PaxosRole):
         self.proposed_seq = self.next_seq()
         self.proposed_value = value
 
+        log("PROPOSING", self.proposed_value, "SEQ", self.proposed_seq)
 
         self.broadcast(PREPARE(self.proposed_seq), "Proposal failed")
 

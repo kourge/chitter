@@ -56,6 +56,9 @@ class PaxosNode(AbstractNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
         self.RIOSend(dest_addr, Protocol.PAXOS, byte_msg)
 
     def broadcast(self, msg, error_str="Message broadcasting failed"):
+        print "\n\n"
+        print "Broadcasting", msg, "to", self.nodes
+        print "\n\n"
         for dest_addr in self.nodes:
             self.send_msg(dest_addr, msg, error_str)
 
