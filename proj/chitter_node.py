@@ -9,6 +9,7 @@ from pyoperation import RemoteOp
 from pyfs import RPC, Transaction
 
 from collections import deque
+import time
 
 
 K = lambda x: x
@@ -26,6 +27,39 @@ class Queue(deque):
 
     def empty(self):
         return len(self) == 0
+
+
+class TTLDict(dict):
+    """A dict class that associates each key-value entry with a time-to-live
+    value in the unit of seconds. Upon, expiration, the next subsequent attempt
+    to get the key-value entry deletes it, raising KeyError. Calling len() on a
+    TTLDict is not reliable, as it may count expired entries that have not been
+    evicted yet."""
+
+    def __init__(self, ttl=10):
+        dict.__init__(self)
+        self._ttl = ttl
+
+    def __getitem__(self, key):
+        value, expiration = dict.__getitem__(self, key)
+        if expiration <= time.time():
+            self.__delitem__(key)
+            raise KeyError(key)
+        return value
+
+    def __setitem__(self, key, value):
+        expiration = time.time() + self._ttl
+        dict.__setitem__(self, key, (value, expiration))
+
+    def __contains__(self, key):
+        if not dict.__contains__(self, key):
+            return False
+
+        try:
+            self.__getitem__(key)
+            return True
+        except KeyError as e:
+            return False
 
 
 class ServerNode(object):
@@ -132,7 +166,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
         self.completed_transactions = set()
 
         self.snapshots = {}
-        self.cache = {}
+        self.cache = TTLDict()
         self.op = RemoteOp()
 
     @server
