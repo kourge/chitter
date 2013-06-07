@@ -1,9 +1,7 @@
 from paxos_message import *
 
 def log(*args):
-    print "\n\n"
-    print " ".join([str(x) for x in list(args)])
-    print "\n\n"
+    print "[PAXOS]", " ".join([str(x) for x in list(args)])
 
 class PaxosRole(object):
     logged_names = [
