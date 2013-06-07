@@ -3,6 +3,7 @@ package edu.washington.cs.cse490h.lib;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.Random;
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * Provides some useful static methods.
@@ -109,5 +110,13 @@ public class Utility {
         }
 
         return b.toString();
+    }
+
+    public static String toBase64(byte[] array) {
+        return DatatypeConverter.printBase64Binary(array);
+    }
+
+    public static byte[] fromBase64(String value) {
+        return DatatypeConverter.parseBase64Binary(value);
     }
 }

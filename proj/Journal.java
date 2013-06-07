@@ -30,7 +30,14 @@ public abstract class Journal {
     /** Serialize and base64-encode an object into our file
      *  @return Whether we succeeded */
     public boolean push(Serializable obj) throws JournalException {
-        String b64 = base64Encode(obj);
+        String b64;
+        try {
+            byte[] out = Serialization.encode(obj);
+            b64 = Utility.toBase64(out);
+        } catch (Serialization.EncodingException e) {
+            return false;
+        }
+
         this.pendingOps.offer(obj);
         try {
             log.write(b64 + "\n");
@@ -105,7 +112,7 @@ public abstract class Journal {
                         if (line.equals(COMPLETE_TOKEN)) {
                             this.pendingOps.poll();
                         } else {
-                            Serializable obj = base64Decode(line);
+                            Serializable obj = Utility.fromBase64(line);
                             this.pendingOps.offer(obj);
                         }
                     }
@@ -135,32 +142,5 @@ public abstract class Journal {
 
     /** Execute a pending operation */
     public abstract void execute(Serializable obj);
-
-    /** TODO these should probably be moved to Utility: */
-
-    /** Get a base64 representation of the serialized version of
-     *  the passed-in object */
-    private String base64Encode(Serializable obj) throws JournalException {
-        byte[] bytes = null;
-        try {
-            bytes = Serialization.encode(obj);
-        } catch(Serialization.EncodingException e) {
-            throw new JournalException("Failed base64 encoding: " + e);
-        }
-        return DatatypeConverter.printBase64Binary(bytes);
-    }
-
-    /** Decode a base64 serialized object back into a proper object */
-    private Serializable base64Decode(String b64) throws JournalException {
-        byte[] bytes = DatatypeConverter.parseBase64Binary(b64);
-        Serializable out = null;
-        try {
-            out = (Serializable)Serialization.decode(bytes);
-        } catch(Serialization.DecodingException e) {
-            throw new JournalException("Failed base64 decoding.");
-        }
-        return out;
-    }
-
 }
 

@@ -1,6 +1,6 @@
-import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.util.Arrays;
+import edu.washington.cs.cse490h.lib.Utility;
 
 public class Delta implements Serializable {
     public static final long serialVersionUID = 0L;
@@ -44,23 +44,15 @@ public class Delta implements Serializable {
         }
     }
 
-    private static String toBase64(byte[] array) {
-        return DatatypeConverter.printHexBinary(array);
-    }
-
-    private static byte[] fromBase64(String value) {
-        return DatatypeConverter.parseHexBinary(value);
-    }
-
     public void writeObject(ObjectOutputStream oos) throws IOException {
         oos.writeUTF(this.type.name());
-        oos.writeUTF(toBase64(data));
+        oos.writeUTF(Utility.toBase64(data));
     }
 
     public void readObject(ObjectInputStream ois)
     throws IOException, ClassNotFoundException {
         this.type = Enum.valueOf(Type.class, ois.readUTF());
-        this.data = fromBase64(ois.readUTF());
+        this.data = Utility.fromBase64(ois.readUTF());
     }
 
     public void readObjectNoData() throws ObjectStreamException {}
