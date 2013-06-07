@@ -21,8 +21,7 @@ public class Repl {
         );
         InteractiveConsole c = new InteractiveConsole();
         c.runsource("from edu.washington.cs.cse490h.lib import Utility");
-        c.runsource("from java.lang import *");
-        c.runsource("from java.util import *");
+        c.runsource("import java.util.Random as Random");
         c.runsource("from Serialization import encode as dumps");
         c.runsource("from Serialization import decode as loads");
         c.runsource("Utility.setRNG(Random())");
