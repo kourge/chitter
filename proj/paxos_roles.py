@@ -1,7 +1,32 @@
 from paxos_message import *
 
+class PaxosRole(object):
+    logged_names = [
+        "nodes",
+        "promised_seq",
+        "accepted_seq",
+        "accepted_value",
+        "learned_seq",
+        "learned_value",
+        "learned",
+        "promises",
+        "proposed_seq",
+        "proposed_value",
+        "proposal_queue",
+    ]
 
-class PaxosAcceptor(object):
+    def __init__(self):
+        pass
+
+    def __setattr__(self, name, value):
+        try:
+            if name in PaxosRole.logged_names:
+                self.journal.push((name, value))
+        except AttributeError:
+            pass
+        super(PaxosRole, self).__setattr__(name, value)
+
+class PaxosAcceptor(PaxosRole):
     def __init__(self):
         # last promised sequence
         self.promised_seq = None

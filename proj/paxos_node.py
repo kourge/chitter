@@ -2,8 +2,9 @@ import AbstractNode
 import Protocol
 import Serialization
 
-from paxos_roles import *
+from paxos_journal import *
 from paxos_message import *
+from paxos_roles import *
 
 
 class PaxosNode(AbstractNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
@@ -14,15 +15,17 @@ class PaxosNode(AbstractNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
 
     def start(self):
         self.nodes = {self.addr}
-        # TODO(sumanvyj): recover from log and/or catch-up to other nodes if
-        # necessary
+        self.journal = PaxosJournal(self)
+        self.broadcast(CATCH_UP(self.learned_seq))
 
     def onCommand(self, cmd_str):
         tokens = cmd_str.split()
         cmd = tokens[0]
 
         if cmd == "paxos_setup":
-            self.nodes.update([int(x) for x in tokens[1:]])
+            nodes_copy = self.nodes.copy()
+            nodes_copy.update([int(x) for x in tokens[1:]])
+            self.nodes = nodes_copy
         elif cmd == "paxos_propose":
             self.propose(tokens[1])
 
