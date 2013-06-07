@@ -248,7 +248,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
             self.cache[filename] = content
 
         # Resume the corresponding generator
-        proc = self.pending_cmds.pop(command)
+        proc = self.pending_cmds[command]
         value = proc.send(req.get('result', None))
 
         node_addr = req['dest']
@@ -279,6 +279,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
             message.update(action='commit', sid=sid, tid=tid)
             self.send_rpc(message)
         else:
+            self.pending_cmds.pop(command)
             # The operation completed with a return value
             print '[done] %s = %r' % (command, value)
 
@@ -345,7 +346,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
             req['error'] = 'invalid session ID'
             return req
 
-        snapshot = self.snapshots.pop(sid)
+        snapshot = self.snapshots[sid]
         result = getattr(snapshot, req['name'])(*req['args'])
         req['result'] = result
         return req
