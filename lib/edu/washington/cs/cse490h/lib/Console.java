@@ -115,8 +115,8 @@ public class Console implements ConsoleType {
             }
         }
 
-        // ignore invalid commands
-        return "";
+        // don't ignore invalid commands; pass them through
+        return line;
     }
 
     private void help(String[] cmd) {
