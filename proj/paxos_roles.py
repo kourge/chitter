@@ -17,9 +17,6 @@ class PaxosRole(object):
         "proposed_value",
     ]
 
-    def __init__(self):
-        pass
-
     def __setattr__(self, name, value):
         try:
             if name in PaxosRole.logged_names:
