@@ -13,8 +13,8 @@ public class SnapshotCommitJournal extends Journal {
 
     FS fs;
     
-    public SnapshotCommitJournal(String filename, Node n, FS fs) throws JournalException {
-        super(filename, n);
+    public SnapshotCommitJournal(Node n, FS fs) throws JournalException {
+        super("$snapshot_commit_log", n);
         this.fs = fs;
     }
 
@@ -37,7 +37,7 @@ public class SnapshotCommitJournal extends Journal {
             this.fs.overwriteIfNotChanged(d.filename, d.delta.data, -1);
             break;
         case APPEND:
-            // we already did the append if the version number has been bumped
+            // We already did the append if the version number has been bumped
             if (Utility.fileTimestamp(this.node, d.filename) == d.version) {
                 this.fs.appendIfNotChanged(d.filename, d.delta.data, -1);
             }
