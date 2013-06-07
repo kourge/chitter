@@ -6,8 +6,10 @@ import Snapshot as BaseSnapshot
 import Delta
 import Serialization
 import SnapshotCommitJournal
+import ClientJournal
 from pyoperation import RemoteOp
 from pyfs import RPC, Transaction
+from java.util import HashSet as Set
 
 from collections import deque
 import time
@@ -203,8 +205,14 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
     @override
     def start(self):
         print 'Node %d started' % (self.addr,)
-
-        # Wrap up a commit that we failed during, if necessary.
+        self.journal = ClientJournal("client_journal", self)
+        for command in self.journal.getCommands():
+            node_addr, cmd_name, cmd_str = command.split(None, 2)
+            proc = self.op(cmd_name, cmd_str)
+            self.pending_cmds[command] = proc
+            value = proc.next()
+            self.act(int(node_addr), command, value)
+        # wrap up a commit that we failed during, if necessary:
         commit_snap = SnapshotCommitJournal(self, self.fs)
         commit_snap.completePendingOps()
 
@@ -224,6 +232,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
         node_addr, cmd_name, cmd_str = command.split(None, 2)
         proc = self.op(cmd_name, cmd_str)
 
+        self.journal.push(command)
         self.pending_cmds[command] = proc
 
         value = proc.next()
@@ -279,9 +288,14 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
             message.update(action='commit', sid=sid, tid=tid)
             self.send_rpc(message)
         else:
-            self.pending_cmds.pop(command)
             # The operation completed with a return value
-            print '[done] %s = %r' % (command, value)
+            self.pending_cmds.pop(command)
+            self.on_command_complete(command, value)
+
+    @client
+    def on_command_complete(self, command, result):
+        print '[done] %s = %r' % (command, result)
+        self.journal.complete(command)
 
     @client
     def before_send_rpc(self, message):
