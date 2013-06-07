@@ -35,6 +35,10 @@ public class Snapshot implements SimpleFS, Serializable {
         return Collections.unmodifiableMap(this.deltas);
     }
 
+    public boolean isEmpty() {
+        return this.deltas.isEmpty();
+    }
+
     private void writeObject(ObjectOutputStream oos) throws IOException {
         oos.writeLong(id);
         for (String filename : this.deltas.keySet()) {
