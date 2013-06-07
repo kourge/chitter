@@ -7,6 +7,7 @@ import Delta
 import Serialization
 import SnapshotCommitJournal
 import ClientJournal
+import Journal
 from pyoperation import RemoteOp
 from pyfs import RPC, Transaction
 from java.util import HashSet as Set
@@ -172,6 +173,24 @@ class ClientNode(object):
         raise NotImplementedError()
 
 
+# Journals are not meant to be used this way, and I feel bad about myself
+class TransactionJournal(Journal):
+    def __init__(self, node):
+        Journal.__init__(self, "txn_journal", node)
+        self.node = node
+
+    def execute(self, obj):
+        pass
+
+    @override
+    def pop(self):
+        pass
+
+    @override
+    def completePendingOps(self):
+        pass
+
+
 class ChitterNode(ServerNode, ClientNode, AbstractNode):
     def __init__(self):
         ClientNode.__init__(self)
@@ -206,6 +225,11 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
     def start(self):
         print 'Node %d started' % (self.addr,)
         self.journal = ClientJournal("client_journal", self)
+        self.txn_journal = TransactionJournal(self)
+        for cookie in self.txn_journal.getPendingOperations():
+            self.completed_transactions.add(cookie)
+            print cookie
+        self.tid = self.tid + 1
         for command in self.journal.getCommands():
             node_addr, cmd_name, cmd_str = command.split(None, 2)
             proc = self.op(cmd_name, cmd_str)
@@ -387,6 +411,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
 
             cookie = (src_addr, req['tid'])
             self.completed_transactions.add(cookie)
+            self.txn_journal.push(cookie)
 
             self.last_sid = sid
             req['result'] = True

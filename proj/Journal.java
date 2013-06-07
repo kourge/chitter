@@ -90,6 +90,10 @@ public abstract class Journal {
             }
         }
     }
+
+    public List<Serializable> getPendingOperations() {
+        return (LinkedList<Serializable>)this.pendingOps;
+    }
     
     /** Recover from a failure */
     private void recover() throws JournalException {
@@ -112,8 +116,12 @@ public abstract class Journal {
                         if (line.equals(COMPLETE_TOKEN)) {
                             this.pendingOps.poll();
                         } else {
-                            Serializable obj = Utility.fromBase64(line);
-                            this.pendingOps.offer(obj);
+                            try {
+                                Serializable obj = (Serializable)Serialization.decode(Utility.fromBase64(line));
+                                this.pendingOps.offer(obj);
+                            } catch (Exception e) {
+                                throw new JournalException("Error deserializing on recovery.");
+                            }
                         }
                     }
                 } catch (IOException e) {

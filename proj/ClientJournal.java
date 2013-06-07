@@ -29,7 +29,6 @@ public class ClientJournal {
 
     public boolean push(String command) throws JournalException {
         String b64 = base64Encode(command);
-        System.out.println("Logging " + command + " " + b64);
         try {
             log.write(b64 + "\n");
         } catch (IOException e) {
