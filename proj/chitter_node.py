@@ -248,7 +248,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
             self.cache[filename] = content
 
         # Resume the corresponding generator
-        proc = self.pending_cmds[command]
+        proc = self.pending_cmds.pop(command)
         value = proc.send(req.get('result', None))
 
         node_addr = req['dest']
@@ -345,7 +345,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
             req['error'] = 'invalid session ID'
             return req
 
-        snapshot = self.snapshots[sid]
+        snapshot = self.snapshots.pop(sid)
         result = getattr(snapshot, req['name'])(*req['args'])
         req['result'] = result
         return req
@@ -367,7 +367,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
                 )
                 return req
         else:
-            snapshot = self.snapshots[sid]
+            snapshot = self.snapshots.pop(sid)
             snapshot.commit(self)
 
             cookie = (src_addr, req['tid'])
