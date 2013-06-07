@@ -94,6 +94,11 @@ class Snapshot(BaseSnapshot):
 
 
 class ServerNode(object):
+    @override
+    def onRIOReceive(self, src_addr, protocol, msg):
+        if protocol == Protocol.CHITTER_RPC_REQUEST:
+            self.handle_request(src_addr, msg)
+
     def handle_request(self, src_addr, msg):
         try:
             req = Serialization.decode(msg)
@@ -120,16 +125,10 @@ class ClientNode(object):
 
     @override
     def onRIOReceive(self, src_addr, protocol, msg):
-        if False:
-            pass
-        elif protocol == Protocol.CHITTER_RPC_REQUEST:
-            self.handle_request(src_addr, msg)
-        elif protocol == Protocol.CHITTER_RPC_REPLY:
+        if protocol == Protocol.CHITTER_RPC_REPLY:
             self.handle_reply(src_addr, msg)
             self.pump_recv_queue()
             self.pump_send_queue()
-        else:
-            pass
 
     def handle_reply(self, src_addr, msg):
         print 'handle_reply'
@@ -282,6 +281,7 @@ class ChitterNode(ServerNode, ClientNode, PaxosNode):
 
     @override
     def onRIOReceive(self, from_addr, protocol, msg):
+        ServerNode.onRIOReceive(self, from_addr, protocol, msg)
         ClientNode.onRIOReceive(self, from_addr, protocol, msg)
         PaxosNode.onRIOReceive(self, from_addr, protocol, msg)
 
