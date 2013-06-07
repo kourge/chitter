@@ -224,17 +224,17 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
     @override
     def start(self):
         print 'Node %d started' % (self.addr,)
-        self.journal = ClientJournal("client_journal", self)
+        self.client_journal = ClientJournal("client_journal", self)
         self.txn_journal = TransactionJournal(self)
         for cookie in self.txn_journal.getPendingOperations():
             self.completed_transactions.add(cookie)
-        self.tid = self.tid + 1
-        for command in self.journal.getCommands():
+        for command in self.client_journal.getCommands():
             node_addr, cmd_name, cmd_str = command.split(None, 2)
             proc = self.op(cmd_name, cmd_str)
             self.pending_cmds[command] = proc
             value = proc.next()
             self.act(int(node_addr), command, value)
+        self.tid = self.client_journal.getCount();
         # wrap up a commit that we failed during, if necessary:
         commit_snap = SnapshotCommitJournal(self, self.fs)
         commit_snap.completePendingOps()
@@ -255,7 +255,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
         node_addr, cmd_name, cmd_str = command.split(None, 2)
         proc = self.op(cmd_name, cmd_str)
 
-        self.journal.push(command)
+        self.client_journal.push(command)
         self.pending_cmds[command] = proc
 
         value = proc.next()
@@ -318,7 +318,7 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
     @client
     def on_command_complete(self, command, result):
         print '[done] %s = %r' % (command, result)
-        self.journal.complete(command)
+        self.client_journal.complete(command)
 
     @client
     def before_send_rpc(self, message):

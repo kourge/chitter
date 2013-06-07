@@ -19,6 +19,7 @@ public class ClientJournal {
     private static final String COMPLETE_TOKEN = "COMPLETE";
     private PersistentStorageWriter log;
     protected Node node;
+    private int opCount;
 
     public ClientJournal(String filename, Node n) throws JournalException {
         this.filename = filename;
@@ -28,6 +29,7 @@ public class ClientJournal {
     }
 
     public boolean push(String command) throws JournalException {
+        opCount++;
         String b64 = base64Encode(command);
         try {
             log.write(b64 + "\n");
@@ -47,14 +49,14 @@ public class ClientJournal {
         this.commands.remove(command);
 
         // garbage collect
-        if (commands.isEmpty()) {
+        /*if (commands.isEmpty()) {
             // we want to empty the file, but keep it around
             try {
                 this.log = this.node.getWriter(this.filename, false);
             } catch (IOException e) {
                 throw new JournalException("Failed to garbage collect log file.");
             }
-        }
+        }*/
     }
 
     protected void recover() throws JournalException {
@@ -80,6 +82,7 @@ public class ClientJournal {
                         } else {
                             String command = (String)base64Decode(line);
                             this.commands.add(command);
+                            opCount++;
                         }
                     }
                 } catch (IOException e) {
@@ -108,6 +111,10 @@ public class ClientJournal {
 
     public Set<String> getCommands() {
         return commands;
+    }
+
+    public int getCount() {
+        return opCount;
     }
 
     /** TODO these should probably be moved to Utility: */
