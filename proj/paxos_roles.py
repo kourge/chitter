@@ -2,7 +2,7 @@ from paxos_message import *
 
 def log(*args):
     print "\n\n"
-    print args
+    print " ".join([str(x) for x in list(args)])
     print "\n\n"
 
 class PaxosRole(object):
@@ -17,7 +17,6 @@ class PaxosRole(object):
         "promises",
         "proposed_seq",
         "proposed_value",
-        "proposal_queue",
     ]
 
     def __init__(self):
@@ -55,6 +54,13 @@ class PaxosAcceptor(PaxosRole):
             self.send_msg(src_addr, ACCEPTED(seq, value))
             self.broadcast(LEARN(seq, value))
 
+            # If this acceptor was also the proposer, then directly call
+            # self.on_paxos_result (the proposer won't do it since
+            # self.accepted_seq and self.accepted_value will already have been
+            # updated here)
+            if self.accepted_seq == self.proposed_seq:
+                self.on_paxos_result(True, msg.data)
+
     def prepare(self, src_addr, msg):
         seq, = msg.data
 
@@ -75,20 +81,13 @@ class PaxosLearner(PaxosRole):
         self.learned = {}
 
     def learn(self, src_addr, msg):
-        # TODO(sumanvyj): save to disk/MemoryFS
-        # TODO(sumanvyj): ignore duplicate learnings
-
         seq, value = msg.data
 
         if seq > self.learned_seq:
             self.learned_seq, self.learned_value = seq, value
             self.learned[seq] = value
 
-            log(self.addr, "learned", "proposal", seq, "with value", value)
-
-            # re-propose any extant proposals since the round has ended
-            if self.proposal_queue:
-                self.propose(self.proposal_queue.pop(0))
+            log(self.addr, "LEARNED", value, "with seq", seq)
 
     def catch_up(self, src_addr, msg):
         seq, = msg.data
@@ -107,7 +106,6 @@ class PaxosProposer(PaxosRole):
         self.promises = 0
         self.proposed_seq = None
         self.proposed_value = None
-        self.proposal_queue = []
 
     # The sequence numbers allowed for a given node are of the form
     # len(self.nodes) * x + i, where x is some multiplier and i is the node's
@@ -132,15 +130,16 @@ class PaxosProposer(PaxosRole):
         self.proposed_seq = self.next_seq()
         self.proposed_value = value
 
-        log("PROPOSING", self.proposed_value, "SEQ", self.proposed_seq)
+        log(self.addr, "PROPOSING", self.proposed_value, "with seq", self.proposed_seq)
 
         self.broadcast(PREPARE(self.proposed_seq), "Proposal failed")
 
     def accepted(self, src_addr, msg):
-        # TODO(kourge): respond to user somehow
-
-        # updated accepted seq and value
-        self.accepted_seq, self.accepted_value = msg.data
+        # update accepted seq and value
+        seq, value = msg.data
+        if self.accepted_seq < seq:
+            self.accepted_seq, self.accepted_value = msg.data
+            self.on_paxos_result(True, msg.data)
 
     def promise(self, src_addr, msg):
         seq, value = msg.data
@@ -168,6 +167,7 @@ class PaxosProposer(PaxosRole):
             self.send_msg(src_addr, CATCH_UP(self.accepted_seq))
 
     def nack(self, src_addr, msg):
-        # proposal rejected, put in proposal queue until next round 
-        if self.proposed_value not in self.proposal_queue:
-           self.proposal_queue.append(self.proposed_value)
+        seq, = msg.data
+
+        # proposal rejected, forward to client
+        self.on_paxos_result(False, (seq, self.proposed_value))
