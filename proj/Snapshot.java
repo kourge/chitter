@@ -205,7 +205,7 @@ public class Snapshot implements SimpleFS, Serializable {
 
     public void commit(Node node) {
         try {
-            SnapshotCommitJournal journal = new SnapshotCommitJournal(".commit_snap", node, fs);
+            SnapshotCommitJournal journal = new SnapshotCommitJournal(node, fs);
             for (String filename : this.deltas.keySet()) {
                 journal.addDelta(filename, this.deltas.get(filename));
             }
