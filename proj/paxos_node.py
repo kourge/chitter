@@ -55,7 +55,7 @@ class PaxosNode(AbstractNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
         self.RIOSend(dest_addr, Protocol.PAXOS, byte_msg)
 
     def broadcast(self, msg, error_str="Message broadcasting failed"):
-        log(self.addr, "BROADCASTING", msg, "to", self.nodes)
+        log(self.addr, "Broadcasting", msg, "to nodes", self.nodes)
 
         for dest_addr in self.nodes:
             self.send_msg(dest_addr, msg, error_str)
@@ -66,6 +66,6 @@ class PaxosNode(AbstractNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
         self.nodes.add(src_addr)
 
     def on_paxos_consensus(self, consensus_reached, value):
-        log(self.addr, "REPORTING PAXOS CONSENSUS", consensus_reached, value)
+        log(self.addr, "on_paxos_consensus", consensus_reached, value)
 
         raise NotImplementedError
