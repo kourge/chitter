@@ -12,6 +12,7 @@ class PaxosRole(object):
         "learned_seq",
         "learned_value",
         "learned",
+        "original_proposed_value",
         "promises",
         "proposed_seq",
         "proposed_value",
@@ -54,7 +55,10 @@ class PaxosAcceptor(PaxosRole):
             # self.accepted_seq and self.accepted_value will already have been
             # updated here)
             if self.accepted_seq == self.proposed_seq:
-                self.on_paxos_result(True, msg.data)
+                self.on_paxos_consensus(
+                    value == self.original_proposed_value,
+                    self.original_proposed_value
+                )
 
     def prepare(self, src_addr, msg):
         seq, = msg.data
@@ -99,6 +103,7 @@ class PaxosProposer(PaxosRole):
     def __init__(self):
         self.promises = 0
         self.proposed_seq = None
+        self.original_proposed_value = None
         self.proposed_value = None
 
     # The sequence numbers allowed for a given node are of the form
@@ -122,6 +127,7 @@ class PaxosProposer(PaxosRole):
     def propose(self, value):
         self.promises = 0
         self.proposed_seq = self.next_seq()
+        self.original_proposed_value = value
         self.proposed_value = value
 
         log(self.addr, "PROPOSING", self.proposed_value, "with seq", self.proposed_seq)
@@ -133,7 +139,10 @@ class PaxosProposer(PaxosRole):
         seq, value = msg.data
         if self.accepted_seq < seq:
             self.accepted_seq, self.accepted_value = msg.data
-            self.on_paxos_result(True, msg.data)
+            self.on_paxos_consensus(
+                value == self.original_proposed_value,
+                self.original_proposed_value
+            )
 
     def promise(self, src_addr, msg):
         seq, value = msg.data
@@ -161,7 +170,5 @@ class PaxosProposer(PaxosRole):
             self.send_msg(src_addr, CATCH_UP(self.accepted_seq))
 
     def nack(self, src_addr, msg):
-        seq, = msg.data
-
         # proposal rejected, forward to client
-        self.on_paxos_result(False, (seq, self.proposed_value))
+        self.on_paxos_consensus(False, self.original_proposed_value)

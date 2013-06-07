@@ -65,7 +65,7 @@ class PaxosNode(AbstractNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
     def announce(self, src_addr, msg):
         self.nodes.add(src_addr)
 
-    def on_paxos_result(self, result, data):
-        log(self.addr, "REPORTING PAXOS RESULT", (result, data))
+    def on_paxos_consensus(self, consensus_reached, value):
+        log(self.addr, "REPORTING PAXOS CONSENSUS", consensus_reached, value)
 
         raise NotImplementedError
