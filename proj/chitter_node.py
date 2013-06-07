@@ -228,7 +228,6 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
         self.txn_journal = TransactionJournal(self)
         for cookie in self.txn_journal.getPendingOperations():
             self.completed_transactions.add(cookie)
-            print cookie
         self.tid = self.tid + 1
         for command in self.journal.getCommands():
             node_addr, cmd_name, cmd_str = command.split(None, 2)
