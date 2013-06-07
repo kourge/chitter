@@ -274,47 +274,59 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
         action = req['action']
 
         if action == 'begin':
-            cookie = (src_addr, req['tid'])
-            if cookie in self.completed_transactions:
-                req['error'] = 'transaction already completed'
-                return req
-
-            sid = self.next_sid()
-            self.snapshots[sid] = Snapshot(self.fs)
-            req['sid'] = sid
-            return req
+            return self.respond_begin(seq, src_addr)
         elif action == 'do':
-            sid = req['sid']
-            if sid not in self.snapshots:
-                req['error'] = 'invalid session ID'
-                return req
-
-            snapshot = self.snapshots[sid]
-            result = getattr(snapshot, req['name'])(*req['args'])
-            req['result'] = result
-            return req
+            return self.respond_do(seq, src_addr)
         elif action == 'commit':
-            sid = req['sid']
-            if sid not in self.snapshots:
-                req['error'] = 'invalid session ID'
-                return req
+            return self.respond_commit(seq, src_addr)
 
-            if self.last_sid > sid:
-                if False:
-                    # TODO: optimize for transactions that don't touch other files
-                    pass
-                else:
-                    req['error'] = 'transaction failed: sid: %d, last sid: %d' % (
-                        sid, self.last_sid
-                    )
-                    return req
+    @server
+    def respond_begin(self, seq, src_addr):
+        cookie = (src_addr, req['tid'])
+        if cookie in self.completed_transactions:
+            req['error'] = 'transaction already completed'
+            return req
+
+        sid = self.next_sid()
+        self.snapshots[sid] = Snapshot(self.fs)
+        req['sid'] = sid
+        return req
+
+    @server
+    def respond_do(self, seq, src_addr):
+        sid = req['sid']
+        if sid not in self.snapshots:
+            req['error'] = 'invalid session ID'
+            return req
+
+        snapshot = self.snapshots[sid]
+        result = getattr(snapshot, req['name'])(*req['args'])
+        req['result'] = result
+        return req
+
+    @server
+    def respond_commit(self, seq, src_addr):
+        sid = req['sid']
+        if sid not in self.snapshots:
+            req['error'] = 'invalid session ID'
+            return req
+
+        if self.last_sid > sid:
+            if False:
+                # TODO: optimize for transactions that don't touch other files
+                pass
             else:
-                snapshot = self.snapshots[sid]
-                snapshot.commit(self)
-
-                cookie = (src_addr, req['tid'])
-                self.completed_transactions.add(cookie)
-
-                self.last_sid = sid
-                req['result'] = True
+                req['error'] = 'transaction failed: sid: %d, last sid: %d' % (
+                    sid, self.last_sid
+                )
                 return req
+        else:
+            snapshot = self.snapshots[sid]
+            snapshot.commit(self)
+
+            cookie = (src_addr, req['tid'])
+            self.completed_transactions.add(cookie)
+
+            self.last_sid = sid
+            req['result'] = True
+            return req
