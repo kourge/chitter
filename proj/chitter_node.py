@@ -8,6 +8,8 @@ import SnapshotCommitJournal
 from pyoperation import RemoteOp
 from pyfs import RPC, Transaction
 
+from collections import deque
+
 
 K = lambda x: x
 override = K
@@ -15,12 +17,12 @@ server = K
 client = K
 
 
-class Queue(list):
+class Queue(deque):
     def put(self, item):
         return self.append(item)
 
     def get(self):
-        return self.pop(0)
+        return self.popleft()
 
     def empty(self):
         return len(self) == 0
