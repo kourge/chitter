@@ -96,9 +96,8 @@ class PaxosLearner(PaxosRole):
 
     def update(self, src_addr, msg):
         self.learned_seq, self.learned_value, updates = msg.data
-        learned_copy = self.learned.copy()
-        learned_copy.update(updates)
-        self.learned = learned_copy
+        self.learned.update(updates)
+        self.learned = self.learned
 
 
 class PaxosProposer(PaxosRole):

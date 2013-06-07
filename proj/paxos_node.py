@@ -23,9 +23,8 @@ class PaxosNode(AbstractNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
         cmd = tokens[0]
 
         if cmd == "paxos_setup":
-            nodes_copy = self.nodes.copy()
-            nodes_copy.update([int(x) for x in tokens[1:]])
-            self.nodes = nodes_copy
+            self.nodes.update([int(x) for x in tokens[1:]])
+            self.nodes = self.nodes
         elif cmd == "paxos_propose":
             self.propose(tokens[1])
 
