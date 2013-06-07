@@ -187,8 +187,9 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
     @override
     def start(self):
         print 'Node %d started' % (self.addr,)
-        # wrap up a commit that we failed during, if necessary:
-        commit_snap = SnapshotCommitJournal(".commit_snap", self, self.fs)
+
+        # Wrap up a commit that we failed during, if necessary.
+        commit_snap = SnapshotCommitJournal(self, self.fs)
         commit_snap.completePendingOps()
 
     @override
