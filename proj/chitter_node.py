@@ -99,7 +99,6 @@ class ClientNode(object):
             self.pump_send_queue()
         else:
             pass
-            # print 'unknown protocol packet: %r' % (protocol,)
 
     def handle_reply(self, src_addr, msg):
         print 'handle_reply'
@@ -200,12 +199,6 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
     @override
     def onRIOReceive(self, from_addr, protocol, msg):
         super(self.__class__, self).onRIOReceive(from_addr, protocol, msg)
-
-        if protocol != Protocol.PAXOS:
-            return
-
-        # TODO deserialize msg to a PaxosMessage type
-        pass
 
     @override
     def onCommand(self, command):
