@@ -279,9 +279,13 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
             message.update(action='commit', sid=sid, tid=tid)
             self.send_rpc(message)
         else:
-            self.pending_cmds.pop(command)
             # The operation completed with a return value
-            print '[done] %s = %r' % (command, value)
+            self.pending_cmds.pop(command)
+            self.on_command_complete(command, result)
+
+    @client
+    def on_command_complete(self, command, result):
+        print '[done] %s = %r' % (command, result)
 
     @client
     def before_send_rpc(self, message):
