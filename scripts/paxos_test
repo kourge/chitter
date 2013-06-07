@@ -7,6 +7,9 @@ time
 2 paxos_setup 0 1
 time
 0 paxos_propose foo
+1 paxos_propose bar
+time
+time
 time
 time
 time

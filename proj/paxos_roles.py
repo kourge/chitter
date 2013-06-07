@@ -1,7 +1,37 @@
 from paxos_message import *
 
+def log(*args):
+    print "\n\n"
+    print args
+    print "\n\n"
 
-class PaxosAcceptor(object):
+class PaxosRole(object):
+    logged_names = [
+        "nodes",
+        "promised_seq",
+        "accepted_seq",
+        "accepted_value",
+        "learned_seq",
+        "learned_value",
+        "learned",
+        "promises",
+        "proposed_seq",
+        "proposed_value",
+        "proposal_queue",
+    ]
+
+    def __init__(self):
+        pass
+
+    def __setattr__(self, name, value):
+        try:
+            if name in PaxosRole.logged_names:
+                self.journal.push((name, value))
+        except AttributeError:
+            pass
+        super(PaxosRole, self).__setattr__(name, value)
+
+class PaxosAcceptor(PaxosRole):
     def __init__(self):
         # last promised sequence
         self.promised_seq = None
@@ -38,21 +68,46 @@ class PaxosAcceptor(object):
         self.send_msg(src_addr, new_msg)
 
 
-class PaxosLearner(object):
+class PaxosLearner(PaxosRole):
     def __init__(self):
-        pass
+        self.learned_seq = None
+        self.learned_value = None
+        self.learned = {}
 
     def learn(self, src_addr, msg):
         # TODO(sumanvyj): save to disk/MemoryFS
         # TODO(sumanvyj): ignore duplicate learnings
-        print self.addr, "learned", msg.data
+
+        seq, value = msg.data
+
+        if seq > self.learned_seq:
+            self.learned_seq, self.learned_value = seq, value
+            self.learned[seq] = value
+
+            log(self.addr, "learned", "proposal", seq, "with value", value)
+
+            # re-propose any extant proposals since the round has ended
+            if self.proposal_queue:
+                self.propose(self.proposal_queue.pop(0))
+
+    def catch_up(self, src_addr, msg):
+        seq, = msg.data
+        updates = {k:self.learned[k] for k in self.learned if k > seq} 
+        self.send_msg(src_addr, UPDATE(self.learned_seq, self.learned_value, updates))
+
+    def update(self, src_addr, msg):
+        self.learned_seq, self.learned_value, updates = msg.data
+        learned_copy = self.learned.copy()
+        learned_copy.update(updates)
+        self.learned = learned_copy
 
 
-class PaxosProposer(object):
+class PaxosProposer(PaxosRole):
     def __init__(self):
         self.promises = 0
-        self.proposed_seq = 0
+        self.proposed_seq = None
         self.proposed_value = None
+        self.proposal_queue = []
 
     # The sequence numbers allowed for a given node are of the form
     # len(self.nodes) * x + i, where x is some multiplier and i is the node's
@@ -64,18 +119,22 @@ class PaxosProposer(object):
     # than the previously accepted seq.
     def next_seq(self):
         max_used = max(self.accepted_seq, self.proposed_seq)
-        if max_used:
+        if max_used is not None:
             seq = max_used - (max_used % len(self.nodes)) + self.addr
             if seq <= max_used:
-                seq += node_num
+                seq += len(self.nodes)
         else:
             seq = self.addr
         return seq
 
     def propose(self, value):
         self.promises = 0
+        self.proposed_seq = self.next_seq()
         self.proposed_value = value
-        self.broadcast(PREPARE(self.next_seq()), "Proposal failed")
+
+        log("PROPOSING", self.proposed_value, "SEQ", self.proposed_seq)
+
+        self.broadcast(PREPARE(self.proposed_seq), "Proposal failed")
 
     def accepted(self, src_addr, msg):
         # TODO(kourge): respond to user somehow
@@ -86,7 +145,7 @@ class PaxosProposer(object):
     def promise(self, src_addr, msg):
         seq, value = msg.data
 
-        # ensure that the promiser and the current node are on the same page
+        # ensure that the promiser and the proposer are on the same page
         if seq == self.accepted_seq:
             self.promises += 1
 
@@ -100,12 +159,15 @@ class PaxosProposer(object):
             if self.promises > len(self.nodes) / 2:
                 self.broadcast(ACCEPT(self.proposed_seq, self.proposed_value))
         elif seq < self.accepted_seq:
-            # we need to catch up
-            pass
-        else: # seq > self.accepted_seq
             # the acceptor needs to catch up
-            pass
+            updates = {k:self.learned[k] for k in self.learned if k > seq} 
+            self.send_msg(src_addr, UPDATE(self.learned_seq, self.learned_value, updates))
+            self.send_msg(src_addr, PREPARE(self.proposed_seq), "Proposal failed")
+        else: # seq > self.accepted_seq
+            # we need to catch up
+            self.send_msg(src_addr, CATCH_UP(self.accepted_seq))
 
     def nack(self, src_addr, msg):
-        # proposal rejected, re-propose with higher seq
-        self.propose(self.proposed_value)
+        # proposal rejected, put in proposal queue until next round 
+        if self.proposed_value not in self.proposal_queue:
+           self.proposal_queue.append(self.proposed_value)

@@ -2,7 +2,14 @@ def enum(**enums):
     return type('Enum', (), enums)
 
 TYPES = (
-    'ACCEPT', 'ACCEPTED', 'ANNOUNCE', 'LEARN', 'NACK', 'PREPARE', 'PROMISE'
+    'ACCEPT',
+    'ACCEPTED',
+    'CATCH_UP',
+    'LEARN',
+    'NACK',
+    'PREPARE',
+    'PROMISE',
+    'UPDATE',
 )
 
 class PaxosMessage:
