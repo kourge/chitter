@@ -21,8 +21,8 @@ public class ClientJournal {
     protected Node node;
     private int opCount;
 
-    public ClientJournal(String filename, Node n) throws JournalException {
-        this.filename = filename;
+    public ClientJournal(Node n) throws JournalException {
+        this.filename = "$client_journal";
         this.node = n;
         this.commands = new HashSet<String>();
         recover();

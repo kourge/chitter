@@ -87,16 +87,23 @@ class PaxosLearner(PaxosRole):
             self.learned[seq] = value
 
             log(self.addr, "LEARNED", value, "with seq", seq)
+            self.on_paxos_learned(value)
 
     def catch_up(self, src_addr, msg):
         seq, = msg.data
-        updates = {k:self.learned[k] for k in self.learned if k > seq} 
+        updates = {k: self.learned[k] for k in self.learned if k > seq}
         self.send_msg(src_addr, UPDATE(self.learned_seq, self.learned_value, updates))
 
     def update(self, src_addr, msg):
         self.learned_seq, self.learned_value, updates = msg.data
         self.learned.update(updates)
         self.learned = self.learned
+
+        for seq in sorted(updates.keys()):
+            self.on_paxos_learned(updates[seq])
+
+    def on_paxos_learned(self, value):
+        raise NotImplementedError()
 
 
 class PaxosProposer(PaxosRole):

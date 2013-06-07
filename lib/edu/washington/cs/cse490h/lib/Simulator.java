@@ -226,6 +226,7 @@ public class Simulator extends Manager {
             ArrayList<Event> currentRoundEvents = new ArrayList<Event>();
             currentRoundEvents.add(parser.parseLine("start 0"));
             currentRoundEvents.add(parser.parseLine("start 1"));
+            currentRoundEvents.add(parser.parseLine("start 2"));
             doTimestep(currentRoundEvents);
 
             // ************************

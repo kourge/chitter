@@ -1,4 +1,4 @@
-import AbstractNode
+from paxos_node import PaxosNode
 
 import Protocol
 import LocalFS
@@ -88,7 +88,7 @@ class ServerNode(object):
             print 'handle_request: %r' % (req,)
             req = self.on_request(req, src_addr)
             out = Serialization.encode(req)
-            if len(out) != 0:
+            if len(out) != 0 and req is not None:
                 print 'replying to %d: %r' % (src_addr, req)
                 self.RIOSend(src_addr, Protocol.CHITTER_RPC_REPLY, out)
         except Serialization.DecodingException as e:
@@ -176,7 +176,7 @@ class ClientNode(object):
 # Journals are not meant to be used this way, and I feel bad about myself
 class TransactionJournal(Journal):
     def __init__(self, node):
-        Journal.__init__(self, "txn_journal", node)
+        Journal.__init__(self, "$txn_journal", node)
         self.node = node
 
     def execute(self, obj):
@@ -191,19 +191,24 @@ class TransactionJournal(Journal):
         pass
 
 
-class ChitterNode(ServerNode, ClientNode, AbstractNode):
+class ChitterNode(ServerNode, ClientNode, PaxosNode):
     def __init__(self):
+        PaxosNode.__init__(self)
         ClientNode.__init__(self)
+
         self.pending_cmds = {}
 
         self.sid = 0
         self.last_sid = 0
         self.tid = 0
+        self.pid = 0
         self.completed_transactions = set()
 
         self.snapshots = {}
         self.cache = TTLDict()
         self.op = RemoteOp()
+
+        self.pending_proposals = {}
 
     @server
     def next_sid(self):
@@ -221,23 +226,42 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
         self.tid += 1
         return tid
 
+    @server
+    def next_pid(self):
+        """Generates a new Paxos ID"""
+
+        pid = self.pid
+        self.pid += 1
+        return pid
+
     @override
     def start(self):
+        super(self.__class__, self).start()
+
         print 'Node %d started' % (self.addr,)
-        self.client_journal = ClientJournal("client_journal", self)
+
+        self.client_journal = ClientJournal(self)
         self.txn_journal = TransactionJournal(self)
-        for cookie in self.txn_journal.getPendingOperations():
+        for cookie in self.txn_journal.pendingOperations:
             self.completed_transactions.add(cookie)
-        for command in self.client_journal.getCommands():
+
+        for command in self.client_journal.commands:
             node_addr, cmd_name, cmd_str = command.split(None, 2)
             proc = self.op(cmd_name, cmd_str)
             self.pending_cmds[command] = proc
             value = proc.next()
             self.act(int(node_addr), command, value)
-        self.tid = self.client_journal.getCount();
+
+        self.tid = self.client_journal.count
         # wrap up a commit that we failed during, if necessary:
         commit_snap = SnapshotCommitJournal(self, self.fs)
         commit_snap.completePendingOps()
+
+        # Manually set up Paxos
+        nodes = {0, 1, 2}
+        nodes.remove(self.addr)
+        other_nodes = ' '.join(str(addr) for addr in nodes)
+        PaxosNode.onCommand(self, 'paxos_setup ' + other_nodes)
 
     @override
     def fail(self):
@@ -246,11 +270,14 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
 
     @override
     def onRIOReceive(self, from_addr, protocol, msg):
-        super(self.__class__, self).onRIOReceive(from_addr, protocol, msg)
+        ClientNode.onRIOReceive(self, from_addr, protocol, msg)
+        PaxosNode.onRIOReceive(self, from_addr, protocol, msg)
 
     @override
     def onCommand(self, command):
         """Called when a command is issued through reply or console"""
+
+        super(self.__class__, self).onCommand(command)
 
         node_addr, cmd_name, cmd_str = command.split(None, 2)
         proc = self.op(cmd_name, cmd_str)
@@ -406,6 +433,33 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
                 return req
         else:
             snapshot = self.snapshots.pop(sid)
+
+            pid = self.next_pid()
+            self.pending_proposals[pid] = {
+                'snapshot': snapshot, 'req': req, 'src_addr': src_addr,
+                'sid': sid
+            }
+
+            proposal = {'value': snapshot.proposal, 'pid': pid}
+
+            if not snapshot.empty:
+                self.propose(proposal)
+            else:
+                self.on_paxos_consensus(True, proposal)
+            return None
+
+    @override
+    def on_paxos_consensus(self, success, proposal):
+        pid = proposal['pid']
+        if pid not in self.pending_proposals:
+            # Ignore for now
+            return
+
+        memo = self.pending_proposals.pop(pid)
+        req, src_addr = memo['req'], memo['src_addr']
+        snapshot, sid = memo['snapshot'], memo['sid']
+
+        if success:
             snapshot.commit(self)
 
             cookie = (src_addr, req['tid'])
@@ -414,4 +468,23 @@ class ChitterNode(ServerNode, ClientNode, AbstractNode):
 
             self.last_sid = sid
             req['result'] = True
-            return req
+
+        else:
+            req['error'] = 'Paxos proposal rejected'
+
+        out = Serialization.encode(req)
+        print 'replying to %d: %r' % (src_addr, req)
+        self.RIOSend(src_addr, Protocol.CHITTER_RPC_REPLY, out)
+
+    @override
+    def on_paxos_learned(self, value):
+        proposal = value['value']
+        for filename, content in proposal.iteritems():
+            if content is None:
+                self.fs.delete(filename)
+                return
+
+            if not self.fs.exists(filename):
+                self.fs.create(filename)
+
+            self.fs.overwriteIfNotChanged(filename, content, -1)

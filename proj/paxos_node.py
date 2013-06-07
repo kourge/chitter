@@ -40,7 +40,8 @@ class PaxosNode(AbstractNode, PaxosAcceptor, PaxosLearner, PaxosProposer):
             return
 
         try:
-            getattr(self, msg.kind)(src_addr, msg)
+            handler = getattr(self, msg.kind.lower())
+            handler(src_addr, msg)
         except AttributeError:
             print "Invalid paxos message kind:", msg.kind
             return
